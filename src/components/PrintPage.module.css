@@ -1,0 +1,7 @@
+/* styles.css */
+.page {
+  width: 80mm;
+  height: auto;
+  max-height: 200mm;
+  overflow: hidden;
+}
