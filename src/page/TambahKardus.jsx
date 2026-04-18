@@ -17,23 +17,28 @@ function TambahKardus() {
   useEffect(() => {
     setBlur(true);
     const fectData = async () => {
-      //fetching
-      const response = await api.get("/index-Kardus", {
-        headers: {
-          Authorization: `Bearer ${token}`, // Sisipkan token di header
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
-      //get response data
-      const data = await response.data.dataKardus;
-      //   console.log(data);
-      //
-      if (response.status === 200) {
+      try {
+        //fetching
+        const response = await api.get("/index-Kardus", {
+          headers: {
+            Authorization: `Bearer ${token}`, // Sisipkan token di header
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        });
+        //get response data
+        const data = await response.data.dataKardus;
+        //   console.log(data);
+        //
+        if (response.status === 200) {
+          setBlur(false);
+        }
+        //assign response data to state "posts"
+        setDatas(data);
+      } catch (error) {
+        console.error("Error fetching kardus data:", error);
         setBlur(false);
       }
-      //assign response data to state "posts"
-      setDatas(data);
     };
     fectData();
   }, [stModalEdit]);

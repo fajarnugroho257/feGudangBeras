@@ -75,28 +75,33 @@ function Nota() {
     };
     setBlur(true);
     const fectData = async () => {
-      //fetching
-      const response = await api.post(endPoint, params, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Sisipkan token di header
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
-      //get response data
-      const data = await response.data.dataNota;
-      //
-      if (response.status === 200) {
-        setBlur(false);
+      try {
+        //fetching
+        const response = await api.post(endPoint, params, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Sisipkan token di header
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        });
+        //get response data
+        const data = await response.data?.dataNota;
+        //
+        if (response.status === 200) {
+          setBlur(false);
+          // console.log(data);
+        }
         // console.log(data);
+        //assign response data to state "posts"
+        setDatas(data);
+      } catch (error) {
+        console.error("Error fetching nota data:", error);
+        setBlur(false);
       }
-      // console.log(data);
-      //assign response data to state "posts"
-      setDatas(data);
     };
     fectData();
     setIsFunctionComplete(false);
-  }, [dateFrom, dateTo, modalBayar, isFunctionComplete]);
+  }, [dateFrom, dateTo, modalBayar, isFunctionComplete, token]);
   let jlh_pembelian = 0;
 
   const [notaId, setNotaId] = useState([]);

@@ -17,6 +17,7 @@ function Login() {
       username: usermail,
       password: password,
     };
+    // const endPoint = "/api/login-api"; // Untuk proxy di development
     const endPoint = "http://127.0.0.1:8000/api/login-api";
     // login
     try {

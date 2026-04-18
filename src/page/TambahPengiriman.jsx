@@ -21,37 +21,42 @@ function TambahPengiriman() {
 
   useEffect(() => {
     const fectData = async () => {
-      //fetching
-      const response = await api.get("/detail-Kardus/1", {
-        headers: {
-          Authorization: `Bearer ${token}`, // Sisipkan token di header
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
-      //get response data
-      const harga = await response.data.data.harga;
-      const jumlah = await response.data.data.jumlah;
-      // console.log(harga);
-      //
-      if (response.status === 200) {
-        setInputFields([
-          ...inputFields,
-          {
-            data_merek: "",
-            data_barang: "",
-            data_box: "",
-            data_box_harga: harga,
-            data_box_rupiah: "",
-            data_tonase: "",
-            data_datas: "",
-            data_estimasi: "",
+      try {
+        //fetching
+        const response = await api.get("/detail-Kardus/1", {
+          headers: {
+            Authorization: `Bearer ${token}`, // Sisipkan token di header
+            "Content-Type": "application/json",
+            Accept: "application/json",
           },
-        ]);
+        });
+        //get response data
+        const harga = await response.data.data?.harga;
+        const jumlah = await response.data.data?.jumlah;
+        console.log('hihi', response.data.data);
+        // console.log(harga);
+        //
+        if (response.status === 200) {
+          setInputFields([
+            ...inputFields,
+            {
+              data_merek: "",
+              data_barang: "",
+              data_box: "",
+              data_box_harga: harga,
+              data_box_rupiah: "",
+              data_tonase: "",
+              data_datas: "",
+              data_estimasi: "",
+            },
+          ]);
+        }
+        //assign response data to state "posts"
+        setBoxHarga(harga);
+        setBoxJumlah(jumlah);
+      } catch (error) {
+        console.error("Error fetching kardus data:", error);
       }
-      //assign response data to state "posts"
-      setBoxHarga(harga);
-      setBoxJumlah(jumlah);
     };
     fectData();
   }, []);

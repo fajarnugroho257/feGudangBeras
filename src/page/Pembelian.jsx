@@ -89,28 +89,33 @@ function Pembelian() {
   //
   const fectData = async () => {
     //fetching
-    let params = {
-      dateFrom: dateFrom,
-      dateTo: dateTo,
-      supName: supName,
-      pembayaran: pembayaran,
-    };
-    const response = await api.post("index-Pembelian", params, {
-      headers: {
-        Authorization: `Bearer ${token}`, // Sisipkan token di header
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
-    //get response data
-    const data = await response.data.data;
-    //
-    if (response.status === 200) {
+    try {
+      let params = {
+        dateFrom: dateFrom,
+        dateTo: dateTo,
+        supName: supName,
+        pembayaran: pembayaran,
+      };
+      const response = await api.post("index-Pembelian", params, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Sisipkan token di header
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
+      //get response data
+      const data = await response.data.data;
+      //
+      if (response.status === 200) {
+        setBlur(false);
+      }
+      // console.log(data);
+      //assign response data to state "posts"
+      setDatas(data);
+    } catch (error) {
+      console.error("Error fetching pembelian data:", error);
       setBlur(false);
     }
-    // console.log(data);
-    //assign response data to state "posts"
-    setDatas(data);
   };
   //useEffect hook
   useEffect(() => {
