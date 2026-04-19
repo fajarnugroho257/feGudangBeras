@@ -5,31 +5,59 @@ import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import api from "../utilities/axiosInterceptor";
 import FormatTanggal from "../utilities/FormatTanggal";
+import Select from 'react-select';
 
 function TambahPembelian() {
   // TOKEN
   const token = localStorage.getItem("token");
   //
+  const [suplier_id, setSuplier_id] = useState("");
   const [suplier_nama, setsuplier_nama] = useState("");
-  const [suplier_tgl, setsuplier_tgl] = useState("");
+  const [pembelian_tgl, setpembelian_tgl] = useState("");
+  const [alamat, setalamat] = useState("");
+  const [no_hp, setno_hp] = useState("");
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   //
+  const supplierOptions = [
+    { value: 1, label: 'Supplier 1' },
+    { value: 2, label: 'Supplier 2' },
+    { value: 3, label: 'Supplier 3' },
+    { value: 'new', label: 'Suplier Baru' },
+  ];
+  const barangOptions = [
+    { value: 1, label: 'Barang 1' },
+    { value: 2, label: 'Barang 2' },
+    { value: 3, label: 'Barang 3' },
+    { value: 'new', label: 'Barang Baru' },
+  ];
   const handleSuplier_nama = (event) => {
     setsuplier_nama(event.target.value);
   };
   //
-  const handleSuplier_tgl = (event) => {
-    setsuplier_tgl(event.target.value);
+  const handlePembelian_tgl = (event) => {
+    setpembelian_tgl(event.target.value);
+  };
+  const handleAlamat = (event) => {
+    setalamat(event.target.value);
+  };
+  const handleNo_hp = (event) => {
+    setno_hp(event.target.value);
   };
 
   const [inputFields, setInputFields] = useState([
     {
       pembayaran: "",
-      pembelian_nama: "",
+      barang_id: "",
+      barang_nama: "",
+      barang_tipe: "beras",
       pembelian_kotor: "",
-      pembelian_potongan: "",
+      pembelian_potongan: "0",
       pembelian_bersih: "",
       pembelian_harga: "",
       pembelian_total: "",
+      pembelian_nota_st: "no",
+      selectedBarang: null,
     },
   ]);
 
@@ -38,12 +66,16 @@ function TambahPembelian() {
       ...inputFields,
       {
         pembayaran: "",
-        pembelian_nama: "",
+        barang_id: "",
+        barang_nama: "",
+        barang_tipe: "beras",
         pembelian_kotor: "",
         pembelian_potongan: "",
         pembelian_bersih: "",
         pembelian_harga: "",
         pembelian_total: "",
+        pembelian_nota_st: "no",
+        selectedBarang: null,
       },
     ]);
   };
@@ -100,23 +132,51 @@ function TambahPembelian() {
   const handleSubmit = async (event) => {
     const btnValue = event.nativeEvent.submitter.value; // Mendapatkan nilai button yang di-klik
     event.preventDefault();
+
+    if (isSubmitting) return; // ✅ cegah double click
+
+    setIsSubmitting(true); // lock
+
     const isConfirmed = window.confirm(
       "Apakah Anda yakin ingin menyimpan data ini?",
     );
     if (isConfirmed) {
-      if (suplier_nama === null) {
+      if (!selectedSupplier) {
+        alert("Pilih Supplier");
+        return;
+      }
+      if (selectedSupplier.value === 'new' && !suplier_nama) {
         alert("Nama Suplier harus diisi");
         return;
       }
-      if (suplier_tgl === null) {
+      if (!pembelian_tgl) {
         alert("Tanggal harus diisi");
+        return;
+      }
+      const invalidItem = inputFields.find(
+        (item) => !item.selectedBarang || (item.selectedBarang.value === 'new' && !item.barang_nama),
+      );
+      if (invalidItem) {
+        alert("Setiap item harus memiliki Barang yang dipilih, dan jika Barang Baru, nama harus diisi.");
         return;
       }
       const toastId = toast.loading("Sending data...");
       try {
-        const data = { suplier_nama: suplier_nama, suplier_tgl: suplier_tgl };
+        const data = {
+          suplier_id: selectedSupplier.value === 'new' ? null : selectedSupplier.value,
+          suplier_nama: selectedSupplier.value === 'new' ? suplier_nama : null,
+          pembelian_tgl: pembelian_tgl,
+          alamat: selectedSupplier.value === 'new' ? alamat : null,
+          no_hp: selectedSupplier.value === 'new' ? no_hp : null,
+        };
+        const sanitizedFields = inputFields.map(item => ({
+          ...item,
+          barang_id: item.selectedBarang?.value === 'new'
+            ? null
+            : item.barang_id
+        }));
         let params = {
-          formData: inputFields,
+          formData: sanitizedFields,
           suplierData: data,
           type: btnValue,
         };
@@ -139,11 +199,9 @@ function TambahPembelian() {
             const fontSmall = `${ESC}!\x01`; // Ukuran font kecil
 
             // Data nota
-            const supplier = response.data.suplierData.suplier_nama;
-            const tanggal = FormatTanggal(
-              response.data.suplierData.suplier_tgl,
-            );
-            const items = response.data.data.formData;
+            const supplier = suplier_nama;
+            const tanggal = FormatTanggal(pembelian_tgl);
+            const items = inputFields;
             const currentDateTime = getCurrentDateTime(); // Ambil tanggal dan jam sekarang
             //   console.log(supplier);
             //   console.log(tanggal);
@@ -177,10 +235,10 @@ function TambahPembelian() {
               .map((item) =>
                 formatRow(
                   [
-                    item.pembelian_nama,
+                    item.barang_id,
                     item.pembelian_kotor.toString() +
-                      "|" +
-                      item.pembelian_bersih.toString(),
+                    "|" +
+                    item.pembelian_bersih.toString(),
                     formatRupiah(parseInt(item.pembelian_harga)),
                     formatRupiah(parseInt(item.pembelian_total)),
                   ],
@@ -272,17 +330,24 @@ function TambahPembelian() {
         // set null
         // console.log("Response:", response.status);
         if (response.status === 200) {
+          setSuplier_id("");
           setsuplier_nama("");
-          setsuplier_tgl("");
+          setpembelian_tgl("");
+          setalamat("");
+          setno_hp("");
+          setSelectedSupplier(null);
           setInputFields([
             {
               pembayaran: "",
-              pembelian_nama: "",
+              barang_id: "",
+              barang_nama: "",
               pembelian_kotor: "",
               pembelian_potongan: "",
               pembelian_bersih: "",
               pembelian_harga: "",
               pembelian_total: "",
+              pembelian_nota_st: "no",
+              selectedBarang: null,
             },
           ]);
           //
@@ -308,8 +373,11 @@ function TambahPembelian() {
           autoClose: 5000,
         });
         console.error("Error posting data:", error);
+      } finally {
+        setIsSubmitting(false); // unlock (WAJIB)
       }
     } else {
+      setIsSubmitting(false);
     }
 
     // console.log("inputFields:", inputFields);
@@ -323,7 +391,11 @@ function TambahPembelian() {
 
   const handleInputCheckbox = (index, event) => {
     const values = [...inputFields];
-    values[index][event.target.name] = event.target.value;
+    if (event.target.type === 'checkbox') {
+      values[index][event.target.name] = event.target.checked ? event.target.value : 'no';
+    } else {
+      values[index][event.target.name] = event.target.value;
+    }
     setInputFields(values);
   };
 
@@ -397,50 +469,88 @@ function TambahPembelian() {
           <form onSubmit={handleSubmit} className="h-fit overflow-y-auto">
             <div className="md:grid md:grid-cols-2 md:gap-10 md:mb-2">
               <div className="flex text-sm xl:text-md font-poppins items-center my-1 xl:my-2">
-                <p className="w-fit">Nama Suplier : </p>
-                <input
-                  className="border ml-5 px-2 py-1 w-1/2"
-                  placeholder="Nama Suplier"
-                  name="suplier_nama"
-                  value={suplier_nama}
-                  onChange={handleSuplier_nama}
-                  required
-                ></input>
+                <p className="w-fit">Supplier : </p>
+                <div className="ml-5 w-1/2">
+                  <Select
+                    value={selectedSupplier}
+                    onChange={setSelectedSupplier}
+                    options={supplierOptions}
+                    placeholder="Pilih Supplier"
+                    isClearable
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    }}
+                  />
+                </div>
               </div>
               <div className="flex text-sm xl:text-md font-poppins items-center my-1 xl:my-2">
                 <p className="w-fit">Tanggal : </p>
                 <input
                   type="date"
                   className="border ml-5 px-2 py-1 w-1/2"
-                  placeholder="Nama Suplier"
-                  name="suplier_tgl"
-                  value={suplier_tgl}
-                  onChange={handleSuplier_tgl}
+                  placeholder="Tanggal Pembelian"
+                  name="pembelian_tgl"
+                  value={pembelian_tgl}
+                  onChange={handlePembelian_tgl}
                   required
                 ></input>
               </div>
+              {selectedSupplier && selectedSupplier.value === 'new' && (
+                <>
+                  <div className="flex text-sm xl:text-md font-poppins items-center my-1 xl:my-2">
+                    <p className="w-fit">Nama Suplier : </p>
+                    <input
+                      className="border ml-5 px-2 py-1 w-1/2"
+                      placeholder="Nama Suplier"
+                      name="suplier_nama"
+                      value={suplier_nama}
+                      onChange={handleSuplier_nama}
+                      required
+                    ></input>
+                  </div>
+                  <div className="flex text-sm xl:text-md font-poppins items-center my-1 xl:my-2">
+                    <p className="w-fit">Alamat : </p>
+                    <input
+                      className="border ml-5 px-2 py-1 w-1/2"
+                      placeholder="Alamat"
+                      name="alamat"
+                      value={alamat}
+                      onChange={handleAlamat}
+                    ></input>
+                  </div>
+                  <div className="flex text-sm xl:text-md font-poppins items-center my-1 xl:my-2">
+                    <p className="w-fit">No HP : </p>
+                    <input
+                      className="border ml-5 px-2 py-1 w-1/2"
+                      placeholder="No HP"
+                      name="no_hp"
+                      value={no_hp}
+                      onChange={handleNo_hp}
+                    ></input>
+                  </div>
+                </>
+              )}
             </div>
             <div className="overflow-x-auto">
-              <table className="w-[115%] xl:w-full font-poppins text-xs xl:text-md">
-                <thead className="">
-                  <tr className="w-full text-white text-center font-poppins text-xs xl:text-md bg-colorBlue">
-                    <th className="border border-black md:w-[5%]">No</th>
-                    <th className="border border-black md:w-[13%]">
-                      Nama Barang
-                    </th>
-                    <th className="border border-black md:w-[10%]">
-                      Tonase Kotor
-                    </th>
-                    <th className="border border-black md:w-[8%]">Potongan</th>
-                    <th className="border border-black md:w-[8%]">
-                      Tonase Bersih
-                    </th>
-                    <th className="border border-black md:w-[10%]">
-                      Pembayaran
-                    </th>
-                    <th className="border border-black md:w-[20%]">Harga</th>
+              <table className="w-[115%] xl:w-full font-poppins text-xs xl:text-sm">
+                <thead>
+                  <tr className="w-full text-white text-center font-poppins bg-colorBlue">
+                    <th className="border border-black md:w-[3%]">No</th>
+                    <th className="border border-black md:w-[8%]">Tipe</th>
+                    <th className="border border-black md:w-[12%]">Pilih Barang</th>
+                    <th className="border border-black md:w-[12%]">Nama Barang</th>
+                    <th className="border border-black md:w-[8%]">Tonase Kotor</th>
+                    <th className="border border-black md:w-[7%]">Potongan</th>
+                    <th className="border border-black md:w-[8%]">Tonase Bersih</th>
+                    <th className="border border-black md:w-[10%]">Pembayaran</th>
+                    {/* Kolom Harga diperlebar menjadi 20% */}
+                    <th className="border border-black md:w-[20%]">Harga (Rp)</th>
+                    {/* Kolom Total diperlebar menjadi 15% */}
                     <th className="border border-black md:w-[15%]">Total</th>
-                    <th className="border border-black md:w-[5%]"></th>
+                    <th className="border border-black md:w-[4%]">Nota</th>
+                    <th className="border border-black md:w-[3%]"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -449,182 +559,152 @@ function TambahPembelian() {
                     return (
                       <tr
                         key={index}
-                        className={`text-center hover:bg-colorBlue  ${
-                          number % 2 === 0 ? "bg-gray-50" : "bg-gray-200"
-                        }`}
+                        className={`text-center hover:bg-blue-50 ${number % 2 === 0 ? "bg-gray-50" : "bg-gray-200"
+                          }`}
                       >
                         <td className="border border-black">{number}</td>
                         <td className="border border-black">
-                          <input
-                            required
-                            name="pembelian_nama"
-                            className="border m-2 w-24 md:w-3/4 p-1"
-                            value={field.pembelian_nama}
-                            onChange={(event) =>
-                              handleInputChange(index, event)
-                            }
-                          ></input>
-                        </td>
-                        <td className="border border-black">
-                          <input
-                            type="number"
-                            className="border m-2 w-24 md:w-3/4 p-1"
-                            name="pembelian_kotor"
-                            value={field.pembelian_kotor}
-                            onChange={(event) =>
-                              handleInputChangePembelianKotor(index, event)
-                            }
-                            required
-                            onFocus={(e) =>
-                              e.target.addEventListener(
-                                "wheel",
-                                function (e) {
-                                  e.preventDefault();
-                                },
-                                { passive: false },
-                              )
-                            }
-                          ></input>
-                        </td>
-                        <td className="border border-black">
-                          <input
-                            type="number"
-                            className="border m-2 w-24 md:w-3/4 p-1"
-                            name="pembelian_potongan"
-                            value={field.pembelian_potongan}
-                            onChange={(event) =>
-                              handleInputChangePembelianPotongan(index, event)
-                            }
-                            onFocus={(e) =>
-                              e.target.addEventListener(
-                                "wheel",
-                                function (e) {
-                                  e.preventDefault();
-                                },
-                                { passive: false },
-                              )
-                            }
-                          ></input>
-                        </td>
-                        <td className="border border-black">
-                          <input
-                            className="border m-2 w-24 md:w-3/4 p-1 bg-slate-300"
-                            name="pembelian_bersih"
-                            value={field.pembelian_bersih}
-                            readOnly
-                            required
-                          ></input>
-                        </td>
-                        <td className="border border-black px-2 text-center">
-                          <div className="flex w-full gap-2 mx-auto">
-                            <div>
-                              <p className="text-xs font-poppins">Cash</p>
-                              <input
-                                type="checkbox"
-                                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                                name="pembayaran"
-                                value="cash"
-                                onChange={(event) =>
-                                  handleInputCheckbox(index, event)
-                                }
-                                checked={field.pembayaran === "cash"}
-                                required={field.pembayaran === ""}
-                              ></input>
-                            </div>
-                            <div>
-                              <p className="text-xs font-poppins">Hutang</p>
-                              <input
-                                type="checkbox"
-                                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                                name="pembayaran"
-                                value="hutang"
-                                onChange={(event) =>
-                                  handleInputCheckbox(index, event)
-                                }
-                                checked={field.pembayaran === "hutang"}
-                                required={field.pembayaran === ""}
-                              ></input>
-                            </div>
+                          <div className="m-1">
+                            <select
+                              className="border w-full p-1"
+                              name="barang_tipe"
+                              value={field.barang_tipe}
+                              onChange={(event) => handleInputChange(index, event)}
+                            >
+                              <option value="beras">Beras</option>
+                              <option value="gabah">Gabah</option>
+                            </select>
                           </div>
                         </td>
                         <td className="border border-black">
+                          <div className="p-1">
+                            <Select
+                              value={field.selectedBarang}
+                              onChange={(selected) => {
+                                const values = [...inputFields];
+                                values[index].selectedBarang = selected;
+                                values[index].barang_id =
+                                  selected && selected.value !== 'new' ? selected.value : null;
+                                setInputFields(values);
+                              }}
+                              options={barangOptions}
+                              placeholder="Cari..."
+                              isClearable
+                              menuPortalTarget={document.body}
+                              styles={{
+                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                control: (base) => ({ ...base, minHeight: '30px', fontSize: '12px' })
+                              }}
+                            />
+                          </div>
+                        </td>
+                        <td className="border border-black">
+                          {field.selectedBarang && field.selectedBarang.value === 'new' ? (
+                            <input
+                              name="barang_nama"
+                              className="border p-1 w-11/12"
+                              placeholder="Nama Baru"
+                              value={field.barang_nama}
+                              onChange={(event) => handleInputChange(index, event)}
+                              required
+                            />
+                          ) : (
+                            <span className="text-gray-400 italic">Otomatis</span>
+                          )}
+                        </td>
+                        <td className="border border-black">
                           <input
                             type="number"
-                            className={`border m-2 w-24 md:w-3/4 p-1`}
+                            className="border p-1 w-11/12"
+                            name="pembelian_kotor"
+                            value={field.pembelian_kotor}
+                            onChange={(event) => handleInputChangePembelianKotor(index, event)}
+                            required
+                          />
+                        </td>
+                        <td className="border border-black">
+                          <input
+                            type="number"
+                            className="border p-1 w-11/12"
+                            name="pembelian_potongan"
+                            value={field.pembelian_potongan}
+                            onChange={(event) => handleInputChangePembelianPotongan(index, event)}
+                          />
+                        </td>
+                        <td className="border border-black">
+                          <input
+                            className="border p-1 w-11/12 bg-slate-300"
+                            name="pembelian_bersih"
+                            value={field.pembelian_bersih}
+                            readOnly
+                          />
+                        </td>
+                        <td className="border border-black p-1">
+                          <div className="flex justify-center gap-2">
+                            <label className="text-[10px]">
+                              Cash<br /><input type="radio" name={`pembayaran-${index}`} value="cash" onChange={(e) => handleInputChange(index, { target: { name: 'pembayaran', value: 'cash' } })} checked={field.pembayaran === "cash"} />
+                            </label>
+                            <label className="text-[10px]">
+                              Hutang<br /><input type="radio" name={`pembayaran-${index}`} value="hutang" onChange={(e) => handleInputChange(index, { target: { name: 'pembayaran', value: 'hutang' } })} checked={field.pembayaran === "hutang"} />
+                            </label>
+                          </div>
+                        </td>
+                        {/* INPUT HARGA DIPERLEBAR */}
+                        <td className="border border-black">
+                          <input
+                            type="number"
+                            className="border p-1 w-11/12 font-bold text-blue-700"
                             name="pembelian_harga"
                             value={field.pembelian_harga}
-                            onChange={(event) =>
-                              handleInputChangeHarga(index, event)
-                            }
-                            onFocus={(e) =>
-                              e.target.addEventListener(
-                                "wheel",
-                                function (e) {
-                                  e.preventDefault();
-                                },
-                                { passive: false },
-                              )
-                            }
+                            onChange={(event) => handleInputChangeHarga(index, event)}
                             required
-                          ></input>
+                          />
                         </td>
+                        {/* INPUT TOTAL DIPERLEBAR */}
                         <td className="border border-black">
                           <input
                             type="text"
-                            className="border py-1 px-2 m-2 w-24 md:w-3/4 bg-slate-300"
-                            name="pembelian_total"
+                            className="border p-1 w-11/12 bg-slate-300 font-bold text-right"
                             value={RupiahFormat(field.pembelian_total)}
                             readOnly
-                            required
-                          ></input>
+                          />
                         </td>
                         <td className="border border-black">
-                          {number === 1 ? (
-                            <button
-                              className={` bg-red-400 text-colorGray py-1 px-2 rounded-md my-1 font-sm md:font-normal`}
-                              type="button"
-                              disabled
-                            >
-                              <i className="fa fa-trash"></i>
-                            </button>
-                          ) : (
-                            <button
-                              className={` bg-red-600 text-colorGray py-1 px-2 rounded-md my-1 font-sm md:font-normal`}
-                              type="button"
-                              onClick={() => handleRemoveField(index)}
-
-                              // { inputFields.length === 1 ? "" : ""}
-                            >
-                              <i className="fa fa-trash"></i>
-                            </button>
-                          )}
+                          <input
+                            type="checkbox"
+                            name="pembelian_nota_st"
+                            value="yes"
+                            onChange={(event) => handleInputCheckbox(index, event)}
+                            checked={field.pembelian_nota_st === "yes"}
+                          />
+                        </td>
+                        <td className="border border-black">
+                          <button
+                            className={`p-2 rounded-md ${index === 0 ? 'bg-red-200' : 'bg-red-600 text-white'}`}
+                            type="button"
+                            onClick={() => handleRemoveField(index)}
+                            disabled={index === 0}
+                          >
+                            <i className="fa fa-trash"></i>
+                          </button>
                         </td>
                       </tr>
                     );
                   })}
-                  <tr>
-                    <td
-                      className="border border-black text-right py-1 px-2 font-poppins"
-                      colSpan="7"
-                    >
-                      <p className="font-bold">Grand Total</p>
+                  {/* Footer Grand Total */}
+                  <tr className="bg-gray-100">
+                    <td className="border border-black text-right py-2 px-4 font-bold" colSpan="9">
+                      GRAND TOTAL
                     </td>
-                    {/* <td className="border border-black  ">
+                    <td className="border border-black p-1">
                       <input
                         type="text"
-                        className="border m-2 w-24 md:w-3/4 bg-slate-300"
+                        className="w-full p-1 bg-white border border-red-500 text-red-600 font-bold text-right"
                         value={RupiahFormat(resTtlPembwlian)}
                         readOnly
-                      ></input>
-                    </td> */}
-                    <td className="border border-black text-center">
-                      <input
-                        type="text"
-                        className="border py-1 px-2 m-2 w-24 md:w-3/4 text-red-500 font-bold"
-                        value={RupiahFormat(resTtlPembwlian)}
-                        readOnly
-                      ></input>
+                      />
                     </td>
+                    <td className="border border-black" colSpan="2"></td>
                   </tr>
                 </tbody>
               </table>
