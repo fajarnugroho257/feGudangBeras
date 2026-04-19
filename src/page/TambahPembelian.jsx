@@ -142,14 +142,17 @@ function TambahPembelian() {
     );
     if (isConfirmed) {
       if (!selectedSupplier) {
+        setIsSubmitting(false);
         alert("Pilih Supplier");
         return;
       }
       if (selectedSupplier.value === 'new' && !suplier_nama) {
+        setIsSubmitting(false);
         alert("Nama Suplier harus diisi");
         return;
       }
       if (!pembelian_tgl) {
+        setIsSubmitting(false);
         alert("Tanggal harus diisi");
         return;
       }
@@ -157,6 +160,7 @@ function TambahPembelian() {
         (item) => !item.selectedBarang || (item.selectedBarang.value === 'new' && !item.barang_nama),
       );
       if (invalidItem) {
+        setIsSubmitting(false);
         alert("Setiap item harus memiliki Barang yang dipilih, dan jika Barang Baru, nama harus diisi.");
         return;
       }
