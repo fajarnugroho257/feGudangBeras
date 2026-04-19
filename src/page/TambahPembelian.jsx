@@ -20,15 +20,14 @@ function TambahPembelian() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   //
   const supplierOptions = [
-    { value: 1, label: 'Supplier 1' },
-    { value: 2, label: 'Supplier 2' },
-    { value: 3, label: 'Supplier 3' },
+    { value: 1, label: 'CV Beras Jaya' },
+    { value: 2, label: 'UD Gabah Murni' },
+    { value: 3, label: 'Test Supplier' },
     { value: 'new', label: 'Suplier Baru' },
   ];
   const barangOptions = [
-    { value: 1, label: 'Barang 1' },
-    { value: 2, label: 'Barang 2' },
-    { value: 3, label: 'Barang 3' },
+    { value: 1, label: 'Beras Premium Putih' },
+    { value: 2, label: 'Beras Medium Putih' },
     { value: 'new', label: 'Barang Baru' },
   ];
   const handleSuplier_nama = (event) => {
