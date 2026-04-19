@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
+import RupiahFormat from "../utilities/RupiahFormat";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import api from "../utilities/axiosInterceptor";
-import ModalAdd from "../components/Suplier/ModalAdd";
-import ModalEdit from "../components/Suplier/ModalEdit";
+import ModalAdd from "../components/Barang/ModalAdd";
+import ModalEdit from "../components/Barang/ModalEdit";
 
-function Suplier() {
+function Barang() {
   const [datas, setDatas] = useState([]);
   const [blur, setBlur] = useState(true);
   const [modalAdd, setModalAdd] = useState(false);
@@ -14,7 +15,7 @@ function Suplier() {
 
   const fectData = async () => {
     const token = localStorage.getItem("token");
-    const response = await api.get("get-suplier", {
+    const response = await api.get("get-barang", {
       headers: {
         Authorization: `Bearer ${token}`, // Sisipkan token di header
         "Content-Type": "application/json",
@@ -26,7 +27,7 @@ function Suplier() {
       setBlur(false);
     }
     //get response data
-    const data = await response.data.dataSuplier;
+    const data = await response.data.dataBarang;
     // console.log(data);
     setDatas(data);
   };
@@ -79,9 +80,8 @@ function Suplier() {
                 key="head-pembelian"
               >
                 <td className="border border-black">No</td>
-                <td className="border border-black">Nama Suplier</td>
-                <td className="border border-black">Alamat </td>
-                <td className="border border-black">Nomor Hp</td>
+                <td className="border border-black">Nama Barang</td>
+                <td className="border border-black">Tipe </td>
                 <td className="border border-black">Aksi</td>
               </tr>
             </thead>
@@ -99,13 +99,22 @@ function Suplier() {
                         {number++}
                       </td>
                       <td className="border border-black px-1 py-1 md:px-3 md:py-2">
-                        {item.suplier_nama}
+                        {item.nama}
                       </td>
-                      <td className="border border-black px-1 py-1 md:px-3 md:py-2">
-                        {item.alamat}
-                      </td>
-                      <td className="border border-black px-1 py-1 md:px-3 md:py-2 text-center">
-                        {item.no_hp}
+                      <td className="border border-black px-1 py-1 md:px-3 md:py-2 text-center uppercase">
+                        <span
+                          className={`text-white px-2 rounded-sm ${
+                            item.tipe === "beras"
+                              ? "bg-red-500"
+                              : item.tipe === "katul"
+                                ? "bg-gray-400"
+                                : item.tipe === "sekam"
+                                  ? "bg-green-500"
+                                  : "bg-yellow-500"
+                          }`}
+                        >
+                          {item.tipe}
+                        </span>
                       </td>
                       <td className="border border-black px-1 py-1 md:px-3 md:py-2 text-center">
                         <button onClick={() => handleDelete(item.id)}>
@@ -138,4 +147,4 @@ function Suplier() {
   );
 }
 
-export default Suplier;
+export default Barang;

@@ -3,16 +3,16 @@ import { getToken } from "../../utilities/Auth";
 import Input from "../Ui/Input";
 import { toast } from "react-toastify";
 import api from "../../utilities/axiosInterceptor";
+import Select from "react-select";
 
 function ModalEdit({ id, isOpen, onClose, reload }) {
-  const [datas, setDatas] = useState([]);
   const [errors, setErrors] = useState({});
 
   const fectData = async (id) => {
     try {
       const toastId = toast.loading("Mendapatkan data...");
       const token = localStorage.getItem("token");
-      const response = await api.get(`get-suplier-by-id/${id}`, {
+      const response = await api.get(`get-barang-by-id/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`, // Sisipkan token di header
           "Content-Type": "application/json",
@@ -29,7 +29,6 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
         autoClose: 1000,
       });
       setForm(data);
-      setDatas(data);
     } catch (error) {}
   };
   useEffect(() => {
@@ -49,13 +48,20 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
     });
   };
 
+  const handleChangeSelect = (option) => {
+    setForm((prev) => ({
+      ...prev,
+      tipe: option ? option.value : null,
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const toastId = toast.loading("Menyimpan data...");
     try {
       const token = getToken();
       // console.log(form);
-      const response = await api.post(`update-suplier/${id}`, form, {
+      const response = await api.post(`update-barang/${id}`, form, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -72,6 +78,7 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
         reload();
       }
     } catch (err) {
+      console.log(err.response);
       if (err.response?.status === 422) {
         console.log(err.response.data.errors);
         setErrors(err.response.data.errors);
@@ -93,6 +100,13 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
       }
     }
   };
+
+  const tipeOptions = [
+    { value: "gabah", label: "Gabah" },
+    { value: "beras", label: "Beras" },
+    { value: "katul", label: "Katul" },
+    { value: "sekam", label: "Sekam" },
+  ];
 
   if (!isOpen) return null;
   return (
@@ -116,34 +130,36 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
           </div>
           <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
             <div className="overflow-x-auto">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-2 gap-2">
                 <Input
-                  label="Nama Suplier"
-                  name="suplier_nama"
+                  label="Nama Barang"
+                  name="nama"
                   type="text"
-                  value={form.suplier_nama}
+                  value={form.nama}
                   onChange={handleChange}
-                  placeholder="Nama Suplier"
-                  error={errors.suplier_nama}
+                  placeholder="Nama Barang"
+                  error={errors.nama}
                 />
-                <Input
-                  label="Alamat"
-                  name="alamat"
-                  type="text"
-                  value={form.alamat}
-                  onChange={handleChange}
-                  placeholder="Alamat"
-                  error={errors.alamat}
-                />
-                <Input
-                  label="No Hp"
-                  name="no_hp"
-                  type="text"
-                  value={form.no_hp}
-                  onChange={handleChange}
-                  placeholder="No Hp"
-                  error={errors.no_hp}
-                />
+                <div className="w-full">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
+                    Tipe
+                  </label>
+                  <Select
+                    value={tipeOptions.find((opt) => opt.value === form.tipe)}
+                    onChange={handleChangeSelect}
+                    options={tipeOptions}
+                    placeholder="Pilih Tipe"
+                    isClearable
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    }}
+                  />
+                  {errors.tipe && (
+                    <p className="mt-1 text-sm text-red-500">{errors.tipe}</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

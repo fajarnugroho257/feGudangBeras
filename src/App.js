@@ -18,6 +18,7 @@ import TambahKaryawan from "./page/TambahKaryawan";
 import TambahKardus from "./page/TambahKardus";
 import Nota from "./page/Nota";
 import Suplier from "./page/Suplier";
+import Barang from "./page/Barang";
 
 function App() {
   const location = useLocation();
@@ -103,7 +104,7 @@ function App() {
             />
             <Route
               path="/barang"
-              element={<AuthRoute element={<Nota />} isPrivate={true} />}
+              element={<AuthRoute element={<Barang />} isPrivate={true} />}
             />
           </Routes>
         </main>

@@ -1,42 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { getToken } from "../../utilities/Auth";
-import Input from "../Ui/Input";
+import Input from "../../components/Ui/Input";
 import { toast } from "react-toastify";
 import api from "../../utilities/axiosInterceptor";
+import Select from "react-select";
 
-function ModalEdit({ id, isOpen, onClose, reload }) {
-  const [datas, setDatas] = useState([]);
+function ModalAdd({ isOpen, onClose, reload }) {
   const [errors, setErrors] = useState({});
-
-  const fectData = async (id) => {
-    try {
-      const toastId = toast.loading("Mendapatkan data...");
-      const token = localStorage.getItem("token");
-      const response = await api.get(`get-suplier-by-id/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Sisipkan token di header
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
-      //get response data
-      const data = await response.data.detail;
-      console.log(data);
-      toast.update(toastId, {
-        render: response.data.message,
-        type: "success",
-        isLoading: false,
-        autoClose: 1000,
-      });
-      setForm(data);
-      setDatas(data);
-    } catch (error) {}
-  };
-  useEffect(() => {
-    fectData(id);
-  }, [id]);
-
-  const [form, setForm] = useState([]);
+  const getInitialForm = () => ({
+    nama: "",
+    tipe: "",
+  });
+  const [form, setForm] = useState(getInitialForm());
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,20 +24,28 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
     });
   };
 
+  const handleChangeSelect = (option) => {
+    setForm((prev) => ({
+      ...prev,
+      tipe: option ? option.value : null,
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const toastId = toast.loading("Menyimpan data...");
     try {
       const token = getToken();
-      // console.log(form);
-      const response = await api.post(`update-suplier/${id}`, form, {
+      const response = await api.post(`create-barang`, form, {
         headers: {
           Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
       });
       if (response.data.success) {
         setErrors({}); // reset error
         // optional reset form
+        setForm(getInitialForm());
         toast.update(toastId, {
           render: response.data.message,
           type: "success",
@@ -73,7 +56,6 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
       }
     } catch (err) {
       if (err.response?.status === 422) {
-        console.log(err.response.data.errors);
         setErrors(err.response.data.errors);
         toast.update(toastId, {
           render: "Validasi gagal",
@@ -94,6 +76,12 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
     }
   };
 
+  const tipeOptions = [
+    { value: "gabah", label: "Gabah" },
+    { value: "beras", label: "Beras" },
+    { value: "katul", label: "Katul" },
+    { value: "sekam", label: "Sekam" },
+  ];
   if (!isOpen) return null;
   return (
     <>
@@ -110,40 +98,42 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
           {/* Header: Tetap di atas */}
           <div className="flex-none">
             <h2 className="text-base md:text-lg font-bold mb-2 text-black">
-              Ubah Data Suplier
+              Tambah Data Barang
             </h2>
             <div className="h-[2px] w-full bg-colorPrimary mb-4"></div>
           </div>
           <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
             <div className="overflow-x-auto">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-2 gap-2">
                 <Input
-                  label="Nama Suplier"
-                  name="suplier_nama"
+                  label="Nama Barang"
+                  name="nama"
                   type="text"
-                  value={form.suplier_nama}
+                  value={form.nama}
                   onChange={handleChange}
-                  placeholder="Nama Suplier"
-                  error={errors.suplier_nama}
+                  placeholder="Nama Barang"
+                  error={errors.nama}
                 />
-                <Input
-                  label="Alamat"
-                  name="alamat"
-                  type="text"
-                  value={form.alamat}
-                  onChange={handleChange}
-                  placeholder="Alamat"
-                  error={errors.alamat}
-                />
-                <Input
-                  label="No Hp"
-                  name="no_hp"
-                  type="text"
-                  value={form.no_hp}
-                  onChange={handleChange}
-                  placeholder="No Hp"
-                  error={errors.no_hp}
-                />
+                <div className="w-full">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
+                    Tipe
+                  </label>
+                  <Select
+                    value={tipeOptions.find((opt) => opt.value === form.tipe)}
+                    onChange={handleChangeSelect}
+                    options={tipeOptions}
+                    placeholder="Pilih Tipe"
+                    isClearable
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    }}
+                  />
+                  {errors.tipe && (
+                    <p className="mt-1 text-sm text-red-500">{errors.tipe}</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -169,4 +159,4 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
   );
 }
 
-export default ModalEdit;
+export default ModalAdd;
