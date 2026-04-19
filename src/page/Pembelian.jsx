@@ -444,13 +444,14 @@ function Pembelian() {
                 <td className="border border-black w-[10%]">Suplier</td>
                 <td className="border border-black w-[10%]">Tanggal</td>
                 <td className="border border-black w-[12%]">Nama Barang</td>
+                <td className="border border-black w-[8%]">Tipe</td>
                 <td className="border border-black w-[9%]">Tonase Kotor</td>
                 <td className="border border-black w-[5%]">Potongan</td>
                 <td className="border border-black w-[9%]">Tonase Bersih</td>
-                <td className="border border-black w-[11%]">Harga</td>
-                <td className="border border-black w-[11%]">Total</td>
-                <td className="border border-black w-[5%]">Pembayaran</td>
+                <td className="border border-black w-[10%]">Harga</td>
                 <td className="border border-black w-[10%]">Total</td>
+                <td className="border border-black w-[5%]">Pembayaran</td>
+                <td className="border border-black w-[8%]">Total</td>
                 <td className="border border-black w-[3%]">Nota</td>
               </tr>
             </thead>
@@ -458,178 +459,147 @@ function Pembelian() {
               {datas &&
                 datas.map((item, index) => {
                   number++;
+                  // Calculate total pembelian_data items for rowSpan
+                  const totalPembelianData = item.pembelian_data.length;
+                  // Accumulate totals from all pembelian_data
+                  item.pembelian_data.forEach((pembelianDetail) => {
+                    ttl_harga += parseInt(pembelianDetail.pembelian_harga, 10);
+                    ttl_total += parseInt(pembelianDetail.pembelian_total, 10);
+                    ttl_tonase_kotor += parseFloat(pembelianDetail.pembelian_kotor);
+                    ttl_tonase_potongan += parseFloat(
+                      pembelianDetail.pembelian_potongan ?? 0,
+                    );
+                    ttl_tonase_bersih += parseFloat(
+                      pembelianDetail.pembelian_bersih,
+                    );
+                  });
+                  let firstPembelianDataOfSupplier = true;
+                  
                   return (
                     <React.Fragment key={item.id}>
-                      <tr
-                        key={"parent" + item.id}
-                        className={`${
-                          number % 2 === 0 ? "bg-gray-50" : "bg-gray-200"
-                        }`}
-                      >
-                        <td
-                          className="border border-black text-center cursor-pointer px-2 md:px-0"
-                          rowSpan={item.listPembelian.length}
-                        >
-                          <div className="grid grid-cols-1 md:flex md:justify-center gap-1 md:gap-[6px]">
-                            <i
-                              onClick={() => {
-                                downloadImage(item.id);
-                              }}
-                              className="fa fa-image text-blue-500 text-lg"
-                            ></i>
-                            <i
-                              onClick={() => {
-                                viewModalCetak(item.id);
-                              }}
-                              className="fa fa-download text-green-500 text-lg"
-                            ></i>
-                            <i
-                              onClick={() => {
-                                openEditModal(item.id);
-                              }}
-                              className="fa fa-edit text-yellow-500 text-lg"
-                            ></i>
-                            <i
-                              onClick={() => {
-                                handleDelete(item.id);
-                              }}
-                              className="fa fa-trash text-red-500 text-lg"
-                            ></i>
-                          </div>
-                        </td>
-                        <td
-                          className="border border-black text-center"
-                          rowSpan={item.listPembelian.length}
-                        >
-                          {number}
-                        </td>
-                        <td
-                          className="border border-black py-1 px-2"
-                          rowSpan={item.listPembelian.length}
-                        >
-                          {item.suplier_nama}
-                        </td>
-                        <td
-                          className="border border-black text-center"
-                          rowSpan={item.listPembelian.length}
-                        >
-                          {FormatTanggal(item.suplier_tgl)}
-                        </td>
-                        <td className="border border-black py-1 px-2">
-                          {item.listPembelian[0] &&
-                            item.listPembelian[0]["pembelian_nama"]}
-                        </td>
-                        <td className="border border-black text-center">
-                          {item.listPembelian[0] &&
-                            item.listPembelian[0]["pembelian_kotor"]}
-                        </td>
-                        <td className="border border-black text-center">
-                          {item.listPembelian[0] &&
-                            item.listPembelian[0]["pembelian_potongan"]}
-                        </td>
-                        <td className="border border-black text-center">
-                          {item.listPembelian[0] &&
-                            item.listPembelian[0]["pembelian_bersih"]}
-                        </td>
-                        <td className="border border-black text-right py-1 px-2">
-                          {RupiahFormat(
-                            item.listPembelian[0] &&
-                              item.listPembelian[0]["pembelian_harga"],
-                          )}
-                        </td>
-                        <td className="border border-black text-right py-1 px-2">
-                          {RupiahFormat(
-                            item.listPembelian[0] &&
-                              item.listPembelian[0]["pembelian_total"],
-                          )}
-                        </td>
-                        <td
-                          className={`${
-                            item.listPembelian[0] &&
-                            item.listPembelian[0]["pembayaran"] === "cash"
-                              ? "bg-green-500"
-                              : "bg-red-500"
-                          } border border-black text-center text-colorGray`}
-                        >
-                          {item.listPembelian[0] &&
-                            item.listPembelian[0]["pembayaran"]}
-                        </td>
-                        <td
-                          className="border border-black text-center"
-                          rowSpan={item.listPembelian.length}
-                        >
-                          {RupiahFormat(item.ttlPembelian)}
-                        </td>
-                        <td
-                          className="border border-black text-center"
-                          rowSpan={item.listPembelian.length}
-                        >
-                          <input
-                            type="checkbox"
-                            className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                            name="suplier_nota_st"
-                            // value="yes"
-                            onChange={(event) =>
-                              handleCheckboxChange(item.id, index)
-                            }
-                            checked={item.suplier_nota_st === "yes"}
-                            disabled={item.suplier_nota_st === "yes"}
-                            // required={field.pembayaran === ""}
-                          ></input>
-                          {item.suplier_nota_st}
-                        </td>
-                      </tr>
-                      {item.listPembelian.map((listPem, key) => {
-                        ttl_harga += parseInt(listPem.pembelian_harga, 10);
-                        ttl_total += parseInt(listPem.pembelian_total, 10);
-                        ttl_tonase_kotor += parseFloat(listPem.pembelian_kotor);
-                        ttl_tonase_potongan += parseFloat(
-                          listPem.pembelian_potongan ?? 0,
-                        );
-                        ttl_tonase_bersih += parseFloat(
-                          listPem.pembelian_bersih,
-                        );
+                      {item.pembelian_data.map((pembelianDetail, dataIndex) => {
+                        const isFirstDetailOfSupplier = firstPembelianDataOfSupplier;
+                        if (firstPembelianDataOfSupplier) {
+                          firstPembelianDataOfSupplier = false;
+                        }
+                        
                         return (
-                          <React.Fragment key={listPem.id}>
-                            {JSON.stringify(key) === "0" ? null : (
-                              <tr
-                                key={"data" + listPem.id}
-                                className={` ${
-                                  number % 2 === 0
-                                    ? "bg-gray-50"
-                                    : "bg-gray-200"
-                                }`}
-                              >
-                                <td className="border border-black py-1 px-2">
-                                  {listPem.pembelian_nama}
-                                </td>
-                                <td className="border border-black text-center">
-                                  {listPem.pembelian_kotor}
-                                </td>
-                                <td className="border border-black text-center">
-                                  {listPem.pembelian_potongan}
-                                </td>
-                                <td className="border border-black text-center">
-                                  {listPem.pembelian_bersih}
-                                </td>
-                                <td className="border border-black text-right py-1 px-2">
-                                  {RupiahFormat(listPem.pembelian_harga)}
-                                </td>
-                                <td className="border border-black text-right py-1 px-2">
-                                  {RupiahFormat(listPem.pembelian_total)}
+                          <tr
+                            key={"data" + item.id + dataIndex}
+                            className={`${
+                              number % 2 === 0 ? "bg-gray-50" : "bg-gray-200"
+                            }`}
+                          >
+                            {isFirstDetailOfSupplier && (
+                              <>
+                                <td
+                                  className="border border-black text-center cursor-pointer px-2 md:px-0"
+                                  rowSpan={totalPembelianData}
+                                >
+                                  <div className="grid grid-cols-1 md:flex md:justify-center gap-1 md:gap-[6px]">
+                                    <i
+                                      onClick={() => {
+                                        downloadImage(item.id);
+                                      }}
+                                      className="fa fa-image text-blue-500 text-lg"
+                                    ></i>
+                                    <i
+                                      onClick={() => {
+                                        viewModalCetak(item.id);
+                                      }}
+                                      className="fa fa-download text-green-500 text-lg"
+                                    ></i>
+                                    <i
+                                      onClick={() => {
+                                        openEditModal(item.id);
+                                      }}
+                                      className="fa fa-edit text-yellow-500 text-lg"
+                                    ></i>
+                                    <i
+                                      onClick={() => {
+                                        handleDelete(item.id);
+                                      }}
+                                      className="fa fa-trash text-red-500 text-lg"
+                                    ></i>
+                                  </div>
                                 </td>
                                 <td
-                                  className={`${
-                                    listPem.pembayaran === "cash"
-                                      ? "bg-green-500"
-                                      : "bg-red-500"
-                                  } border border-black text-center text-colorGray`}
+                                  className="border border-black text-center"
+                                  rowSpan={totalPembelianData}
                                 >
-                                  {listPem.pembayaran}
+                                  {number}
                                 </td>
-                              </tr>
+                                <td
+                                  className="border border-black py-1 px-2"
+                                  rowSpan={totalPembelianData}
+                                >
+                                  {item.suplier_nama}
+                                </td>
+                                <td
+                                  className="border border-black text-center"
+                                  rowSpan={totalPembelianData}
+                                >
+                                  {FormatTanggal(item.pembelian_tgl)}
+                                </td>
+                              </>
                             )}
-                          </React.Fragment>
+                            <td className="border border-black py-1 px-2">
+                              {pembelianDetail.barang.nama}
+                            </td>
+                            <td className="border border-black text-center">
+                              {pembelianDetail.barang.tipe}
+                            </td>
+                            <td className="border border-black text-center">
+                              {pembelianDetail.pembelian_kotor}
+                            </td>
+                            <td className="border border-black text-center">
+                              {pembelianDetail.pembelian_potongan}
+                            </td>
+                            <td className="border border-black text-center">
+                              {pembelianDetail.pembelian_bersih}
+                            </td>
+                            <td className="border border-black text-right py-1 px-2">
+                              {RupiahFormat(pembelianDetail.pembelian_harga)}
+                            </td>
+                            <td className="border border-black text-right py-1 px-2">
+                              {RupiahFormat(pembelianDetail.pembelian_total)}
+                            </td>
+                            <td
+                              className={`${
+                                pembelianDetail.pembayaran === "cash"
+                                  ? "bg-green-500"
+                                  : "bg-red-500"
+                              } border border-black text-center text-colorGray`}
+                            >
+                              {pembelianDetail.pembayaran}
+                            </td>
+                            {isFirstDetailOfSupplier && (
+                              <>
+                                <td
+                                  className="border border-black text-center"
+                                  rowSpan={totalPembelianData}
+                                >
+                                  {RupiahFormat(item.ttlPembelian)}
+                                </td>
+                                <td
+                                  className="border border-black text-center"
+                                  rowSpan={totalPembelianData}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded"
+                                    name="suplier_nota_st"
+                                    onChange={(event) =>
+                                      handleCheckboxChange(item.id, index)
+                                    }
+                                    checked={item.suplier_nota_st === "yes"}
+                                    disabled={item.suplier_nota_st === "yes"}
+                                  ></input>
+                                  {item.suplier_nota_st}
+                                </td>
+                              </>
+                            )}
+                          </tr>
                         );
                       })}
                     </React.Fragment>
@@ -637,7 +607,7 @@ function Pembelian() {
                 })}
               <tr key={"jumlah"}>
                 <td
-                  colSpan="5"
+                  colSpan="6"
                   className="border border-black text-right py-1 px-2"
                 >
                   TOTAL

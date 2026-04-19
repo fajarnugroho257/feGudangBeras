@@ -21,13 +21,20 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
       // console.log(response.status);
       if (response.status === 200) {
         //get response data
-        const data = await response.data.data.listPembelian;
+        const data = await response.data.data.pembelian_data;
         // console.log(data);
         //assign response data to state "posts"
         setInputFields(data);
         const suplier = await response.data.data;
+
+        // ambil hanya tanggal
+        const formattedDate = suplier.pembelian_tgl
+          ? suplier.pembelian_tgl.split("T")[0]
+          : "";
+
+
         setsuplier_nama(suplier.suplier_nama);
-        setsuplier_tgl(suplier.suplier_tgl);
+        setsuplier_tgl(formattedDate);
         //
         toast.update(toastId, {
           render: "Data getting successfully!",
@@ -68,12 +75,14 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
       {
         pembelian_id: "",
         pembayaran: "",
-        pembelian_nama: "",
+        barang_id: "",
         pembelian_kotor: "",
         pembelian_potongan: "",
         pembelian_bersih: "",
         pembelian_harga: "",
         pembelian_total: "",
+        pembelian_nota_st: "no",
+        barang: { nama: "", tipe: "" },
       },
     ]);
   };
@@ -243,19 +252,22 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                     <th className="border border-black md:w-[15%]">
                       Nama Barang
                     </th>
-                    <th className="border border-black md:w-[10%]">
+                    <th className="border border-black md:w-[8%]">
+                      Tipe
+                    </th>
+                    <th className="border border-black md:w-[9%]">
                       Tonase Kotor
                     </th>
-                    <th className="border border-black md:w-[10%]">Potongan</th>
-                    <th className="border border-black md:w-[10%]">
+                    <th className="border border-black md:w-[9%]">Potongan</th>
+                    <th className="border border-black md:w-[9%]">
                       Tonase Bersih
                     </th>
-                    <th className="border border-black md:w-[15%]">Harga</th>
-                    <th className="border border-black md:w-[13%]">
+                    <th className="border border-black md:w-[12%]">Harga</th>
+                    <th className="border border-black md:w-[12%]">
                       Pembayaran
                     </th>
-                    <th className="border border-black md:w-[15%]">Total</th>
-                    <th className="border border-black md:w-[10%]"></th>
+                    <th className="border border-black md:w-[12%]">Total</th>
+                    <th className="border border-black md:w-[9%]"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -269,16 +281,11 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                         }`}
                       >
                         <td className="border border-black">{number}</td>
-                        <td className="border border-black">
-                          <input
-                            required
-                            name="pembelian_nama"
-                            className="border m-2 w-24 md:w-3/4 p-1"
-                            value={field.pembelian_nama}
-                            onChange={(event) =>
-                              handleInputChange(index, event)
-                            }
-                          ></input>
+                        <td className="border border-black py-1 px-2">
+                          {field.barang && field.barang.nama ? field.barang.nama : field.pembelian_nama || ""}
+                        </td>
+                        <td className="border border-black py-1 px-2">
+                          {field.barang && field.barang.tipe ? field.barang.tipe : ""}
                         </td>
                         <td className="border border-black">
                           <input
