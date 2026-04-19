@@ -5,6 +5,7 @@ import quick from "../assets/img/calculator_6655639.png";
 import Dropdown from "../components/Dropdown";
 import User from "./User";
 import { useLocation } from "react-router-dom";
+import HoverDropdown from "./HoverDropdown";
 
 function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -59,6 +60,7 @@ function Header() {
               <div className={val.url === uri ? "header-active" : ""}></div>
             </Link>
           ))}
+          <HoverDropdown />
         </div>
         <User />
       </div>
@@ -100,6 +102,7 @@ function Header() {
               ></div>
             </Link>
           ))}
+          <HoverDropdown />
         </ul>
       </div>
     </header>

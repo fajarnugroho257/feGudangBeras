@@ -16,7 +16,7 @@ api.interceptors.response.use(
       window.location.href = "/login/login"; // Redirect ke login
     }
     // Jangan tampilkan stack trace di konsol
-    return Promise.reject({ handled: true });
+    return Promise.reject(error);
   },
 );
 
