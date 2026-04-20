@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import RupiahFormat from "../utilities/RupiahFormat";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -11,25 +11,75 @@ function TambahPembelian() {
   // TOKEN
   const token = localStorage.getItem("token");
   //
-  const [suplier_id, setSuplier_id] = useState("");
   const [suplier_nama, setsuplier_nama] = useState("");
   const [pembelian_tgl, setpembelian_tgl] = useState("");
   const [alamat, setalamat] = useState("");
   const [no_hp, setno_hp] = useState("");
   const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [supplierOptions, setSupplierOptions] = useState([{ value: 'new', label: 'Suplier Baru' }]);
+  const [barangOptionsCache, setBarangOptionsCache] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      try {
+        const response = await api.get('/get-suplier', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.status === 200 && Array.isArray(response.data.dataSuplier)) {
+          const options = response.data.dataSuplier.map((item) => ({
+            value: item.id,
+            label: item.suplier_nama,
+          }));
+          setSupplierOptions([...options, { value: 'new', label: 'Suplier Baru' }]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch suppliers:', error);
+      }
+    };
+
+    fetchSuppliers();
+  }, [token]);
+
+  const fetchBarangByType = useCallback(
+    async (tipe) => {
+      if (barangOptionsCache[tipe]) {
+        return; // Already cached
+      }
+
+      try {
+        const response = await api.get('/get-barang', {
+          params: { tipe },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.status === 200 && Array.isArray(response.data.dataBarang)) {
+          const options = response.data.dataBarang.map((item) => ({
+            value: item.id,
+            label: item.nama,
+          }));
+
+          setBarangOptionsCache((prev) => ({
+            ...prev,
+            [tipe]: options,
+          }));
+        }
+      } catch (error) {
+        console.error(`Failed to fetch barang for type ${tipe}:`, error);
+      }
+    },
+    [barangOptionsCache, token],
+  );
+
+  useEffect(() => {
+    fetchBarangByType('beras');
+    fetchBarangByType('gabah');
+  }, [fetchBarangByType]);
   //
-  const supplierOptions = [
-    { value: 1, label: 'CV Beras Jaya' },
-    { value: 2, label: 'UD Gabah Murni' },
-    { value: 3, label: 'Test Supplier' },
-    { value: 'new', label: 'Suplier Baru' },
-  ];
-  const barangOptions = [
-    { value: 1, label: 'Beras Premium Putih' },
-    { value: 2, label: 'Beras Medium Putih' },
-    { value: 'new', label: 'Barang Baru' },
-  ];
   const handleSuplier_nama = (event) => {
     setsuplier_nama(event.target.value);
   };
@@ -88,6 +138,12 @@ function TambahPembelian() {
   const handleInputChange = (index, event) => {
     const values = [...inputFields];
     values[index][event.target.name] = event.target.value;
+
+    // If barang_tipe changed, fetch barang for that type
+    if (event.target.name === 'barang_tipe') {
+      fetchBarangByType(event.target.value);
+    }
+
     setInputFields(values);
   };
 
@@ -333,7 +389,6 @@ function TambahPembelian() {
         // set null
         // console.log("Response:", response.status);
         if (response.status === 200) {
-          setSuplier_id("");
           setsuplier_nama("");
           setpembelian_tgl("");
           setalamat("");
@@ -431,13 +486,10 @@ function TambahPembelian() {
     return `Rp${angka.toLocaleString("id-ID")}`;
   }
 
-  let resTtlPembwlian = 0;
-  const grandTotalPembelian = () => {
-    inputFields.map((val, index) => {
-      resTtlPembwlian += val.pembelian_total;
-    });
-  };
-  grandTotalPembelian();
+  const resTtlPembwlian = inputFields.reduce(
+    (sum, val) => sum + Number(val.pembelian_total || 0),
+    0,
+  );
   //
   return (
     <div className="p-1 md:p-2 xl:p-7">
@@ -590,7 +642,7 @@ function TambahPembelian() {
                                   selected && selected.value !== 'new' ? selected.value : null;
                                 setInputFields(values);
                               }}
-                              options={barangOptions}
+                              options={barangOptionsCache[field.barang_tipe] ? [...barangOptionsCache[field.barang_tipe], { value: 'new', label: 'Barang Baru' }] : [{ value: 'new', label: 'Barang Baru' }]}
                               placeholder="Cari..."
                               isClearable
                               menuPortalTarget={document.body}

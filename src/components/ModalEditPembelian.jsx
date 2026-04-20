@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState, useCallback } from "react";
 import RupiahFormat from "../utilities/RupiahFormat";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import api from "../utilities/axiosInterceptor";
+import Select from 'react-select';
 
 function ModalEditPembelian({ id, isOpen, onClose }) {
   // TOKEN
   const token = localStorage.getItem("token");
   const [inputFields, setInputFields] = useState([]);
+  const [barangOptionsCache, setBarangOptionsCache] = useState({});
   useEffect(() => {
     const toastId = toast.loading("Getting data...");
     const fectData = async () => {
@@ -24,7 +25,12 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
         const data = await response.data.data.pembelian_data;
         // console.log(data);
         //assign response data to state "posts"
-        setInputFields(data);
+        const processedData = data.map((item) => ({
+          ...item,
+          barang_tipe: item.barang ? item.barang.tipe : 'beras',
+          selectedBarang: item.barang ? { value: item.barang_id, label: item.barang.nama } : null,
+        }));
+        setInputFields(processedData);
         const suplier = await response.data.data;
 
         // ambil hanya tanggal
@@ -54,7 +60,44 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
     };
     //panggil method "fetchData"
     fectData();
-  }, [id]);
+  }, [id, token]);
+
+  const fetchBarangByType = useCallback(
+    async (tipe) => {
+      if (barangOptionsCache[tipe]) {
+        return; // Already cached
+      }
+
+      try {
+        const response = await api.get('/get-barang', {
+          params: { tipe },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.status === 200 && Array.isArray(response.data.dataBarang)) {
+          const options = response.data.dataBarang.map((item) => ({
+            value: item.id,
+            label: item.nama,
+          }));
+
+          setBarangOptionsCache((prev) => ({
+            ...prev,
+            [tipe]: options,
+          }));
+        }
+      } catch (error) {
+        console.error(`Failed to fetch barang for type ${tipe}:`, error);
+      }
+    },
+    [barangOptionsCache, token],
+  );
+
+  useEffect(() => {
+    fetchBarangByType('beras');
+    fetchBarangByType('gabah');
+  }, [fetchBarangByType]);
 
   const [suplier_nama, setsuplier_nama] = useState("");
   const [suplier_tgl, setsuplier_tgl] = useState("");
@@ -78,13 +121,15 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
         pembelian_id: "",
         pembayaran: "",
         barang_id: "",
+        barang_nama: "",
+        barang_tipe: "beras",
         pembelian_kotor: "",
         pembelian_potongan: "",
         pembelian_bersih: "",
         pembelian_harga: "",
         pembelian_total: "",
         pembelian_nota_st: "no",
-        barang: { nama: "", tipe: "" },
+        selectedBarang: null,
       },
     ]);
   };
@@ -98,6 +143,12 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
   const handleInputChange = (index, event) => {
     const values = [...inputFields];
     values[index][event.target.name] = event.target.value;
+
+    // If barang_tipe changed, fetch barang for that type
+    if (event.target.name === 'barang_tipe') {
+      fetchBarangByType(event.target.value);
+    }
+
     setInputFields(values);
   };
 
@@ -155,9 +206,15 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
         id: suplier_id,
         suplier_nama: suplier_nama,
       };
+      const sanitizedFields = inputFields.map(item => ({
+        ...item,
+        barang_id: item.selectedBarang?.value === 'new'
+          ? null
+          : item.barang_id
+      }));
       let params = {
         pembelian_id: id,
-        formData: inputFields,
+        formData: sanitizedFields,
         suplierData: data,
       };
       // console.log(params);
@@ -225,12 +282,12 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
               <div className="text-sm xl:text-md flex font-poppins items-center my-2">
                 <p className="w-fit">Nama Suplier : </p>
                 <input
-                  className="border ml-5 w-1/2  p-2"
+                  className="border ml-5 w-1/2  p-2 bg-gray-100"
                   placeholder="Nama Suplier"
                   name="suplier_nama"
                   value={suplier_nama}
                   onChange={handleSuplier_nama}
-                  required
+                  disabled
                 ></input>
               </div>
               <div className="text-sm xl:text-md flex font-poppins items-center my-2">
@@ -252,12 +309,9 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                 <thead>
                   <tr className="w-full text-white text-center font-poppins text-xs xl:text-md bg-colorBlue">
                     <th className="border border-black md:w-[5%]">No</th>
-                    <th className="border border-black md:w-[15%]">
-                      Nama Barang
-                    </th>
-                    <th className="border border-black md:w-[8%]">
-                      Tipe
-                    </th>
+                    <th className="border border-black md:w-[8%]">Tipe</th>
+                    <th className="border border-black md:w-[15%]">Pilih Barang</th>
+                    <th className="border border-black md:w-[15%]">Nama Barang</th>
                     <th className="border border-black md:w-[9%]">
                       Tonase Kotor
                     </th>
@@ -284,11 +338,54 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                         }`}
                       >
                         <td className="border border-black">{number}</td>
-                        <td className="border border-black py-1 px-2">
-                          {field.barang && field.barang.nama ? field.barang.nama : field.pembelian_nama || ""}
+                        <td className="border border-black">
+                          <div className="m-1">
+                            <select
+                              className="border w-full p-1"
+                              name="barang_tipe"
+                              value={field.barang_tipe}
+                              onChange={(event) => handleInputChange(index, event)}
+                            >
+                              <option value="beras">Beras</option>
+                              <option value="gabah">Gabah</option>
+                            </select>
+                          </div>
                         </td>
-                        <td className="border border-black py-1 px-2">
-                          {field.barang && field.barang.tipe ? field.barang.tipe : ""}
+                        <td className="border border-black">
+                          <div className="p-1">
+                            <Select
+                              value={field.selectedBarang}
+                              onChange={(selected) => {
+                                const values = [...inputFields];
+                                values[index].selectedBarang = selected;
+                                values[index].barang_id =
+                                  selected && selected.value !== 'new' ? selected.value : null;
+                                setInputFields(values);
+                              }}
+                              options={barangOptionsCache[field.barang_tipe] ? [...barangOptionsCache[field.barang_tipe], { value: 'new', label: 'Barang Baru' }] : [{ value: 'new', label: 'Barang Baru' }]}
+                              placeholder="Cari..."
+                              isClearable
+                              menuPortalTarget={document.body}
+                              styles={{
+                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                control: (base) => ({ ...base, minHeight: '30px', fontSize: '12px' })
+                              }}
+                            />
+                          </div>
+                        </td>
+                        <td className="border border-black">
+                          {field.selectedBarang && field.selectedBarang.value === 'new' ? (
+                            <input
+                              name="barang_nama"
+                              className="border p-1 w-11/12"
+                              placeholder="Nama Baru"
+                              value={field.barang_nama}
+                              onChange={(event) => handleInputChange(index, event)}
+                              required
+                            />
+                          ) : (
+                            <span className="text-gray-400 italic">Otomatis</span>
+                          )}
                         </td>
                         <td className="border border-black">
                           <input
