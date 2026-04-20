@@ -35,6 +35,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
 
         setsuplier_nama(suplier.suplier_nama);
         setsuplier_tgl(formattedDate);
+        setsuplier_id(suplier.suplier_id);
         //
         toast.update(toastId, {
           render: "Data getting successfully!",
@@ -57,6 +58,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
 
   const [suplier_nama, setsuplier_nama] = useState("");
   const [suplier_tgl, setsuplier_tgl] = useState("");
+  const [suplier_id, setsuplier_id] = useState("");
   //
   const handleSuplier_nama = (event) => {
     setsuplier_nama(event.target.value);
@@ -149,11 +151,12 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
     const toastId = toast.loading("Sending data...");
     try {
       const data = {
-        id: id,
+        pembelian_tgl: suplier_tgl,
+        id: suplier_id,
         suplier_nama: suplier_nama,
-        suplier_tgl: suplier_tgl,
       };
       let params = {
+        pembelian_id: id,
         formData: inputFields,
         suplierData: data,
       };
