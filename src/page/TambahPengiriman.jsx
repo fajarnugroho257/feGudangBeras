@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import Select from "react-select";
 import RupiahFormat from "../utilities/RupiahFormat";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,14 +11,44 @@ function TambahPengiriman() {
   const token = localStorage.getItem("token");
   //
   const [pengiriman_tgl, setPengiriman_tgl] = useState(null);
+  const [nama_pembeli, setNama_pembeli] = useState("");
+  const [uang_muka, setUang_muka] = useState("");
+  const [status, setStatus] = useState("yes");
   const [boxHarga, setBoxHarga] = useState(null);
   const [boxJumlah, setBoxJumlah] = useState(0);
-  //
+  const [barangOptionsCache, setBarangOptionsCache] = useState({});
+  const [supplierOptionsCache, setSupplierOptionsCache] = useState([]);
+  const [stockDataByIndex, setStockDataByIndex] = useState({});
   const handlePengiriman_tgl = (event) => {
     setPengiriman_tgl(event.target.value);
   };
 
-  const [inputFields, setInputFields] = useState([]);
+  const handleNama_pembeli = (event) => {
+    setNama_pembeli(event.target.value);
+  };
+
+  const handleUang_muka = (event) => {
+    setUang_muka(event.target.value);
+  };
+
+  const handleStatus = (event) => {
+    setStatus(event.target.value);
+  };
+
+  const [inputFields, setInputFields] = useState([
+    {
+      barang_tipe: "beras",
+      barang_id: null,
+      selectedBarang: null,
+      supplier_id: null,
+      selectedSupplier: null,
+      current_stock: 0,
+      data_tonase: "",
+      data_harga: "",
+      data_total: "",
+      pembayaran_st: "cash",
+    },
+  ]);
 
   useEffect(() => {
     const fectData = async () => {
@@ -37,19 +68,12 @@ function TambahPengiriman() {
         // console.log(harga);
         //
         if (response.status === 200) {
-          setInputFields([
-            ...inputFields,
-            {
-              data_merek: "",
-              data_barang: "",
-              data_box: "",
-              data_box_harga: harga,
-              data_box_rupiah: "",
-              data_tonase: "",
-              data_datas: "",
-              data_estimasi: "",
-            },
-          ]);
+          setInputFields((prevFields) =>
+            prevFields.map((field) => ({
+              ...field,
+              data_harga: field.data_harga || harga,
+            })),
+          );
         }
         //assign response data to state "posts"
         setBoxHarga(harga);
@@ -59,21 +83,101 @@ function TambahPengiriman() {
       }
     };
     fectData();
-  }, []);
+  }, [token]);
   //
+
+  const fetchBarangByType = useCallback(
+    async (tipe) => {
+      if (barangOptionsCache[tipe]) {
+        return;
+      }
+      try {
+        const response = await api.get('/get-barang', {
+          params: { tipe },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.status === 200 && Array.isArray(response.data.dataBarang)) {
+          const options = response.data.dataBarang.map((item) => ({
+            value: item.id,
+            label: item.nama,
+          }));
+          setBarangOptionsCache((prev) => ({
+            ...prev,
+            [tipe]: options,
+          }));
+        }
+      } catch (error) {
+        console.error(`Failed to fetch barang for type ${tipe}:`, error);
+      }
+    },
+    [barangOptionsCache, token],
+  );
+
+  const fetchSuppliers = useCallback(async () => {
+    if (supplierOptionsCache.length > 0) {
+      return;
+    }
+    try {
+      const response = await api.get('/get-suplier', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200 && Array.isArray(response.data.dataSuplier)) {
+        const options = response.data.dataSuplier.map((item) => ({
+          value: item.id,
+          label: item.nama,
+        }));
+        setSupplierOptionsCache(options);
+      }
+    } catch (error) {
+      console.error('Failed to fetch suppliers:', error);
+    }
+  }, [supplierOptionsCache, token]);
+
+  const fetchStock = useCallback(
+    async (barangId) => {
+      try {
+        const response = await api.get('/get-stock', {
+          params: { barang_id: barangId },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.status === 200 && Array.isArray(response.data.dataStock)) {
+          return response.data.dataStock;
+        }
+        return [];
+      } catch (error) {
+        console.error(`Failed to fetch stock for barang ${barangId}:`, error);
+        return [];
+      }
+    },
+    [token],
+  );
+
+  useEffect(() => {
+    fetchBarangByType('beras');
+    fetchBarangByType('gabah');
+    fetchSuppliers();
+  }, [fetchBarangByType, fetchSuppliers]);
 
   const handleAddField = () => {
     setInputFields([
       ...inputFields,
       {
-        data_merek: "",
-        data_barang: "",
-        data_box: "",
-        data_box_harga: boxHarga,
-        data_box_rupiah: "",
+        barang_tipe: "beras",
+        barang_id: null,
+        selectedBarang: null,
+        supplier_id: null,
+        selectedSupplier: null,
+        current_stock: 0,
         data_tonase: "",
-        data_datas: "",
-        data_estimasi: "",
+        data_harga: boxHarga || "",
+        data_total: "",
+        pembayaran_st: "cash",
       },
     ]);
   };
@@ -86,35 +190,69 @@ function TambahPengiriman() {
 
   const handleInputChange = (index, event) => {
     const values = [...inputFields];
-    values[index][event.target.name] = event.target.value;
-    setInputFields(values);
-  };
 
-  const handleInputTonase = (index, event) => {
-    const values = [...inputFields];
-    if (event.target.name === "data_tonase") {
-      values[index]["data_estimasi"] =
-        event.target.value * values[index]["data_datas"];
+    if (event.target.name === "barang_tipe") {
+      values[index].barang_tipe = event.target.value;
+      values[index].selectedBarang = null;
+      values[index].barang_id = null;
+      fetchBarangByType(event.target.value);
+    } else if (event.target.name === "pembayaran_st") {
+      values[index].pembayaran_st = event.target.value;
+    } else {
+      values[index][event.target.name] = event.target.value;
     }
-    values[index][event.target.name] = event.target.value;
-    setInputFields(values);
-  };
 
-  const handleInputChangeHarga = (index, event) => {
-    const values = [...inputFields];
-    if (event.target.name === "data_datas") {
-      values[index]["data_estimasi"] =
-        event.target.value * values[index]["data_tonase"];
+    if (event.target.name === "data_tonase" || event.target.name === "data_harga") {
+      const tonase = Number(values[index].data_tonase || 0);
+      const harga = Number(values[index].data_harga || 0);
+      values[index].data_total = tonase * harga;
     }
-    values[index][event.target.name] = event.target.value;
+
     setInputFields(values);
   };
 
-  const handleInputKardus = (index, event) => {
-    //
+  const handleSelectBarang = (index, selected) => {
     const values = [...inputFields];
-    values[index]["data_box_rupiah"] = boxHarga * event.target.value;
-    values[index][event.target.name] = event.target.value;
+    values[index].selectedBarang = selected;
+    values[index].barang_id = selected ? selected.value : null;
+    values[index].current_stock = 0;
+    values[index].selectedSupplier = null;
+    values[index].supplier_id = null;
+    setInputFields(values);
+
+    // Fetch stock when barang is selected
+    if (selected && selected.value) {
+      fetchStock(selected.value).then((stockData) => {
+        // Extract suppliers from stock data
+        const supplierOptions = stockData.map((item) => ({
+          value: item.suplier_id,
+          label: item.suplier.suplier_nama,
+        }));
+
+        // Store stock data and supplier options for this row
+        setStockDataByIndex((prev) => ({
+          ...prev,
+          [index]: { stockData, supplierOptions },
+        }));
+      });
+    }
+  };
+
+  const handleSelectSupplier = (index, selected) => {
+    const values = [...inputFields];
+    values[index].selectedSupplier = selected;
+    values[index].supplier_id = selected ? selected.value : null;
+
+    // Look up stock for the selected supplier
+    if (selected && stockDataByIndex[index]) {
+      const stockEntry = stockDataByIndex[index].stockData.find(
+        (item) => item.suplier_id === selected.value
+      );
+      if (stockEntry) {
+        values[index].current_stock = stockEntry.stok;
+      }
+    }
+
     setInputFields(values);
   };
 
@@ -129,9 +267,22 @@ function TambahPengiriman() {
     const toastId = toast.loading("Sending data...");
     try {
       // console.log(inputFields);
-      const data = { pengiriman_tgl: pengiriman_tgl };
+      const data = {
+        pengiriman_tgl: pengiriman_tgl,
+        nama_pembeli: nama_pembeli || null,
+        uang_muka: uang_muka || null,
+        status: status || null,
+      };
+      const sanitizedFields = inputFields.map((item) => ({
+        barang_id: item.barang_id || null,
+        data_tonase: item.data_tonase,
+        data_harga: item.data_harga,
+        data_total: item.data_total,
+        pembayaran_st: item.pembayaran_st || null,
+        supplier_id: item.supplier_id || null,
+      }));
       let params = {
-        formData: inputFields,
+        formData: sanitizedFields,
         pengirimanData: data,
         type: btnValue,
       };
@@ -166,14 +317,21 @@ function TambahPengiriman() {
       // console.log("Response:", response.status);
       if (response.status === 200) {
         setPengiriman_tgl("");
+        setNama_pembeli("");
+        setUang_muka("");
+        setStatus("yes");
         setInputFields([
           {
-            data_merek: "",
-            data_barang: "",
-            data_box: "",
+            barang_tipe: "beras",
+            barang_id: null,
+            selectedBarang: null,
+            supplier_id: null,
+            selectedSupplier: null,
+            current_stock: 0,
             data_tonase: "",
-            data_datas: "",
-            data_estimasi: "",
+            data_harga: boxHarga || "",
+            data_total: "",
+            pembayaran_st: "cash",
           },
         ]);
         //
@@ -203,7 +361,6 @@ function TambahPengiriman() {
     // console.log("inputFields:", inputFields);
   };
 
-  let [number] = useState(1);
   //
   return (
     <div className="p-1 md:p-2 xl:p-7">
@@ -236,22 +393,80 @@ function TambahPengiriman() {
         <div className="h-[1px] xl:h-[2px] w-full bg-colorBlue mb-2 xl:mb-4"></div>
         <div className="h-fit">
           <form onSubmit={handleSubmit} className="h-fit overflow-y-auto">
-            <div className="md:grid md:grid-cols-2 md:gap-10 md:mb-0">
-              <div className="flex text-sm xl:text-md font-poppins items-center my-2">
-                <p className="w-fit">Pengiriman : </p>
-                <input
-                  type="date"
-                  className="border ml-5 px-2 py-1 w-1/2"
-                  placeholder="Nama Suplier"
-                  name="pengiriman_tgl"
-                  value={pengiriman_tgl}
-                  onChange={handlePengiriman_tgl}
-                  required
-                ></input>
+            {/* Baris Pertama: Pengiriman & Uang Muka */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2 mb-4">
+
+              {/* Input Tanggal Pengiriman */}
+              <div className="flex flex-col md:flex-row md:items-center font-poppins">
+                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
+                  Pengiriman
+                </label>
+                <div className="flex-1 md:ml-4">
+                  <input
+                    type="date"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue focus:border-transparent transition-all"
+                    name="pengiriman_tgl"
+                    value={pengiriman_tgl}
+                    onChange={handlePengiriman_tgl}
+                    required
+                  />
+                </div>
               </div>
-              <div className="flex text-sm xl:text-md font-poppins items-center my-2">
-                <p className="w-fit">Sisa Kardus : </p>
-                <p className="ml-5 w-full md:w-1/4 p-2">{boxJumlah}</p>
+
+              {/* Input Uang Muka */}
+              <div className="flex flex-col md:flex-row md:items-center font-poppins">
+                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
+                  Uang Muka
+                </label>
+                <div className="flex-1 md:ml-4">
+                  <input
+                    type="number"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue focus:border-transparent transition-all"
+                    placeholder="0"
+                    name="uang_muka"
+                    value={uang_muka}
+                    onChange={handleUang_muka}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Baris Kedua: Nama Pembeli & Status */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2 mb-6">
+
+              {/* Input Nama Pembeli */}
+              <div className="flex flex-col md:flex-row md:items-center font-poppins">
+                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
+                  Nama Pembeli
+                </label>
+                <div className="flex-1 md:ml-4">
+                  <input
+                    type="text"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue focus:border-transparent transition-all"
+                    placeholder="Masukkan nama pembeli"
+                    name="nama_pembeli"
+                    value={nama_pembeli}
+                    onChange={handleNama_pembeli}
+                  />
+                </div>
+              </div>
+
+              {/* Input Status */}
+              <div className="flex flex-col md:flex-row md:items-center font-poppins">
+                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
+                  Status
+                </label>
+                <div className="flex-1 md:ml-4">
+                  <select
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-colorBlue focus:border-transparent transition-all cursor-pointer"
+                    name="status"
+                    value={status}
+                    onChange={handleStatus}
+                  >
+                    <option value="yes">Yes (Publish)</option>
+                    <option value="draft">Draft</option>
+                  </select>
+                </div>
               </div>
             </div>
             <div className="overflow-x-auto">
@@ -259,150 +474,151 @@ function TambahPengiriman() {
                 <thead>
                   <tr className="w-full text-white text-center font-poppins text-xs xl:text-md bg-colorBlue">
                     <th className="border border-black md:w-[5%]">No</th>
-                    <th className="border border-black md:w-[10%]">Merek</th>
-                    <th className="border border-black md:w-[15%]">
-                      Nama Barang
-                    </th>
-                    <th className="border border-black md:w-[5%]">Kardus</th>
-                    <th className="border border-black md:w-[10%]">
-                      Harga Kardus
-                    </th>
-                    <th className="border border-black md:w-[10%]">
-                      Ttl Kardus
-                    </th>
-                    <th className="border border-black md:w-[7%]">Tonase</th>
-                    <th className="border border-black md:w-[15%]">
-                      Harga Esti
-                    </th>
-                    <th className="border border-black md:w-[15%]">
-                      Total Esti
-                    </th>
-                    <th className="border border-black md:w-[10%]"></th>
+                    <th className="border border-black md:w-[10%]">Tipe</th>
+                    <th className="border border-black md:w-[12%]">Barang</th>
+                    <th className="border border-black md:w-[12%]">Supplier</th>
+                    <th className="border border-black md:w-[8%]">Stock</th>
+                    <th className="border border-black md:w-[8%]">Tonase</th>
+                    <th className="border border-black md:w-[8%]">Harga</th>
+                    <th className="border border-black md:w-[8%]">Total</th>
+                    <th className="border border-black md:w-[10%]">Pembayaran</th>
+                    <th className="border border-black md:w-[5%]"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {inputFields &&
-                    inputFields.map((field, index) => (
-                      <React.Fragment key={index}>
+                    inputFields.map((field, index) => {
+                      const rowNumber = index + 1;
+                      return (
                         <tr
-                          className={`text-center hover:bg-colorBlue  ${
-                            number % 2 === 0 ? "bg-gray-50" : "bg-gray-200"
-                          }`}
+                          key={index}
+                          className={`text-center hover:bg-colorBlue  ${rowNumber % 2 === 0 ? "bg-gray-50" : "bg-gray-200"
+                            }`}
                         >
-                          <td className="border border-black">{number}</td>
+                          <td className="border border-black">{rowNumber}</td>
                           <td className="border border-black">
-                            <input
-                              required
-                              name="data_merek"
+                            <select
                               className="border m-2 w-24 md:w-3/4 p-1"
-                              value={field.data_merek}
-                              onChange={(event) =>
-                                handleInputChange(index, event)
-                              }
-                            ></input>
+                              name="barang_tipe"
+                              value={field.barang_tipe}
+                              onChange={(event) => handleInputChange(index, event)}
+                            >
+                              <option value="beras">Beras</option>
+                              <option value="katul">Katul</option>
+                              <option value="sekam">Sekam</option>
+                            </select>
                           </td>
                           <td className="border border-black">
-                            <input
-                              required
-                              name="data_barang"
-                              className="border m-2 w-24 md:w-3/4 p-1"
-                              value={field.data_barang}
-                              onChange={(event) =>
-                                handleInputChange(index, event)
-                              }
-                            ></input>
+                            <div className="p-1">
+                              <Select
+                                value={field.selectedBarang}
+                                onChange={(selected) => handleSelectBarang(index, selected)}
+                                options={barangOptionsCache[field.barang_tipe] || []}
+                                placeholder="Pilih Barang"
+                                isClearable
+                                menuPortalTarget={document.body}
+                                styles={{
+                                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                  control: (base) => ({
+                                    ...base,
+                                    minHeight: '30px',
+                                    fontSize: '12px',
+                                  }),
+                                }}
+                              />
+                            </div>
                           </td>
                           <td className="border border-black">
-                            <input
-                              type="number"
-                              required
-                              name="data_box"
-                              className="border m-2 w-24 md:w-3/4 p-1"
-                              value={field.data_box}
-                              onChange={(event) =>
-                                handleInputKardus(index, event)
-                              }
-                            ></input>
+                            <div className="p-1">
+                              <Select
+                                value={field.selectedSupplier}
+                                onChange={(selected) => handleSelectSupplier(index, selected)}
+                                options={stockDataByIndex[index]?.supplierOptions || []}
+                                placeholder="Pilih Supplier"
+                                isClearable
+                                menuPortalTarget={document.body}
+                                styles={{
+                                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                  control: (base) => ({
+                                    ...base,
+                                    minHeight: '30px',
+                                    fontSize: '12px',
+                                  }),
+                                }}
+                              />
+                            </div>
                           </td>
-                          <td className="border border-black">
-                            <input
-                              type="number"
-                              required
-                              readOnly
-                              name="data_box_harga"
-                              className="border m-2 w-24 md:w-3/4 p-1 bg-slate-300"
-                              value={field.data_box_harga}
-                              onChange={(event) =>
-                                handleInputChange(index, event)
-                              }
-                            ></input>
-                          </td>
-                          <td className="border border-black">
-                            <input
-                              type="number"
-                              required
-                              name="data_box_rupiah"
-                              className="border m-2 w-24 md:w-3/4 p-1 bg-slate-300"
-                              value={field.data_box_rupiah}
-                              onChange={(event) =>
-                                handleInputChange(index, event)
-                              }
-                            ></input>
-                          </td>
-                          <td className="border border-black">
-                            <input
-                              type="number"
-                              className="border m-2 w-24 md:w-3/4 p-1"
-                              name="data_tonase"
-                              value={field.data_tonase}
-                              onChange={(event) =>
-                                handleInputTonase(index, event)
-                              }
-                              required
-                              onFocus={(e) =>
-                                e.target.addEventListener(
-                                  "wheel",
-                                  function (e) {
-                                    e.preventDefault();
-                                  },
-                                  { passive: false }
-                                )
-                              }
-                            ></input>
-                          </td>
-                          <td className="border border-black bg-yellow-300">
-                            <input
-                              type="number"
-                              className="border m-2 w-24 md:w-3/4 p-1"
-                              name="data_datas"
-                              value={field.data_datas}
-                              onChange={(event) =>
-                                handleInputChangeHarga(index, event)
-                              }
-                              required
-                              onFocus={(e) =>
-                                e.target.addEventListener(
-                                  "wheel",
-                                  function (e) {
-                                    e.preventDefault();
-                                  },
-                                  { passive: false }
-                                )
-                              }
-                            ></input>
-                          </td>
-                          <td className="border border-black bg-yellow-300">
+                          <td className="border border-black bg-slate-300">
                             <input
                               type="text"
                               className="border m-2 w-24 md:w-3/4 p-1 bg-slate-300"
-                              name="data_estimasi"
-                              value={RupiahFormat(field.data_estimasi)}
+                              name="current_stock"
+                              value={field.current_stock}
                               readOnly
                               required
                             ></input>
                           </td>
                           <td className="border border-black">
-                            {number === 1 ? (
+                            <input
+                              type="number"
+                              required
+                              name="data_tonase"
+                              className="border m-2 w-24 md:w-3/4 p-1"
+                              value={field.data_tonase}
+                              onChange={(event) => handleInputChange(index, event)}
+                              onFocus={(e) =>
+                                e.target.addEventListener(
+                                  "wheel",
+                                  function (e) {
+                                    e.preventDefault();
+                                  },
+                                  { passive: false }
+                                )
+                              }
+                            ></input>
+                          </td>
+                          <td className="border border-black">
+                            <input
+                              type="number"
+                              required
+                              name="data_harga"
+                              className="border m-2 w-24 md:w-3/4 p-1"
+                              value={field.data_harga}
+                              onChange={(event) => handleInputChange(index, event)}
+                              onFocus={(e) =>
+                                e.target.addEventListener(
+                                  "wheel",
+                                  function (e) {
+                                    e.preventDefault();
+                                  },
+                                  { passive: false }
+                                )
+                              }
+                            ></input>
+                          </td>
+                          <td className="border border-black bg-slate-300">
+                            <input
+                              type="text"
+                              className="border m-2 w-24 md:w-3/4 p-1 bg-slate-300"
+                              name="data_total"
+                              value={RupiahFormat(field.data_total || 0)}
+                              readOnly
+                              required
+                            ></input>
+                          </td>
+                          <td className="border border-black">
+                            <select
+                              className="border m-2 w-24 md:w-3/4 p-1"
+                              name="pembayaran_st"
+                              value={field.pembayaran_st}
+                              onChange={(event) => handleInputChange(index, event)}
+                            >
+                              <option value="cash">Cash</option>
+                              <option value="hutang">Hutang</option>
+                            </select>
+                          </td>
+                          <td className="border border-black">
+                            {rowNumber === 1 ? (
                               <button
                                 className={` bg-red-400 text-colorGray py-1 px-2 rounded-md my-2 font-sm md:font-normal`}
                                 type="button"
@@ -415,17 +631,14 @@ function TambahPengiriman() {
                                 className={` bg-red-600 text-colorGray py-1 px-2 rounded-md my-2 font-sm md:font-normal`}
                                 type="button"
                                 onClick={() => handleRemoveField(index)}
-
-                                // { inputFields.length === 1 ? "" : ""}
                               >
                                 <i className="fa fa-trash"></i>
                               </button>
                             )}
                           </td>
                         </tr>
-                        <p className="hidden">{number++}</p>
-                      </React.Fragment>
-                    ))}
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
