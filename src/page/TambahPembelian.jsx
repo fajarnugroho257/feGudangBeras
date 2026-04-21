@@ -114,7 +114,7 @@ function TambahPembelian() {
     setInputFields([
       ...inputFields,
       {
-        pembayaran: "",
+        pembayaran: "cash",
         barang_id: "",
         barang_nama: "",
         barang_tipe: "beras",
@@ -522,10 +522,13 @@ function TambahPembelian() {
         <div className="h-[1px] xl:h-[2px] w-full bg-colorBlue mb-2 xl:mb-4"></div>
         <div className="h-auto">
           <form onSubmit={handleSubmit} className="h-fit overflow-y-auto">
-            <div className="md:grid md:grid-cols-2 md:gap-10 md:mb-2">
-              <div className="flex text-sm xl:text-md font-poppins items-center my-1 xl:my-2">
-                <p className="w-fit">Supplier : </p>
-                <div className="ml-5 w-1/2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-2 md:mb-4">
+              {/* Supplier Select */}
+              <div className="flex flex-col md:flex-row md:items-center font-poppins py-1">
+                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
+                  Supplier
+                </label>
+                <div className="flex-1 md:ml-5">
                   <Select
                     value={selectedSupplier}
                     onChange={setSelectedSupplier}
@@ -536,54 +539,83 @@ function TambahPembelian() {
                     menuPosition="fixed"
                     styles={{
                       menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                      control: (base) => ({
+                        ...base,
+                        borderRadius: '0.375rem',
+                        borderColor: '#d1d5db',
+                        minHeight: '38px'
+                      }),
                     }}
                   />
                 </div>
               </div>
-              <div className="flex text-sm xl:text-md font-poppins items-center my-1 xl:my-2">
-                <p className="w-fit">Tanggal : </p>
-                <input
-                  type="date"
-                  className="border ml-5 px-2 py-1 w-1/2"
-                  placeholder="Tanggal Pembelian"
-                  name="pembelian_tgl"
-                  value={pembelian_tgl}
-                  onChange={handlePembelian_tgl}
-                  required
-                ></input>
+
+              {/* Tanggal Pembelian */}
+              <div className="flex flex-col md:flex-row md:items-center font-poppins py-1">
+                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
+                  Tanggal
+                </label>
+                <div className="flex-1 md:ml-5">
+                  <input
+                    type="date"
+                    className="w-full border border-gray-300 rounded-md px-3 py-[6px] text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue focus:border-transparent transition-all"
+                    name="pembelian_tgl"
+                    value={pembelian_tgl}
+                    onChange={handlePembelian_tgl}
+                    required
+                  />
+                </div>
               </div>
+
+              {/* Kondisional: Supplier Baru */}
               {selectedSupplier && selectedSupplier.value === 'new' && (
                 <>
-                  <div className="flex text-sm xl:text-md font-poppins items-center my-1 xl:my-2">
-                    <p className="w-fit">Nama Suplier : </p>
-                    <input
-                      className="border ml-5 px-2 py-1 w-1/2"
-                      placeholder="Nama Suplier"
-                      name="suplier_nama"
-                      value={suplier_nama}
-                      onChange={handleSuplier_nama}
-                      required
-                    ></input>
+                  <div className="flex flex-col md:flex-row md:items-center font-poppins py-1">
+                    <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
+                      Nama Supplier
+                    </label>
+                    <div className="flex-1 md:ml-5">
+                      <input
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue transition-all"
+                        placeholder="Masukkan nama supplier"
+                        name="suplier_nama"
+                        value={suplier_nama}
+                        onChange={handleSuplier_nama}
+                        required
+                      />
+                    </div>
                   </div>
-                  <div className="flex text-sm xl:text-md font-poppins items-center my-1 xl:my-2">
-                    <p className="w-fit">Alamat : </p>
-                    <input
-                      className="border ml-5 px-2 py-1 w-1/2"
-                      placeholder="Alamat"
-                      name="alamat"
-                      value={alamat}
-                      onChange={handleAlamat}
-                    ></input>
+
+                  <div className="flex flex-col md:flex-row md:items-center font-poppins py-1">
+                    <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
+                      No HP
+                    </label>
+                    <div className="flex-1 md:ml-5">
+                      <input
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue transition-all"
+                        placeholder="0812..."
+                        name="no_hp"
+                        value={no_hp}
+                        onChange={handleNo_hp}
+                      />
+                    </div>
                   </div>
-                  <div className="flex text-sm xl:text-md font-poppins items-center my-1 xl:my-2">
-                    <p className="w-fit">No HP : </p>
-                    <input
-                      className="border ml-5 px-2 py-1 w-1/2"
-                      placeholder="No HP"
-                      name="no_hp"
-                      value={no_hp}
-                      onChange={handleNo_hp}
-                    ></input>
+
+                  {/* Alamat dibuat full width (opsional) atau tetap dalam grid */}
+                  <div className="flex flex-col md:flex-row md:items-start font-poppins py-1 md:col-span-2">
+                    <label className="text-sm xl:text-base font-medium text-gray-700 w-32 md:mt-2">
+                      Alamat
+                    </label>
+                    <div className="flex-1 md:ml-5">
+                      <textarea
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue transition-all"
+                        placeholder="Alamat lengkap supplier"
+                        name="alamat"
+                        rows="2"
+                        value={alamat}
+                        onChange={handleAlamat}
+                      />
+                    </div>
                   </div>
                 </>
               )}
@@ -694,13 +726,38 @@ function TambahPembelian() {
                             readOnly
                           />
                         </td>
-                        <td className="border border-black p-1">
-                          <div className="flex justify-center gap-2">
-                            <label className="text-[10px]">
-                              Cash<br /><input type="radio" name={`pembayaran-${index}`} value="cash" onChange={(e) => handleInputChange(index, { target: { name: 'pembayaran', value: 'cash' } })} checked={field.pembayaran === "cash"} />
+                        <td className="border border-black p-2 min-w-[100px]">
+                          <div className="flex bg-gray-100 rounded-lg p-1 shadow-inner">
+                            {/* Opsi Cash */}
+                            <label className={`flex-1 flex flex-col items-center justify-center cursor-pointer py-1 px-2 rounded-md transition-all ${field.pembayaran === "cash"
+                                ? "bg-blue-600 text-white shadow-sm"
+                                : "text-gray-500 hover:bg-gray-200"
+                              }`}>
+                              <input
+                                type="radio"
+                                className="hidden" // Sembunyikan radio asli
+                                name={`pembayaran-${index}`}
+                                value="cash"
+                                onChange={(e) => handleInputChange(index, { target: { name: 'pembayaran', value: 'cash' } })}
+                                checked={field.pembayaran === "cash"}
+                              />
+                              <span className="text-[10px] font-bold uppercase tracking-wider">Cash</span>
                             </label>
-                            <label className="text-[10px]">
-                              Hutang<br /><input type="radio" name={`pembayaran-${index}`} value="hutang" onChange={(e) => handleInputChange(index, { target: { name: 'pembayaran', value: 'hutang' } })} checked={field.pembayaran === "hutang"} />
+
+                            {/* Opsi Hutang */}
+                            <label className={`flex-1 flex flex-col items-center justify-center cursor-pointer py-1 px-2 rounded-md transition-all ${field.pembayaran === "hutang"
+                                ? "bg-red-500 text-white shadow-sm"
+                                : "text-gray-500 hover:bg-gray-200"
+                              }`}>
+                              <input
+                                type="radio"
+                                className="hidden" // Sembunyikan radio asli
+                                name={`pembayaran-${index}`}
+                                value="hutang"
+                                onChange={(e) => handleInputChange(index, { target: { name: 'pembayaran', value: 'hutang' } })}
+                                checked={field.pembayaran === "hutang"}
+                              />
+                              <span className="text-[10px] font-bold uppercase tracking-wider">Hutang</span>
                             </label>
                           </div>
                         </td>
