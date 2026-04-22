@@ -61,9 +61,6 @@ function Pembelian() {
     if (name === "data_merek") {
       setdata_merek(val);
     }
-    if (name === "val_real") {
-      setValReal(val);
-    }
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -396,47 +393,6 @@ function Pembelian() {
     }
   };
 
-  const handleInputCheckbox = (data_id, event) => {
-    const value = event.target.value;
-    // update
-    const update = async () => {
-      const toastUpdate = toast.loading("Sending data...");
-      let params = {
-        data_id: data_id,
-        value: value,
-        // params: supName,
-      };
-      setValueSt(true);
-      //fetching
-      console.log(params);
-      const response = await api.post("/update-Status", params, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Sisipkan token di header
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
-      //get response data
-      const data = await response.data.message;
-      if (response.data.success) {
-        toast.update(toastUpdate, {
-          render: data,
-          type: "success",
-          isLoading: false,
-          autoClose: 3000,
-        });
-      } else {
-        toast.update(toastUpdate, {
-          render: data,
-          type: "error",
-          isLoading: false,
-          autoClose: 3000,
-        });
-      }
-    };
-    update();
-  };
-
   const downloadImage = async (pengiriman_id) => {
     // alert(pengiriman_id);
 
@@ -498,88 +454,10 @@ function Pembelian() {
   };
   //
   let ttl_operational = 0;
-  let ttl_harga = 0;
   let ttl_data_total = 0;
-  let ttl_data_esti = 0;
   // modul edit real
-  const [dataId, setDataId] = useState(null);
-  const [valReal, setValReal] = useState(0);
-  const [valTonase, setValTonase] = useState(0);
-  const [valHarga, setValHarga] = useState(0);
   const formatNumber = (number) => {
     return new Intl.NumberFormat("id-ID").format(number);
-  };
-  const showForm = (data_id, data_total, data_harga, data_tonase) => {
-    setDataId(data_id);
-    setValReal(data_total ?? "");
-    setValHarga(data_harga ?? "");
-    setValTonase(data_tonase ?? "");
-  };
-  const handleInputReal = (event) => {
-    let input = event.target.value.replace(/\./g, "");
-    const name = event.target.name;
-    if (/^\d*$/.test(input)) {
-      if (name === "val_harga") {
-        let res = Number(input) * valTonase;
-        let harga = Math.round(res * 100) / 100;
-        setValHarga(input);
-        setValReal(harga);
-      }
-      if (name === "val_total") {
-        setValReal(input);
-        //
-        let res = Number(input) / valTonase;
-        const harga_ttl = Math.round(res * 100) / 100;
-        setValHarga(harga_ttl);
-      }
-    }
-  };
-  //
-  const handleSubmitReal = async (event) => {
-    event.preventDefault();
-    const toastId = toast.loading("Sending data...");
-    try {
-      const params = {
-        dataId: dataId,
-        valTonase: valTonase,
-        valHarga: valHarga,
-        valReal: valReal,
-      };
-      const response = await api.post("/edit-harga-real-Pengiriman", params, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
-      // set null
-      if (response.data.success) {
-        fectData();
-        toast.update(toastId, {
-          render: response.data.message,
-          type: "success",
-          isLoading: false,
-          autoClose: 3000,
-        });
-      } else {
-        toast.update(toastId, {
-          render: response.data.message,
-          type: "error",
-          isLoading: false,
-          autoClose: 5000,
-        });
-      }
-      showForm(null);
-    } catch (error) {
-      toast.update(toastId, {
-        render: "Error sending data! " + error.message,
-        type: "error",
-        isLoading: false,
-        autoClose: 5000,
-      });
-      console.error("Error posting data:", error);
-    }
-    // console.log("inputFieldsPengiriman:", inputFieldsPengiriman);
   };
   // end
   return (
@@ -622,34 +500,26 @@ function Pembelian() {
             >
               <thead>
                 <tr className="text-center h-14 text-white">
-                  <th className="border border-black w-[15%] px-2 md:w-[5%]">
+                  <th className="border border-black w-[10%] px-2 md:w-[5%]">
                     Aksi
                   </th>
-                  <th className="border border-black w-[5%]">No</th>
-                  <th className="border border-black w-[10%]">Tanggal</th>
-                  <th className="border border-black w-[10%]">Atur Ops</th>
-                  <th className="border border-black w-[8%]">Merek</th>
-                  <th className="border border-black w-[5%]">Nama Barang</th>
-                  <th className="border border-black w-[5%]">Kardus</th>
-                  <th className="border border-black w-[3%]">Tonase</th>
-                  <th className="border border-black w-[8%] bg-yellow-300">
-                    Harga Esti
-                  </th>
-                  <th className="border border-black w-[8%] bg-yellow-300">
-                    Total Esti
-                  </th>
-                  <th className="border border-black w-[8%] bg-green-300">
-                    Harga Real
-                  </th>
-                  <th className="border border-black w-[8%] bg-green-300">
-                    Total Real
-                  </th>
+                  <th className="border border-black w-[3%]">No</th>
+                  <th className="border border-black w-[8%]">Tanggal</th>
+                  <th className="border border-black w-[10%]">Nama Pembeli</th>
+                  <th className="border border-black w-[8%]">Uang Muka</th>
                   <th className="border border-black w-[5%]">Status</th>
+                  <th className="border border-black w-[8%]">Atur Ops</th>
+                  <th className="border border-black w-[8%]">Barang</th>
+                  <th className="border border-black w-[8%]">Supplier</th>
+                  <th className="border border-black w-[5%]">Tonase</th>
+                  <th className="border border-black w-[6%]">Harga</th>
+                  <th className="border border-black w-[8%]">Total</th>
+                  <th className="border border-black w-[5%]">Pembayaran</th>
                 </tr>
               </thead>
               <tbody>
                 {datas.map((item, key) => {
-                  ttl_operational += item.bebanKaryawan;
+                  ttl_operational += item.totalBeban;
                   number++;
                   return (
                     <React.Fragment key={item.id}>
@@ -703,6 +573,24 @@ function Pembelian() {
                           {FormatTanggal(item.pengiriman_tgl)}
                         </td>
                         <td
+                          className="border border-black text-center"
+                          rowSpan={item.listPengiriman.length}
+                        >
+                          {item.nama_pembeli}
+                        </td>
+                        <td
+                          className="border border-black text-right px-2 py-1"
+                          rowSpan={item.listPengiriman.length}
+                        >
+                          {RupiahFormat(item.uang_muka)}
+                        </td>
+                        <td
+                          className="border border-black text-center"
+                          rowSpan={item.listPengiriman.length}
+                        >
+                          {item.status}
+                        </td>
+                        <td
                           className="border border-black text-right px-2 py-1"
                           rowSpan={item.listPengiriman.length}
                         >
@@ -713,186 +601,48 @@ function Pembelian() {
                               handleModalBeban(item.id, item.pengiriman_tgl)
                             }
                           ></i>
-                          {RupiahFormat(item.bebanKaryawan)}
+                          {RupiahFormat(item.totalBeban)}
                         </td>
                         <td className="border border-black text-center">
                           {item.listPengiriman[0] &&
-                            item.listPengiriman[0]["data_merek"]}
+                            item.listPengiriman[0].barang?.nama}
                         </td>
                         <td className="border border-black text-center">
                           {item.listPengiriman[0] &&
-                            item.listPengiriman[0]["data_barang"]}
-                        </td>
-                        <td className="border border-black text-center">
-                          {item.listPengiriman[0] &&
-                            item.listPengiriman[0]["data_box"]}{" "}
-                          <br />
-                          <span className="text-xs">
-                            (
-                            {RupiahFormat(
-                              item.listPengiriman[0] &&
-                                item.listPengiriman[0]["data_box_rupiah"],
-                            )}
-                            )
-                          </span>
+                            item.listPengiriman[0].suplier?.suplier_nama}
                         </td>
                         <td className="border border-black text-center">
                           {item.listPengiriman[0] &&
                             item.listPengiriman[0]["data_tonase"]}
                         </td>
-                        <td className="border border-black text-right px-2 py-1 bg-yellow-300">
-                          {RupiahFormat(
-                            item.listPengiriman[0] &&
-                              item.listPengiriman[0]["data_datas"],
-                          )}
-                        </td>
-                        <td className="border border-black text-right px-2 py-1 bg-yellow-300">
-                          {RupiahFormat(
-                            item.listPengiriman[0] &&
-                              item.listPengiriman[0]["data_estimasi"],
-                          )}
-                        </td>
-                        <td className="border border-black text-right px-2 py-1 bg-green-300">
+                        <td className="border border-black text-right px-2 py-1">
                           {RupiahFormat(
                             item.listPengiriman[0] &&
                               item.listPengiriman[0]["data_harga"],
                           )}
                         </td>
-                        <td className="border border-black text-right px-2 py-1 bg-green-300 underline ">
-                          <div className="relative">
-                            <span>
-                              <p
-                                onClick={() =>
-                                  showForm(
-                                    item.listPengiriman[0]["id"],
-                                    item.listPengiriman[0]["data_total"],
-                                    item.listPengiriman[0]["data_harga"],
-                                    item.listPengiriman[0]["data_tonase"],
-                                  )
-                                }
-                                className="cursor-pointer hover:text-red-500"
-                              >
-                                {RupiahFormat(
-                                  item.listPengiriman[0] &&
-                                    item.listPengiriman[0]["data_total"],
-                                )}
-                              </p>
-                            </span>
-                            <div
-                              className={`z-20 absolute ${
-                                dataId === item.listPengiriman[0]["id"]
-                                  ? ""
-                                  : "hidden"
-                              } -top-20 right-0 h-auto py-2 w-60 bg-gray-50 rounded-md font-poppins`}
-                            >
-                              <div className="mx-2">
-                                <form onSubmit={handleSubmitReal}>
-                                  <input value={dataId} hidden></input>
-                                  <input hidden value={valTonase}></input>
-                                  <div className="text-left text-sm mb-1">
-                                    <label>Harga Real</label>
-                                    <input
-                                      required
-                                      value={formatNumber(valHarga)}
-                                      name="val_harga"
-                                      placeholder="Harga Real"
-                                      onChange={(event) =>
-                                        handleInputReal(event)
-                                      }
-                                      className="mt-1 border py-1 px-2 border-black w-full rounded-sm"
-                                    ></input>
-                                  </div>
-                                  <div className="text-left text-sm mb-1">
-                                    <label>Total Real</label>
-                                    <input
-                                      required
-                                      value={formatNumber(valReal)}
-                                      placeholder="Total Real"
-                                      name="val_total"
-                                      onChange={(event) =>
-                                        handleInputReal(event)
-                                      }
-                                      className="mt-1 border py-1 px-2 border-black w-full rounded-sm"
-                                    ></input>
-                                  </div>
-                                  <div className="flex justify-between mt-2 text-xs">
-                                    <div
-                                      onClick={() => {
-                                        showForm(null);
-                                      }}
-                                      className="cursor-pointer border border-colorBlue text-colorBlue p-1 rounded-sm"
-                                    >
-                                      Close
-                                    </div>
-                                    <button
-                                      type="submit"
-                                      className="bg-colorBlue text-white p-1 rounded-sm"
-                                    >
-                                      Simpan
-                                    </button>
-                                  </div>
-                                </form>
-                              </div>
-                            </div>
-                          </div>
+                        <td className="border border-black text-right px-2 py-1">
+                          {RupiahFormat(
+                            item.listPengiriman[0] &&
+                              item.listPengiriman[0]["data_total"],
+                          )}
                         </td>
-                        <td className="border border-black">
-                          <div className="flex gap-3 w-3/4 mx-auto">
-                            <div>
-                              <p className="text-xs font-poppins">BYR</p>
-                              <input
-                                type="checkbox"
-                                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                                name="data_st"
-                                value="yes"
-                                onChange={(event) =>
-                                  handleInputCheckbox(
-                                    item.listPengiriman[0] &&
-                                      item.listPengiriman[0]["id"],
-                                    event,
-                                  )
-                                }
-                                checked={
-                                  item.listPengiriman[0] &&
-                                  item.listPengiriman[0]["data_st"] === "yes"
-                                }
-                              ></input>
-                            </div>
-                            <div>
-                              <p className="text-xs font-poppins">HTG</p>
-                              <input
-                                type="checkbox"
-                                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                                name="data_st"
-                                value="no"
-                                // value={field.pembelian_harga}
-                                onChange={(event) =>
-                                  handleInputCheckbox(
-                                    item.listPengiriman[0] &&
-                                      item.listPengiriman[0]["id"],
-                                    event,
-                                  )
-                                }
-                                checked={
-                                  item.listPengiriman[0] &&
-                                  item.listPengiriman[0]["data_st"] === "no"
-                                }
-                                // required={field.pembayaran === ""}
-                              ></input>
-                            </div>
-                          </div>
+                        <td
+                          className={`${
+                            item.listPengiriman[0] &&
+                            item.listPengiriman[0]["pembayaran_st"] === "cash"
+                              ? "bg-green-500"
+                              : "bg-red-500"
+                          } border border-black text-center text-colorGray`}
+                        >
+                          {item.listPengiriman[0] &&
+                            item.listPengiriman[0]["pembayaran_st"]}
                         </td>
                       </tr>
                       {item.listPengiriman &&
                         item.listPengiriman.map((listPem, key) => {
-                          let har2 = listPem.data_harga;
-                          ttl_harga += parseInt(har2, 10);
                           let total = listPem.data_total;
                           ttl_data_total += parseInt(total ?? 0, 10);
-                          ttl_data_esti += parseInt(
-                            listPem.data_estimasi ?? 0,
-                            10,
-                          );
 
                           return (
                             <React.Fragment key={listPem.id}>
@@ -906,151 +656,28 @@ function Pembelian() {
                                   }`}
                                 >
                                   <td className="border border-black text-center">
-                                    {listPem && listPem.data_merek}
+                                    {listPem.barang?.nama}
                                   </td>
                                   <td className="border border-black text-center">
-                                    {listPem.data_barang}
-                                  </td>
-                                  <td className="border border-black text-center">
-                                    {listPem.data_box}
-                                    <br />
-                                    <span className="text-xs">
-                                      ({RupiahFormat(listPem.data_box_rupiah)})
-                                    </span>
+                                    {listPem.suplier?.suplier_nama}
                                   </td>
                                   <td className="border border-black text-center">
                                     {listPem.data_tonase}
                                   </td>
-                                  <td className="border border-black text-right px-2 py-1 bg-yellow-300">
-                                    {RupiahFormat(listPem.data_datas)}
-                                  </td>
-                                  <td className="border border-black text-right px-2 py-1 bg-yellow-300">
-                                    {RupiahFormat(listPem.data_estimasi)}
-                                  </td>
-                                  <td className="border border-black text-right px-2 py-1 bg-green-300">
+                                  <td className="border border-black text-right px-2 py-1">
                                     {RupiahFormat(listPem.data_harga)}
                                   </td>
-                                  <td className="border border-black text-right px-2 py-1 bg-green-300 underline">
-                                    {/* {RupiahFormat(listPem.data_total)} */}
-                                    <div className="relative">
-                                      <span>
-                                        <p
-                                          onClick={() =>
-                                            showForm(
-                                              listPem.id,
-                                              listPem.data_total,
-                                              listPem.data_harga,
-                                              listPem.data_tonase,
-                                            )
-                                          }
-                                          className="cursor-pointer hover:text-red-500"
-                                        >
-                                          {RupiahFormat(listPem.data_total)}
-                                        </p>
-                                      </span>
-                                      <div
-                                        className={`z-20 absolute ${
-                                          dataId === listPem.data_id
-                                            ? ""
-                                            : "hidden"
-                                        } -top-20 right-0 h-auto py-2 w-60 bg-gray-50 rounded-md font-poppins`}
-                                      >
-                                        <div className="mx-2">
-                                          <form onSubmit={handleSubmitReal}>
-                                            <input
-                                              value={dataId}
-                                              hidden
-                                            ></input>
-                                            <input
-                                              hidden
-                                              value={valTonase}
-                                            ></input>
-                                            <div className="text-left text-sm mb-1">
-                                              <label>Harga Real</label>
-                                              <input
-                                                required
-                                                value={formatNumber(valHarga)}
-                                                name="val_harga"
-                                                placeholder="Harga Real"
-                                                onChange={(event) =>
-                                                  handleInputReal(event)
-                                                }
-                                                className="mt-1 border py-1 px-2 border-black w-full rounded-sm"
-                                              ></input>
-                                            </div>
-                                            <div className="text-left text-sm mb-1">
-                                              <label>Total Real</label>
-                                              <input
-                                                required
-                                                value={formatNumber(valReal)}
-                                                placeholder="Total Real"
-                                                name="val_total"
-                                                onChange={(event) =>
-                                                  handleInputReal(event)
-                                                }
-                                                className="mt-1 border py-1 px-2 border-black w-full rounded-sm"
-                                              ></input>
-                                            </div>
-                                            <div className="flex justify-between mt-2 text-xs">
-                                              <div
-                                                onClick={() => {
-                                                  showForm(null);
-                                                }}
-                                                className="cursor-pointer border border-colorBlue text-colorBlue p-1 rounded-sm"
-                                              >
-                                                Close
-                                              </div>
-                                              <button
-                                                type="submit"
-                                                className="bg-colorBlue text-white p-1 rounded-sm"
-                                              >
-                                                Simpan
-                                              </button>
-                                            </div>
-                                          </form>
-                                        </div>
-                                      </div>
-                                    </div>
+                                  <td className="border border-black text-right px-2 py-1">
+                                    {RupiahFormat(listPem.data_total)}
                                   </td>
-                                  <td className="border border-black">
-                                    <div className="flex gap-3 w-3/4 mx-auto">
-                                      <div>
-                                        <p className="text-xs font-poppins">
-                                          BYR
-                                        </p>
-                                        <input
-                                          type="checkbox"
-                                          className="w-5 h-5 text-blue-600 bg-green-500 border-gray-300 rounded"
-                                          name="data_st"
-                                          value="yes"
-                                          onChange={(event) =>
-                                            handleInputCheckbox(
-                                              listPem.id,
-                                              event,
-                                            )
-                                          }
-                                          checked={listPem.data_st === "yes"}
-                                        ></input>
-                                      </div>
-                                      <div>
-                                        <p className="text-xs font-poppins">
-                                          HTG
-                                        </p>
-                                        <input
-                                          type="checkbox"
-                                          className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                                          name="pembayaran"
-                                          value="no"
-                                          onChange={(event) =>
-                                            handleInputCheckbox(
-                                              listPem.id,
-                                              event,
-                                            )
-                                          }
-                                          checked={listPem.data_st === "no"}
-                                        ></input>
-                                      </div>
-                                    </div>
+                                  <td
+                                    className={`${
+                                      listPem.pembayaran_st === "cash"
+                                        ? "bg-green-500"
+                                        : "bg-red-500"
+                                    } border border-black text-center text-colorGray`}
+                                  >
+                                    {listPem.pembayaran_st}
                                   </td>
                                 </tr>
                               )}
@@ -1062,28 +689,23 @@ function Pembelian() {
                 })}
                 <tr>
                   <td
-                    colSpan="3"
+                    colSpan="6"
                     className="border border-black text-right px-2 py-1"
                   >
-                    Total
+                    Total Operational
                   </td>
                   <td className="border border-black text-right px-2 py-1">
                     {RupiahFormat(ttl_operational)}
                   </td>
                   <td
+                    colSpan="4"
                     className="border border-black text-right px-2 py-1"
-                    colSpan="5"
                   >
                     GRAND TOTAL
                   </td>
                   <td className="border border-black text-right px-2 py-1">
-                    {RupiahFormat(ttl_data_esti)}
-                  </td>
-                  <td className="border border-black text-right px-2 py-1"></td>
-                  <td className="border border-black text-right px-2 py-1">
                     {RupiahFormat(ttl_data_total)}
                   </td>
-                  <td className="border border-black text-right px-2 py-1"></td>
                 </tr>
               </tbody>
             </table>
