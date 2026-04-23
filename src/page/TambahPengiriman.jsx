@@ -10,7 +10,7 @@ function TambahPengiriman() {
   // TOKEN
   const token = localStorage.getItem("token");
   //
-  const [pengiriman_tgl, setPengiriman_tgl] = useState(null);
+  const [pengiriman_tgl, setPengiriman_tgl] = useState(new Date().toISOString().slice(0, 10));
   const [nama_pembeli, setNama_pembeli] = useState("");
   const [uang_muka, setUang_muka] = useState("");
   const [status, setStatus] = useState("yes");
@@ -224,9 +224,10 @@ function TambahPengiriman() {
     if (selected && selected.value) {
       fetchStock(selected.value).then((stockData) => {
         // Extract suppliers from stock data
+        console.log('Stock data for barang_id', selected.value, stockData);
         const supplierOptions = stockData.map((item) => ({
           value: item.suplier_id,
-          label: item.suplier.suplier_nama,
+          label: item.suplier.suplier_nama + " (Stok: " + item.stok + ")",
         }));
 
         // Store stock data and supplier options for this row
@@ -360,6 +361,11 @@ function TambahPengiriman() {
     }
     // console.log("inputFields:", inputFields);
   };
+
+  const resTtlPengiriman = inputFields.reduce(
+    (sum, val) => sum + Number(val.data_total || 0),
+    0,
+  );
 
   //
   return (
@@ -639,6 +645,21 @@ function TambahPengiriman() {
                         </tr>
                       );
                     })}
+                  {/* Footer Grand Total */}
+                  <tr className="bg-gray-100">
+                    <td className="border border-black text-right py-2 px-4 font-bold" colSpan="7">
+                      GRAND TOTAL
+                    </td>
+                    <td className="border border-black p-1">
+                      <input
+                        type="text"
+                        className="w-full p-1 bg-white border border-red-500 text-red-600 font-bold text-right"
+                        value={RupiahFormat(resTtlPengiriman)}
+                        readOnly
+                      />
+                    </td>
+                    <td className="border border-black" colSpan="2"></td>
+                  </tr>
                 </tbody>
               </table>
             </div>

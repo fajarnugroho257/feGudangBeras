@@ -12,7 +12,7 @@ function TambahPembelian() {
   const token = localStorage.getItem("token");
   //
   const [suplier_nama, setsuplier_nama] = useState("");
-  const [pembelian_tgl, setpembelian_tgl] = useState("");
+  const [pembelian_tgl, setpembelian_tgl] = useState(new Date().toISOString().slice(0, 10));
   const [alamat, setalamat] = useState("");
   const [no_hp, setno_hp] = useState("");
   const [selectedSupplier, setSelectedSupplier] = useState(null);
