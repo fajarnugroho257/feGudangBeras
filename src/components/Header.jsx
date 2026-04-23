@@ -21,6 +21,7 @@ function Header() {
     { name: "Tambah Data", url: "/tambah-pembelian" },
     { name: "Data Pembelian", url: "/pembelian" },
     { name: "Data Pengiriman", url: "/pengiriman" },
+    { name: "Stok Gudang", url: "/stok-gudang" },
     { name: "Laporan", url: "/laporan" },
     { name: "Nota Pembelian", url: "/nota" },
   ];

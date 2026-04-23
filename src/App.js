@@ -10,6 +10,7 @@ import AuthRoute from "./utilities/AuthRoute";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Pengiriman from "./page/Pengiriman";
+import StokGudang from "./page/StokGudang";
 import Laporan from "./page/Laporan";
 import { useLocation } from "react-router-dom";
 import TambahPengiriman from "./page/TambahPengiriman";
@@ -65,6 +66,10 @@ function App() {
             <Route
               path="/pengiriman"
               element={<AuthRoute element={<Pengiriman />} isPrivate={true} />}
+            />
+            <Route
+              path="/stok-gudang"
+              element={<AuthRoute element={<StokGudang />} isPrivate={true} />}
             />
             <Route
               path="/laporan"
