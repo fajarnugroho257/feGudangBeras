@@ -21,6 +21,7 @@ function TambahPengiriman() {
   const [supplierOptionsCache, setSupplierOptionsCache] = useState([]);
   const [stockDataByIndex, setStockDataByIndex] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingBarang, setLoadingBarang] = useState(false);
 
   const handlePengiriman_tgl = (event) => setPengiriman_tgl(event.target.value);
   const handleNama_pembeli = (event) => setNama_pembeli(event.target.value);
@@ -74,7 +75,9 @@ function TambahPengiriman() {
 
   const fetchBarangByType = useCallback(
     async (tipe) => {
-      if (barangOptionsCache[tipe]) return;
+      if (barangOptionsCache[tipe] || loadingBarang) return;
+
+      setLoadingBarang(true);
       try {
         const response = await api.get('/get-barang', {
           params: { tipe },
@@ -85,16 +88,15 @@ function TambahPengiriman() {
             value: item.id,
             label: item.nama,
           }));
-          setBarangOptionsCache((prev) => ({
-            ...prev,
-            [tipe]: options,
-          }));
+          setBarangOptionsCache((prev) => ({ ...prev, [tipe]: options }));
         }
       } catch (error) {
         console.error(`Failed to fetch barang for type ${tipe}:`, error);
+      } finally {
+        setLoadingBarang(false);
       }
     },
-    [barangOptionsCache, token],
+    [barangOptionsCache, token, loadingBarang],
   );
 
   const fetchSuppliers = useCallback(async () => {
@@ -122,23 +124,11 @@ function TambahPengiriman() {
           params: { barang_id: barangId },
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (response.status === 200 && Array.isArray(response.data.dataStock)) {
-          return response.data.dataStock;
-        }
-        return [];
-      } catch (error) {
-        console.error(`Failed to fetch stock for barang ${barangId}:`, error);
-        return [];
-      }
+        return response.status === 200 ? response.data.dataStock : [];
+      } catch (error) { return []; }
     },
     [token],
   );
-
-  useEffect(() => {
-    fetchBarangByType('beras');
-    fetchBarangByType('gabah');
-    fetchSuppliers();
-  }, [fetchBarangByType, fetchSuppliers]);
 
   const handleAddField = () => {
     setInputFields([
@@ -309,6 +299,7 @@ function TambahPengiriman() {
           isLoading: false,
           autoClose: 3000,
         });
+        window.location.reload()
       } else {
         toast.update(toastId, {
           render: "Error sending data!" + response.status,
@@ -489,6 +480,7 @@ function TambahPengiriman() {
                           <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Pilih Barang</label>
                           <Select
                             value={field.selectedBarang}
+                            onMenuOpen={() => fetchBarangByType(field.barang_tipe)}
                             onChange={(selected) => handleSelectBarang(index, selected)}
                             options={barangOptionsCache[field.barang_tipe] || []}
                             placeholder="Cari..."
@@ -664,6 +656,7 @@ function TambahPengiriman() {
                           <td className="py-2 px-3 border-r border-gray-100">
                             <Select
                               value={field.selectedBarang}
+                              onMenuOpen={() => fetchBarangByType(field.barang_tipe)}
                               onChange={(selected) => handleSelectBarang(index, selected)}
                               options={barangOptionsCache[field.barang_tipe] || []}
                               placeholder="Pilih Barang..."

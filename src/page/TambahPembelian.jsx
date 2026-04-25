@@ -16,45 +16,48 @@ function TambahPembelian() {
   const [alamat, setalamat] = useState("");
   const [no_hp, setno_hp] = useState("");
   const [selectedSupplier, setSelectedSupplier] = useState(null);
-  const [supplierOptions, setSupplierOptions] = useState([{ value: 'new', label: 'Suplier Baru' }]);
-  const [barangOptionsCache, setBarangOptionsCache] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    const fetchSuppliers = async () => {
-      try {
-        const response = await api.get('/get-suplier', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.status === 200 && Array.isArray(response.data.dataSuplier)) {
-          const options = response.data.dataSuplier.map((item) => ({
-            value: item.id,
-            label: item.suplier_nama,
-          }));
-          setSupplierOptions([...options, { value: 'new', label: 'Suplier Baru' }]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch suppliers:', error);
-      }
-    };
+  // State untuk options
+  const [supplierOptions, setSupplierOptions] = useState([{ value: 'new', label: 'Suplier Baru' }]);
+  const [barangOptionsCache, setBarangOptionsCache] = useState({});
+  
+  // State untuk loading indicator
+  const [loadingSuppliers, setLoadingSuppliers] = useState(false);
+  const [loadingBarang, setLoadingBarang] = useState(false);
 
-    fetchSuppliers();
-  }, [token]);
+  const fetchSuppliers = async () => {
+    // Jika sudah ada data (selain 'new'), jangan fetch lagi
+    if (supplierOptions.length > 1 || loadingSuppliers) return;
+
+    setLoadingSuppliers(true);
+    try {
+      const response = await api.get('/get-suplier', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.status === 200 && Array.isArray(response.data.dataSuplier)) {
+        const options = response.data.dataSuplier.map((item) => ({
+          value: item.id,
+          label: item.suplier_nama,
+        }));
+        setSupplierOptions([...options, { value: 'new', label: 'Suplier Baru' }]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch suppliers:', error);
+    } finally {
+      setLoadingSuppliers(false);
+    }
+  };
 
   const fetchBarangByType = useCallback(
     async (tipe) => {
-      if (barangOptionsCache[tipe]) {
-        return; // Already cached
-      }
+      if (barangOptionsCache[tipe] || loadingBarang) return;
 
+      setLoadingBarang(true);
       try {
         const response = await api.get('/get-barang', {
           params: { tipe },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (response.status === 200 && Array.isArray(response.data.dataBarang)) {
@@ -70,15 +73,13 @@ function TambahPembelian() {
         }
       } catch (error) {
         console.error(`Failed to fetch barang for type ${tipe}:`, error);
+      } finally {
+        setLoadingBarang(false);
       }
     },
-    [barangOptionsCache, token],
+    [barangOptionsCache, token, loadingBarang],
   );
 
-  useEffect(() => {
-    fetchBarangByType('beras');
-    fetchBarangByType('gabah');
-  }, [fetchBarangByType]);
 
   const handleSuplier_nama = (event) => {
     setsuplier_nama(event.target.value);
@@ -139,9 +140,10 @@ function TambahPembelian() {
     const values = [...inputFields];
     values[index][event.target.name] = event.target.value;
 
-    // If barang_tipe changed, fetch barang for that type
+    // Reset barang jika tipe berubah agar user dipaksa pilih barang yang sesuai tipenya
     if (event.target.name === 'barang_tipe') {
-      fetchBarangByType(event.target.value);
+      values[index].selectedBarang = null;
+      values[index].barang_id = "";
     }
 
     setInputFields(values);
@@ -373,6 +375,7 @@ function TambahPembelian() {
             isLoading: false,
             autoClose: 3000,
           });
+          window.location.reload();
         } else {
           toast.update(toastId, {
             render: "Error sending data!" + response.status,
@@ -483,6 +486,7 @@ function TambahPembelian() {
                     value={selectedSupplier}
                     onChange={setSelectedSupplier}
                     options={supplierOptions}
+                    onMenuOpen={fetchSuppliers}
                     placeholder="-- Pilih Supplier --"
                     isClearable
                     menuPortalTarget={document.body}
@@ -612,6 +616,7 @@ function TambahPembelian() {
                           <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Pilih Barang</label>
                           <Select
                             value={field.selectedBarang}
+                            onMenuOpen={() => fetchBarangByType(field.barang_tipe)}
                             onChange={(selected) => {
                               const values = [...inputFields];
                               values[index].selectedBarang = selected;
@@ -805,6 +810,7 @@ function TambahPembelian() {
                           <td className="py-2 px-3 border-r border-gray-100">
                             <Select
                               value={field.selectedBarang}
+                              onMenuOpen={() => fetchBarangByType(field.barang_tipe)}
                               onChange={(selected) => {
                                 const values = [...inputFields];
                                 values[index].selectedBarang = selected;
