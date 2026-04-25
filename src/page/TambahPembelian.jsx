@@ -79,11 +79,11 @@ function TambahPembelian() {
     fetchBarangByType('beras');
     fetchBarangByType('gabah');
   }, [fetchBarangByType]);
-  //
+
   const handleSuplier_nama = (event) => {
     setsuplier_nama(event.target.value);
   };
-  //
+
   const handlePembelian_tgl = (event) => {
     setpembelian_tgl(event.target.value);
   };
@@ -96,7 +96,7 @@ function TambahPembelian() {
 
   const [inputFields, setInputFields] = useState([
     {
-      pembayaran: "",
+      pembayaran: "cash",
       barang_id: "",
       barang_nama: "",
       barang_tipe: "beras",
@@ -119,7 +119,7 @@ function TambahPembelian() {
         barang_nama: "",
         barang_tipe: "beras",
         pembelian_kotor: "",
-        pembelian_potongan: "",
+        pembelian_potongan: "0",
         pembelian_bersih: "",
         pembelian_harga: "",
         pembelian_total: "",
@@ -153,7 +153,6 @@ function TambahPembelian() {
     if (event.target.name === "pembelian_kotor") {
       values[index]["pembelian_bersih"] =
         event.target.value - values[index]["pembelian_potongan"];
-      //
       values[index]["pembelian_total"] =
         values[index]["pembelian_bersih"] * values[index]["pembelian_harga"];
     }
@@ -166,7 +165,6 @@ function TambahPembelian() {
     if (event.target.name === "pembelian_potongan") {
       values[index]["pembelian_bersih"] =
         values[index]["pembelian_kotor"] - event.target.value;
-      //
       values[index]["pembelian_total"] =
         values[index]["pembelian_bersih"] * values[index]["pembelian_harga"];
     }
@@ -188,8 +186,7 @@ function TambahPembelian() {
     const btnValue = event.nativeEvent.submitter.value; // Mendapatkan nilai button yang di-klik
     event.preventDefault();
 
-    if (isSubmitting) return; // ✅ cegah double click
-
+    if (isSubmitting) return; // cegah double click
     setIsSubmitting(true); // lock
 
     const isConfirmed = window.confirm(
@@ -230,9 +227,7 @@ function TambahPembelian() {
         };
         const sanitizedFields = inputFields.map(item => ({
           ...item,
-          barang_id: item.selectedBarang?.value === 'new'
-            ? null
-            : item.barang_id
+          barang_id: item.selectedBarang?.value === 'new' ? null : item.barang_id
         }));
         let params = {
           formData: sanitizedFields,
@@ -240,14 +235,11 @@ function TambahPembelian() {
           type: btnValue,
         };
         let response = "";
+        
         if (btnValue === "simcetak") {
           response = await api.post(`/add-Pembelian`, params, {
-            // headers: {
-            //   Authorization: `Bearer ${token}`, // Sisipkan token di header
-            // },
-            // responseType: "blob", // penting untuk men-download file
             headers: {
-              Authorization: `Bearer ${token}`, // Sisipkan token di header
+              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
               Accept: "application/json",
             },
@@ -261,29 +253,27 @@ function TambahPembelian() {
             const supplier = suplier_nama;
             const tanggal = FormatTanggal(pembelian_tgl);
             const items = inputFields;
-            const currentDateTime = getCurrentDateTime(); // Ambil tanggal dan jam sekarang
-            //   console.log(supplier);
-            //   console.log(tanggal);
-            //   console.log(items);
+            const currentDateTime = getCurrentDateTime();
+
             const grandTotal = items.reduce(
-              (sum, item) => sum + parseInt(item.pembelian_total),
+              (sum, item) => sum + parseInt(item.pembelian_total || 0),
               0,
             );
 
             // Format kolom
-            const columnWidths = [6, 9, 16, 16]; // Lebar kolom untuk nama, tonase, dan harga
+            const columnWidths = [6, 9, 16, 16]; 
 
             // Format header
             const header =
-              `${fontSmall}` + // Atur font kecil
+              `${fontSmall}` +
               "Putra Cabe\n" +
               "Alamat Jln. Raya Bandongan - Magelang\nPaingan Trasan, Bandongan\n" +
               "HP. 0813 1300 5249 / 0813 9123 1224" +
               "\n-----------------------------------------------\n" +
               `Supplier    : ${supplier}\n` +
               `Tanggal     : ${tanggal}\n` +
-              `Nota Cetak  : ${currentDateTime[0]}\n` + // Tambahkan tanggal dan jam sekarang
-              `Nota Jam    : ${currentDateTime[1]}\n` + // Tambahkan tanggal dan jam sekarang
+              `Nota Cetak  : ${currentDateTime[0]}\n` + 
+              `Nota Jam    : ${currentDateTime[1]}\n` + 
               "-----------------------------------------------\n" +
               formatRow(["Brg", "Ton", "Harga", "Total"], columnWidths) +
               "\n" +
@@ -294,12 +284,10 @@ function TambahPembelian() {
               .map((item) =>
                 formatRow(
                   [
-                    item.barang_id,
-                    item.pembelian_kotor.toString() +
-                    "|" +
-                    item.pembelian_bersih.toString(),
-                    formatRupiah(parseInt(item.pembelian_harga)),
-                    formatRupiah(parseInt(item.pembelian_total)),
+                    item.barang_id, // Ganti ini jika perlu
+                    item.pembelian_kotor.toString() + "|" + item.pembelian_bersih.toString(),
+                    formatRupiah(parseInt(item.pembelian_harga || 0)),
+                    formatRupiah(parseInt(item.pembelian_total || 0)),
                   ],
                   columnWidths,
                 ),
@@ -312,35 +300,21 @@ function TambahPembelian() {
               formatRow(["Grand Total", formatRupiah(grandTotal)], [33, 16]) +
               "\n-----------------------------------------------\n\n";
 
-            // Gabungkan semuanya
-            // const nota = header + rows + "\n" + footer;
-            const nota =
-              `${fontSmall}` + header + rows + "\n" + footer + `${fontSmall}`; // Kembalikan ke font normal jika perlu
-
-            console.log(nota); // Debug: lihat output di konsol
+            const nota = `${fontSmall}` + header + rows + "\n" + footer + `${fontSmall}`; 
+            console.log(nota); 
 
             // Kirim ke printer thermal
             const printData = new TextEncoder().encode(nota);
-
-            // Hubungkan ke perangkat Bluetooth
             const device = await navigator.bluetooth.requestDevice({
               acceptAllDevices: true,
               optionalServices: ["000018f0-0000-1000-8000-00805f9b34fb"],
             });
-
             console.log("Perangkat ditemukan:", device.name);
 
             const server = await device.gatt.connect();
-            const service = await server.getPrimaryService(
-              "000018f0-0000-1000-8000-00805f9b34fb",
-            );
-            const characteristic = await service.getCharacteristic(
-              "00002af1-0000-1000-8000-00805f9b34fb",
-            );
+            const service = await server.getPrimaryService("000018f0-0000-1000-8000-00805f9b34fb");
+            const characteristic = await service.getCharacteristic("00002af1-0000-1000-8000-00805f9b34fb");
 
-            // Kirim data ke printer
-            // await characteristic.writeValue(printData);
-            // mambagi dua
             function chunkArrayBuffer(buffer, chunkSize) {
               let chunks = [];
               for (let i = 0; i < buffer.byteLength; i += chunkSize) {
@@ -350,57 +324,42 @@ function TambahPembelian() {
             }
 
             async function sendDataInChunks(characteristic, data) {
-              const chunkSize = 512; // Batas maksimum byte
+              const chunkSize = 512;
               const chunks = chunkArrayBuffer(data, chunkSize);
-
               for (const chunk of chunks) {
                 await characteristic.writeValue(chunk);
-                // Tunggu sedikit waktu jika perangkat memerlukan jeda
                 await new Promise((resolve) => setTimeout(resolve, 50));
               }
             }
-            // end membagi dua
             await sendDataInChunks(characteristic, printData);
-
             console.log("Nota berhasil dicetak.");
           } catch (error) {
             console.error("Gagal mencetak nota:", error);
           }
-          // console.log(response);
-          // console.log(response.data);
-          // // Membuat URL untuk file yang didownload
-          // const url = window.URL.createObjectURL(new Blob([response.data]));
-          // // alert(url);
-          // const link = document.createElement("a");
-          // link.href = url;
-          // link.setAttribute("download", "Pembelian.png"); // Nama file untuk diunduh
-          // document.body.appendChild(link);
-          // link.click(); // Memicu download
-          // document.body.removeChild(link); // Menghapus link setelah download
         } else {
           response = await api.post("/add-Pembelian", params, {
             headers: {
-              Authorization: `Bearer ${token}`, // Sisipkan token di header
+              Authorization: `Bearer ${token}`, 
               "Content-Type": "application/json",
               Accept: "application/json",
             },
           });
         }
-        // set null
-        // console.log("Response:", response.status);
+        
         if (response.status === 200) {
           setsuplier_nama("");
-          setpembelian_tgl("");
+          setpembelian_tgl(new Date().toISOString().slice(0, 10)); 
           setalamat("");
           setno_hp("");
           setSelectedSupplier(null);
           setInputFields([
             {
-              pembayaran: "",
+              pembayaran: "cash",
               barang_id: "",
               barang_nama: "",
+              barang_tipe: "beras",
               pembelian_kotor: "",
-              pembelian_potongan: "",
+              pembelian_potongan: "0",
               pembelian_bersih: "",
               pembelian_harga: "",
               pembelian_total: "",
@@ -408,7 +367,6 @@ function TambahPembelian() {
               selectedBarang: null,
             },
           ]);
-          //
           toast.update(toastId, {
             render: "Data sent successfully!",
             type: "success",
@@ -430,22 +388,18 @@ function TambahPembelian() {
           isLoading: false,
           autoClose: 5000,
         });
-        console.error("Error posting data:", error);
       } finally {
-        setIsSubmitting(false); // unlock (WAJIB)
+        setIsSubmitting(false); // unlock
       }
     } else {
       setIsSubmitting(false);
     }
-
-    // console.log("inputFields:", inputFields);
   };
+
   const navigate = useNavigate();
   const handleTab = (event) => {
     navigate(`/${event}`);
   };
-
-  let number = 0;
 
   const handleInputCheckbox = (index, event) => {
     const values = [...inputFields];
@@ -459,201 +413,386 @@ function TambahPembelian() {
 
   function getCurrentDateTime() {
     const now = new Date();
-    const options = {
-      weekday: "long",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    };
-    const tanggal = now.toLocaleDateString("id-ID", options); // Format: "Kamis, 16 November 2024"
-    const jam = now.toLocaleTimeString("id-ID"); // Format: "13:45:30" atau sesuai lokal
-    // return `${tanggal} ${jam}`;
+    const options = { weekday: "long", year: "numeric", month: "short", day: "numeric" };
+    const tanggal = now.toLocaleDateString("id-ID", options);
+    const jam = now.toLocaleTimeString("id-ID"); 
     return [tanggal, jam];
   }
 
-  // Fungsi untuk memformat baris teks
   function formatRow(columns, columnWidths) {
     return columns
       .map((col, index) => {
         const width = columnWidths[index];
-        return col.toString().padEnd(width, " "); // Tambahkan spasi untuk alignment
+        return col.toString().padEnd(width, " ");
       })
       .join(" ");
   }
 
-  // Fungsi untuk memformat angka ke rupiah
   function formatRupiah(angka) {
     return `Rp${angka.toLocaleString("id-ID")}`;
   }
 
-  const resTtlPembwlian = inputFields.reduce(
+  const resTtlPembelian = inputFields.reduce(
     (sum, val) => sum + Number(val.pembelian_total || 0),
     0,
   );
-  //
+  
   return (
-    <div className="p-1 md:p-2 xl:p-7">
-      <div className=" w-full h-full mx-auto bg-gray-50 shadow-xl p-5">
-        <div className="h-fit xl:flex items-center mb-1 xl:mb-4 justify-between">
-          <div className="font-poppins font-normal grid grid-cols-2 md:flex gap-1 xl:gap-4 items-center">
-            <h3 className="text-colorBlue text-sm xl:text-lg  font-semibold border-l-2 px-2">
-              Pembelian
-            </h3>
-            <h3
-              className="text-gray-500 text-xs xl:text-md cursor-pointer border-l-2 px-2"
-              onClick={() => handleTab("tambah-pengiriman")}
-            >
-              Pengiriman
-            </h3>
-            <h3
-              className="text-gray-500 text-xs xl:text-md cursor-pointer border-l-2 px-2"
-              onClick={() => handleTab("tambah-karyawan")}
-            >
-              Karyawan
-            </h3>
-            <h3
-              className="text-gray-500 text-xs xl:text-md cursor-pointer border-l-2 px-2"
-              onClick={() => handleTab("tambah-kardus")}
-            >
-              Kardus
-            </h3>
-          </div>
+    <div className="p-1 md:p-3 xl:p-5 font-poppins">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full h-full mx-auto flex flex-col">
+        
+        {/* Navigation Tabs */}
+        <div className="flex flex-wrap items-center gap-2 mb-6 border-b border-gray-100 pb-4">
+          <button className="px-4 py-2 bg-teal-50 text-teal-700 font-bold rounded-lg text-sm border border-teal-200 transition-colors">
+            Pembelian
+          </button>
+          <button
+            className="px-4 py-2 text-gray-500 hover:bg-gray-50 font-medium rounded-lg text-sm transition-colors"
+            onClick={() => handleTab("tambah-pengiriman")}
+          >
+            Pengiriman
+          </button>
+          <button
+            className="px-4 py-2 text-gray-500 hover:bg-gray-50 font-medium rounded-lg text-sm transition-colors"
+            onClick={() => handleTab("tambah-karyawan")}
+          >
+            Karyawan
+          </button>
+          {/* <button
+            className="px-4 py-2 text-gray-500 hover:bg-gray-50 font-medium rounded-lg text-sm transition-colors"
+            onClick={() => handleTab("tambah-kardus")}
+          >
+            Kardus
+          </button> */}
         </div>
-        <div className="h-[1px] xl:h-[2px] w-full bg-colorBlue mb-2 xl:mb-4"></div>
-        <div className="h-auto">
-          <form onSubmit={handleSubmit} className="h-fit overflow-y-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-2 md:mb-4">
-              {/* Supplier Select */}
-              <div className="flex flex-col md:flex-row md:items-center font-poppins py-1">
-                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
-                  Supplier
-                </label>
-                <div className="flex-1 md:ml-5">
+
+        {/* Main Content Form */}
+        <div className="flex-1">
+          <form onSubmit={handleSubmit} className="h-fit">
+            
+            {/* Header Form (Supplier & Date) */}
+            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                
+                {/* Select Supplier */}
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    Supplier
+                  </label>
                   <Select
                     value={selectedSupplier}
                     onChange={setSelectedSupplier}
                     options={supplierOptions}
-                    placeholder="Pilih Supplier"
+                    placeholder="-- Pilih Supplier --"
                     isClearable
                     menuPortalTarget={document.body}
-                    menuPosition="fixed"
                     styles={{
                       menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                      control: (base) => ({
+                      control: (base, state) => ({
                         ...base,
-                        borderRadius: '0.375rem',
-                        borderColor: '#d1d5db',
-                        minHeight: '38px'
+                        minHeight: '42px',
+                        fontSize: '14px',
+                        borderColor: state.isFocused ? '#2dd4bf' : '#e5e7eb',
+                        boxShadow: state.isFocused ? '0 0 0 1px #2dd4bf' : 'none',
+                        borderRadius: '0.5rem',
+                        '&:hover': { borderColor: '#2dd4bf' }
                       }),
                     }}
                   />
                 </div>
-              </div>
 
-              {/* Tanggal Pembelian */}
-              <div className="flex flex-col md:flex-row md:items-center font-poppins py-1">
-                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
-                  Tanggal
-                </label>
-                <div className="flex-1 md:ml-5">
+                {/* Tanggal Pembelian */}
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    Tanggal Transaksi
+                  </label>
                   <input
                     type="date"
-                    className="w-full border border-gray-300 rounded-md px-3 py-[6px] text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue focus:border-transparent transition-all"
+                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
                     name="pembelian_tgl"
                     value={pembelian_tgl}
                     onChange={handlePembelian_tgl}
                     required
                   />
                 </div>
-              </div>
 
-              {/* Kondisional: Supplier Baru */}
-              {selectedSupplier && selectedSupplier.value === 'new' && (
-                <>
-                  <div className="flex flex-col md:flex-row md:items-center font-poppins py-1">
-                    <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
-                      Nama Supplier
-                    </label>
-                    <div className="flex-1 md:ml-5">
+                {/* Kondisional: Supplier Baru */}
+                {selectedSupplier && selectedSupplier.value === 'new' && (
+                  <>
+                    <div className="w-full">
+                      <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                        Nama Supplier Baru
+                      </label>
                       <input
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue transition-all"
-                        placeholder="Masukkan nama supplier"
+                        type="text"
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                        placeholder="Contoh: PT. Makmur"
                         name="suplier_nama"
                         value={suplier_nama}
                         onChange={handleSuplier_nama}
                         required
                       />
                     </div>
-                  </div>
 
-                  <div className="flex flex-col md:flex-row md:items-center font-poppins py-1">
-                    <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
-                      No HP
-                    </label>
-                    <div className="flex-1 md:ml-5">
+                    <div className="w-full">
+                      <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                        Nomor HP
+                      </label>
                       <input
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue transition-all"
-                        placeholder="0812..."
+                        type="text"
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                        placeholder="081234567890"
                         name="no_hp"
                         value={no_hp}
                         onChange={handleNo_hp}
                       />
                     </div>
-                  </div>
 
-                  {/* Alamat dibuat full width (opsional) atau tetap dalam grid */}
-                  <div className="flex flex-col md:flex-row md:items-start font-poppins py-1 md:col-span-2">
-                    <label className="text-sm xl:text-base font-medium text-gray-700 w-32 md:mt-2">
-                      Alamat
-                    </label>
-                    <div className="flex-1 md:ml-5">
+                    <div className="w-full md:col-span-2">
+                      <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                        Alamat Lengkap
+                      </label>
                       <textarea
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue transition-all"
-                        placeholder="Alamat lengkap supplier"
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                        placeholder="Masukkan alamat supplier..."
                         name="alamat"
                         rows="2"
                         value={alamat}
                         onChange={handleAlamat}
                       />
                     </div>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
+              </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-[115%] xl:w-full font-poppins text-xs xl:text-sm">
-                <thead>
-                  <tr className="w-full text-white text-center font-poppins bg-colorBlue">
-                    <th className="border border-black md:w-[3%]">No</th>
-                    <th className="border border-black md:w-[8%]">Tipe</th>
-                    <th className="border border-black md:w-[12%]">Pilih Barang</th>
-                    <th className="border border-black md:w-[12%]">Nama Barang</th>
-                    <th className="border border-black md:w-[8%]">Tonase Kotor</th>
-                    <th className="border border-black md:w-[7%]">Potongan</th>
-                    <th className="border border-black md:w-[8%]">Tonase Bersih</th>
-                    <th className="border border-black md:w-[10%]">Pembayaran</th>
-                    {/* Kolom Harga diperlebar menjadi 20% */}
-                    <th className="border border-black md:w-[20%]">Harga (Rp)</th>
-                    {/* Kolom Total diperlebar menjadi 15% */}
-                    <th className="border border-black md:w-[15%]">Total</th>
-                    <th className="border border-black md:w-[4%]">Nota</th>
-                    <th className="border border-black md:w-[3%]"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {inputFields.map((field, index) => {
-                    number++;
-                    return (
-                      <tr
-                        key={index}
-                        className={`text-center hover:bg-blue-50 ${number % 2 === 0 ? "bg-gray-50" : "bg-gray-200"
-                          }`}
-                      >
-                        <td className="border border-black">{number}</td>
-                        <td className="border border-black">
-                          <div className="m-1">
+
+            {/* ========================================= */}
+            {/* VIEW MOBILE: CARD LAYOUT (Tampil < 768px)  */}
+            {/* ========================================= */}
+            <div className="md:hidden space-y-4 mb-6">
+              <label className="block text-sm font-bold text-gray-800 border-b border-gray-100 pb-2">
+                Daftar Barang ({inputFields.length} Item)
+              </label>
+              
+              {inputFields.map((field, index) => {
+                let rowNumber = index + 1;
+                return (
+                  <div key={index} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm relative flex flex-col gap-3">
+                    
+                    {/* Header Card & Delete Button */}
+                    <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                      <span className="font-bold text-teal-700 text-sm">Item #{rowNumber}</span>
+                      {index > 0 && (
+                        <button 
+                          type="button" 
+                          onClick={() => handleRemoveField(index)} 
+                          className="w-7 h-7 flex justify-center items-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+                        >
+                          <i className="fa fa-trash text-xs"></i>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Tipe & Pilih Barang */}
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="col-span-1">
+                          <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Tipe</label>
+                          <select
+                            className="w-full py-2 px-2 bg-white border border-gray-200 rounded-md text-xs text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none"
+                            name="barang_tipe"
+                            value={field.barang_tipe}
+                            onChange={(event) => handleInputChange(index, event)}
+                          >
+                            <option value="beras">Beras</option>
+                            <option value="gabah">Gabah</option>
+                          </select>
+                        </div>
+                        <div className="col-span-2">
+                          <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Pilih Barang</label>
+                          <Select
+                            value={field.selectedBarang}
+                            onChange={(selected) => {
+                              const values = [...inputFields];
+                              values[index].selectedBarang = selected;
+                              values[index].barang_id = selected && selected.value !== 'new' ? selected.value : null;
+                              setInputFields(values);
+                            }}
+                            options={barangOptionsCache[field.barang_tipe] ? [...barangOptionsCache[field.barang_tipe], { value: 'new', label: '+ Barang Baru' }] : [{ value: 'new', label: '+ Barang Baru' }]}
+                            placeholder="Cari..."
+                            isClearable
+                            menuPortalTarget={document.body}
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                              control: (base, state) => ({
+                                ...base,
+                                minHeight: '34px',
+                                fontSize: '12px',
+                                borderColor: state.isFocused ? '#2dd4bf' : '#e5e7eb',
+                                borderRadius: '0.375rem',
+                              })
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Input Barang Baru */}
+                      {field.selectedBarang && field.selectedBarang.value === 'new' && (
+                        <div>
+                          <input
+                            name="barang_nama"
+                            className="w-full py-2 px-3 bg-white border border-teal-300 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none"
+                            placeholder="Ketik nama barang baru..."
+                            value={field.barang_nama}
+                            onChange={(event) => handleInputChange(index, event)}
+                            required
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Tonase: Kotor, Potongan, Bersih */}
+                    <div className="grid grid-cols-3 gap-2 mt-1">
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block text-center">Kotor</label>
+                        <input
+                          type="number"
+                          className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-gray-700 outline-none focus:border-teal-400"
+                          name="pembelian_kotor"
+                          value={field.pembelian_kotor}
+                          onChange={(event) => handleInputChangePembelianKotor(index, event)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-red-400 uppercase mb-1 block text-center">Potongan</label>
+                        <input
+                          type="number"
+                          className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-red-600 font-medium outline-none focus:border-red-400"
+                          name="pembelian_potongan"
+                          value={field.pembelian_potongan}
+                          onChange={(event) => handleInputChangePembelianPotongan(index, event)}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-green-600 uppercase mb-1 block text-center">Bersih</label>
+                        <input
+                          className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-center text-green-700 font-bold outline-none"
+                          name="pembelian_bersih"
+                          value={field.pembelian_bersih}
+                          readOnly
+                        />
+                      </div>
+                    </div>
+
+                    {/* Harga & Subtotal */}
+                    <div className="grid grid-cols-2 gap-3 mt-1">
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Harga (Rp)</label>
+                        <input
+                          type="number"
+                          className="w-full py-2 px-3 bg-white border border-gray-200 rounded-md text-sm text-teal-700 font-bold outline-none focus:border-teal-400"
+                          name="pembelian_harga"
+                          value={field.pembelian_harga}
+                          onChange={(event) => handleInputChangeHarga(index, event)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Subtotal</label>
+                        <input
+                          type="text"
+                          className="w-full py-2 px-3 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-800 font-bold text-right outline-none"
+                          value={RupiahFormat(field.pembelian_total || 0)}
+                          readOnly
+                        />
+                      </div>
+                    </div>
+
+                    {/* Pembayaran & Nota */}
+                    <div className="flex justify-between items-center border-t border-gray-100 pt-3 mt-1">
+                      <div className="flex bg-gray-100 rounded-lg p-1 border border-gray-200 w-1/2">
+                        <label className={`flex-1 flex items-center justify-center cursor-pointer py-1.5 rounded-md transition-all ${field.pembayaran === "cash" ? "bg-teal-600 text-white shadow-sm" : "text-gray-500"}`}>
+                          <input
+                            type="radio"
+                            className="hidden"
+                            name={`pembayaran-${index}`}
+                            value="cash"
+                            onChange={() => handleInputChange(index, { target: { name: 'pembayaran', value: 'cash' } })}
+                            checked={field.pembayaran === "cash"}
+                          />
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Cash</span>
+                        </label>
+                        <label className={`flex-1 flex items-center justify-center cursor-pointer py-1.5 rounded-md transition-all ${field.pembayaran === "hutang" ? "bg-red-500 text-white shadow-sm" : "text-gray-500"}`}>
+                          <input
+                            type="radio"
+                            className="hidden"
+                            name={`pembayaran-${index}`}
+                            value="hutang"
+                            onChange={() => handleInputChange(index, { target: { name: 'pembayaran', value: 'hutang' } })}
+                            checked={field.pembayaran === "hutang"}
+                          />
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Hutang</span>
+                        </label>
+                      </div>
+                      
+                      <label className="flex items-center gap-2 cursor-pointer bg-white border border-gray-200 px-3 py-1.5 rounded-lg">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 text-teal-600 rounded cursor-pointer"
+                          name="pembelian_nota_st"
+                          value="yes"
+                          onChange={(event) => handleInputCheckbox(index, event)}
+                          checked={field.pembelian_nota_st === "yes"}
+                        />
+                        <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Cetak Nota</span>
+                      </label>
+                    </div>
+
+                  </div>
+                );
+              })}
+
+              {/* Total Mobile Bawah */}
+              <div className="bg-teal-50/50 border border-teal-200 rounded-xl p-4 shadow-sm flex justify-between items-center">
+                <span className="text-sm font-bold text-teal-900 uppercase">Grand Total</span>
+                <span className="text-lg font-bold text-teal-700">{RupiahFormat(resTtlPembelian)}</span>
+              </div>
+            </div>
+
+            {/* ========================================= */}
+            {/* VIEW DESKTOP: TABLE LAYOUT (Tampil > 768px) */}
+            {/* ========================================= */}
+            <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-4">
+              <div className="overflow-x-auto min-h-[300px]">
+                <table className="w-full text-left border-collapse min-w-[1200px]">
+                  <thead>
+                    <tr className="bg-gray-50/80 border-b border-gray-200">
+                      <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-12">No</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">Tipe</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-56">Pilih Barang</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-48">Nama Barang Baru</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">T. Kotor</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Potongan</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">T. Bersih</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-36">Pembayaran</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Harga (Rp)</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Total</th>
+                      <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-16">Nota</th>
+                      <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-14">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+
+                    {inputFields.map((field, index) => {
+                     const rowNumber = index + 1;
+                      return (
+                        <tr key={index} className="hover:bg-teal-50/20 transition-colors">
+                          <td className="py-2 px-2 text-center text-sm font-medium text-gray-500 border-r border-gray-100">{rowNumber}</td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
                             <select
-                              className="border w-full p-1"
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all cursor-pointer"
                               name="barang_tipe"
                               value={field.barang_tipe}
                               onChange={(event) => handleInputChange(index, event)}
@@ -661,199 +800,205 @@ function TambahPembelian() {
                               <option value="beras">Beras</option>
                               <option value="gabah">Gabah</option>
                             </select>
-                          </div>
-                        </td>
-                        <td className="border border-black">
-                          <div className="p-1">
+                          </td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
                             <Select
                               value={field.selectedBarang}
                               onChange={(selected) => {
                                 const values = [...inputFields];
                                 values[index].selectedBarang = selected;
-                                values[index].barang_id =
-                                  selected && selected.value !== 'new' ? selected.value : null;
+                                values[index].barang_id = selected && selected.value !== 'new' ? selected.value : null;
                                 setInputFields(values);
                               }}
-                              options={barangOptionsCache[field.barang_tipe] ? [...barangOptionsCache[field.barang_tipe], { value: 'new', label: 'Barang Baru' }] : [{ value: 'new', label: 'Barang Baru' }]}
-                              placeholder="Cari..."
+                              options={barangOptionsCache[field.barang_tipe] ? [...barangOptionsCache[field.barang_tipe], { value: 'new', label: '+ Barang Baru' }] : [{ value: 'new', label: '+ Barang Baru' }]}
+                              placeholder="Cari Barang..."
                               isClearable
                               menuPortalTarget={document.body}
                               styles={{
                                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                control: (base) => ({ ...base, minHeight: '30px', fontSize: '12px' })
+                                control: (base, state) => ({
+                                  ...base,
+                                  minHeight: '34px',
+                                  fontSize: '13px',
+                                  borderColor: state.isFocused ? '#2dd4bf' : '#e5e7eb',
+                                  boxShadow: state.isFocused ? '0 0 0 1px #2dd4bf' : 'none',
+                                  borderRadius: '0.375rem',
+                                  '&:hover': { borderColor: '#2dd4bf' }
+                                })
                               }}
                             />
-                          </div>
-                        </td>
-                        <td className="border border-black">
-                          {field.selectedBarang && field.selectedBarang.value === 'new' ? (
+                          </td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            {field.selectedBarang && field.selectedBarang.value === 'new' ? (
+                              <input
+                                name="barang_nama"
+                                className="w-full py-1.5 px-3 bg-white border border-teal-300 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                                placeholder="Ketik nama baru..."
+                                value={field.barang_nama}
+                                onChange={(event) => handleInputChange(index, event)}
+                                required
+                              />
+                            ) : (
+                              <span className="text-xs text-gray-400 italic bg-gray-50 px-2 py-1.5 rounded w-full block border border-gray-100 text-center">Otomatis dari sistem</span>
+                            )}
+                          </td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
                             <input
-                              name="barang_nama"
-                              className="border p-1 w-11/12"
-                              placeholder="Nama Baru"
-                              value={field.barang_nama}
-                              onChange={(event) => handleInputChange(index, event)}
+                              type="number"
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                              name="pembelian_kotor"
+                              value={field.pembelian_kotor}
+                              onChange={(event) => handleInputChangePembelianKotor(index, event)}
                               required
+                              onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
                             />
-                          ) : (
-                            <span className="text-gray-400 italic">Otomatis</span>
-                          )}
-                        </td>
-                        <td className="border border-black">
-                          <input
-                            type="number"
-                            className="border p-1 w-11/12"
-                            name="pembelian_kotor"
-                            value={field.pembelian_kotor}
-                            onChange={(event) => handleInputChangePembelianKotor(index, event)}
-                            required
-                          />
-                        </td>
-                        <td className="border border-black">
-                          <input
-                            type="number"
-                            className="border p-1 w-11/12"
-                            name="pembelian_potongan"
-                            value={field.pembelian_potongan}
-                            onChange={(event) => handleInputChangePembelianPotongan(index, event)}
-                          />
-                        </td>
-                        <td className="border border-black">
-                          <input
-                            className="border p-1 w-11/12 bg-slate-300"
-                            name="pembelian_bersih"
-                            value={field.pembelian_bersih}
-                            readOnly
-                          />
-                        </td>
-                        <td className="border border-black p-2 min-w-[100px]">
-                          <div className="flex bg-gray-100 rounded-lg p-1 shadow-inner">
-                            {/* Opsi Cash */}
-                            <label className={`flex-1 flex flex-col items-center justify-center cursor-pointer py-1 px-2 rounded-md transition-all ${field.pembayaran === "cash"
-                                ? "bg-blue-600 text-white shadow-sm"
-                                : "text-gray-500 hover:bg-gray-200"
-                              }`}>
-                              <input
-                                type="radio"
-                                className="hidden" // Sembunyikan radio asli
-                                name={`pembayaran-${index}`}
-                                value="cash"
-                                onChange={(e) => handleInputChange(index, { target: { name: 'pembayaran', value: 'cash' } })}
-                                checked={field.pembayaran === "cash"}
-                              />
-                              <span className="text-[10px] font-bold uppercase tracking-wider">Cash</span>
-                            </label>
+                          </td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <input
+                              type="number"
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-red-600 font-medium focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all"
+                              name="pembelian_potongan"
+                              value={field.pembelian_potongan}
+                              onChange={(event) => handleInputChangePembelianPotongan(index, event)}
+                              onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
+                            />
+                          </td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <input
+                              className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-center text-green-700 font-bold cursor-not-allowed outline-none"
+                              name="pembelian_bersih"
+                              value={field.pembelian_bersih}
+                              readOnly
+                            />
+                          </td>
 
-                            {/* Opsi Hutang */}
-                            <label className={`flex-1 flex flex-col items-center justify-center cursor-pointer py-1 px-2 rounded-md transition-all ${field.pembayaran === "hutang"
-                                ? "bg-red-500 text-white shadow-sm"
-                                : "text-gray-500 hover:bg-gray-200"
-                              }`}>
-                              <input
-                                type="radio"
-                                className="hidden" // Sembunyikan radio asli
-                                name={`pembayaran-${index}`}
-                                value="hutang"
-                                onChange={(e) => handleInputChange(index, { target: { name: 'pembayaran', value: 'hutang' } })}
-                                checked={field.pembayaran === "hutang"}
-                              />
-                              <span className="text-[10px] font-bold uppercase tracking-wider">Hutang</span>
-                            </label>
-                          </div>
-                        </td>
-                        {/* INPUT HARGA DIPERLEBAR */}
-                        <td className="border border-black">
-                          <input
-                            type="number"
-                            className="border p-1 w-11/12 font-bold text-blue-700"
-                            name="pembelian_harga"
-                            value={field.pembelian_harga}
-                            onChange={(event) => handleInputChangeHarga(index, event)}
-                            required
-                          />
-                        </td>
-                        {/* INPUT TOTAL DIPERLEBAR */}
-                        <td className="border border-black">
-                          <input
-                            type="text"
-                            className="border p-1 w-11/12 bg-slate-300 font-bold text-right"
-                            value={RupiahFormat(field.pembelian_total)}
-                            readOnly
-                          />
-                        </td>
-                        <td className="border border-black">
-                          <input
-                            type="checkbox"
-                            name="pembelian_nota_st"
-                            value="yes"
-                            onChange={(event) => handleInputCheckbox(index, event)}
-                            checked={field.pembelian_nota_st === "yes"}
-                          />
-                        </td>
-                        <td className="border border-black">
-                          <button
-                            className={`p-2 rounded-md ${index === 0 ? 'bg-red-200' : 'bg-red-600 text-white'}`}
-                            type="button"
-                            onClick={() => handleRemoveField(index)}
-                            disabled={index === 0}
-                          >
-                            <i className="fa fa-trash"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {/* Footer Grand Total */}
-                  <tr className="bg-gray-100">
-                    <td className="border border-black text-right py-2 px-4 font-bold" colSpan="9">
-                      GRAND TOTAL
-                    </td>
-                    <td className="border border-black p-1">
-                      <input
-                        type="text"
-                        className="w-full p-1 bg-white border border-red-500 text-red-600 font-bold text-right"
-                        value={RupiahFormat(resTtlPembwlian)}
-                        readOnly
-                      />
-                    </td>
-                    <td className="border border-black" colSpan="2"></td>
-                  </tr>
-                </tbody>
-              </table>
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <div className="flex bg-gray-100 rounded-lg p-1 border border-gray-200">
+                              <label className={`flex-1 flex flex-col items-center justify-center cursor-pointer py-1 px-2 rounded-md transition-all ${field.pembayaran === "cash" ? "bg-teal-600 text-white shadow-sm" : "text-gray-500 hover:bg-gray-200"}`}>
+                                <input
+                                  type="radio"
+                                  className="hidden"
+                                  name={`pembayaran-${index}`}
+                                  value="cash"
+                                  onChange={() => handleInputChange(index, { target: { name: 'pembayaran', value: 'cash' } })}
+                                  checked={field.pembayaran === "cash"}
+                                />
+                                <span className="text-[10px] font-bold uppercase tracking-wider">Cash</span>
+                              </label>
+                              <label className={`flex-1 flex flex-col items-center justify-center cursor-pointer py-1 px-2 rounded-md transition-all ${field.pembayaran === "hutang" ? "bg-red-500 text-white shadow-sm" : "text-gray-500 hover:bg-gray-200"}`}>
+                                <input
+                                  type="radio"
+                                  className="hidden"
+                                  name={`pembayaran-${index}`}
+                                  value="hutang"
+                                  onChange={() => handleInputChange(index, { target: { name: 'pembayaran', value: 'hutang' } })}
+                                  checked={field.pembayaran === "hutang"}
+                                />
+                                <span className="text-[10px] font-bold uppercase tracking-wider">Hutang</span>
+                              </label>
+                            </div>
+                          </td>
+
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <input
+                              type="number"
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-right text-teal-700 font-bold focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                              name="pembelian_harga"
+                              value={field.pembelian_harga}
+                              onChange={(event) => handleInputChangeHarga(index, event)}
+                              required
+                              onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
+                            />
+                          </td>
+
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <input
+                              type="text"
+                              className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-right text-gray-800 font-bold cursor-not-allowed outline-none"
+                              value={RupiahFormat(field.pembelian_total || 0)}
+                              readOnly
+                            />
+                          </td>
+
+                          <td className="py-2 px-2 text-center border-r border-gray-100">
+                            <input
+                              type="checkbox"
+                              className="w-5 h-5 text-teal-600 bg-white border-gray-300 rounded focus:ring-teal-500 cursor-pointer"
+                              name="pembelian_nota_st"
+                              value="yes"
+                              onChange={(event) => handleInputCheckbox(index, event)}
+                              checked={field.pembelian_nota_st === "yes"}
+                            />
+                          </td>
+
+                          <td className="py-2 px-2 text-center">
+                            {index === 0 ? (
+                              <button type="button" className="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed" disabled>
+                                <i className="fa fa-trash"></i>
+                              </button>
+                            ) : (
+                              <button type="button" onClick={() => handleRemoveField(index)} className="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors">
+                                <i className="fa fa-trash"></i>
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                    <tr className="bg-gray-100/80 border-t-2 border-gray-300">
+                      <td colSpan="9" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
+                        GRAND TOTAL KESELURUHAN
+                      </td>
+                      <td className="text-right py-3 px-3 text-sm font-bold text-red-600 border-r border-gray-200 bg-red-50/50">
+                        {RupiahFormat(resTtlPembelian)}
+                      </td>
+                      <td colSpan="2"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div className="w-full mt-2 xl:mt-5">
-              <div className="flex gap-3 justify-end">
+            
+            {/* Tombol Tambah & Submit */}
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-2">
+              <button
+                type="button"
+                onClick={handleAddField}
+                className="flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-700 border border-teal-200 rounded-lg text-sm font-medium hover:bg-teal-100 transition-colors shadow-sm w-full md:w-auto justify-center"
+              >
+                <i className="fa fa-plus text-xs"></i> Tambah Baris Barang
+              </button>
+
+              <div className="flex gap-3 w-full md:w-auto">
                 <button
-                  className="py-1 px-2 text-sm xl:text-md bg-blue-500 font-poppins text-colorGray rounded hover:bg-green-900"
                   type="submit"
                   value="simcetak"
                   name="type_submit"
+                  className="flex-1 md:flex-none px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm flex items-center justify-center gap-2"
                 >
                   <i className="fa fa-print"></i> Simpan & Cetak
                 </button>
                 <button
-                  className="py-1 px-2 text-sm xl:text-md bg-green-700 font-poppins text-colorGray rounded hover:bg-green-900"
                   type="submit"
                   value="simpan"
                   name="type_submit"
+                  className="flex-1 md:flex-none px-6 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors shadow-sm flex items-center justify-center gap-2"
                 >
                   <i className="fa fa-save"></i> Simpan
                 </button>
               </div>
             </div>
+
           </form>
-          <div className="h-fit">
-            <button
-              className="bg-colorBlue text-sm xl:text-md text-colorGray py-1 px-2 rounded-sm my-1 font-poppins"
-              type="button"
-              onClick={() => handleAddField()}
-            >
-              <i className="fa fa-plus text-sm"></i> Tambah
-            </button>
-          </div>
         </div>
       </div>
-      <ToastContainer />
+      <ToastContainer position="bottom-right" />
     </div>
   );
 }

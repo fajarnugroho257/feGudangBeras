@@ -43,14 +43,14 @@ function Topbar({ onMenuClick }) {
         </button>
         
         {/* Search Bar (Tersembunyi di mobile terkecil) */}
-        <div className="relative w-full max-w-md hidden sm:block">
+        {/* <div className="relative w-full max-w-md hidden sm:block">
           <i className="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
           <input 
             type="text" 
             placeholder="Search orders, products, shipments..."
             className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-teal-300 focus:ring-4 focus:ring-teal-50 transition-all outline-none text-sm text-gray-700 placeholder-gray-400"
           />
-        </div>
+        </div> */}
       </div>
 
       {/* Kanan: Hanya User Profile */}

@@ -5,6 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import api from "../utilities/axiosInterceptor";
+import FormatTanggal from "../utilities/FormatTanggal";
 
 function TambahPengiriman() {
   // TOKEN
@@ -19,21 +20,12 @@ function TambahPengiriman() {
   const [barangOptionsCache, setBarangOptionsCache] = useState({});
   const [supplierOptionsCache, setSupplierOptionsCache] = useState([]);
   const [stockDataByIndex, setStockDataByIndex] = useState({});
-  const handlePengiriman_tgl = (event) => {
-    setPengiriman_tgl(event.target.value);
-  };
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleNama_pembeli = (event) => {
-    setNama_pembeli(event.target.value);
-  };
-
-  const handleUang_muka = (event) => {
-    setUang_muka(event.target.value);
-  };
-
-  const handleStatus = (event) => {
-    setStatus(event.target.value);
-  };
+  const handlePengiriman_tgl = (event) => setPengiriman_tgl(event.target.value);
+  const handleNama_pembeli = (event) => setNama_pembeli(event.target.value);
+  const handleUang_muka = (event) => setUang_muka(event.target.value);
+  const handleStatus = (event) => setStatus(event.target.value);
 
   const [inputFields, setInputFields] = useState([
     {
@@ -53,20 +45,16 @@ function TambahPengiriman() {
   useEffect(() => {
     const fectData = async () => {
       try {
-        //fetching
         const response = await api.get("/detail-Kardus/1", {
           headers: {
-            Authorization: `Bearer ${token}`, // Sisipkan token di header
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
             Accept: "application/json",
           },
         });
-        //get response data
         const harga = await response.data.data?.harga;
         const jumlah = await response.data.data?.jumlah;
-        console.log('hihi', response.data.data);
-        // console.log(harga);
-        //
+        
         if (response.status === 200) {
           setInputFields((prevFields) =>
             prevFields.map((field) => ({
@@ -75,7 +63,6 @@ function TambahPengiriman() {
             })),
           );
         }
-        //assign response data to state "posts"
         setBoxHarga(harga);
         setBoxJumlah(jumlah);
       } catch (error) {
@@ -84,19 +71,14 @@ function TambahPengiriman() {
     };
     fectData();
   }, [token]);
-  //
 
   const fetchBarangByType = useCallback(
     async (tipe) => {
-      if (barangOptionsCache[tipe]) {
-        return;
-      }
+      if (barangOptionsCache[tipe]) return;
       try {
         const response = await api.get('/get-barang', {
           params: { tipe },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (response.status === 200 && Array.isArray(response.data.dataBarang)) {
           const options = response.data.dataBarang.map((item) => ({
@@ -116,14 +98,10 @@ function TambahPengiriman() {
   );
 
   const fetchSuppliers = useCallback(async () => {
-    if (supplierOptionsCache.length > 0) {
-      return;
-    }
+    if (supplierOptionsCache.length > 0) return;
     try {
       const response = await api.get('/get-suplier', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (response.status === 200 && Array.isArray(response.data.dataSuplier)) {
         const options = response.data.dataSuplier.map((item) => ({
@@ -142,9 +120,7 @@ function TambahPengiriman() {
       try {
         const response = await api.get('/get-stock', {
           params: { barang_id: barangId },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (response.status === 200 && Array.isArray(response.data.dataStock)) {
           return response.data.dataStock;
@@ -220,17 +196,12 @@ function TambahPengiriman() {
     values[index].supplier_id = null;
     setInputFields(values);
 
-    // Fetch stock when barang is selected
     if (selected && selected.value) {
       fetchStock(selected.value).then((stockData) => {
-        // Extract suppliers from stock data
-        console.log('Stock data for barang_id', selected.value, stockData);
         const supplierOptions = stockData.map((item) => ({
           value: item.suplier_id,
           label: item.suplier.suplier_nama + " (Stok: " + item.stok + ")",
         }));
-
-        // Store stock data and supplier options for this row
         setStockDataByIndex((prev) => ({
           ...prev,
           [index]: { stockData, supplierOptions },
@@ -244,7 +215,6 @@ function TambahPengiriman() {
     values[index].selectedSupplier = selected;
     values[index].supplier_id = selected ? selected.value : null;
 
-    // Look up stock for the selected supplier
     if (selected && stockDataByIndex[index]) {
       const stockEntry = stockDataByIndex[index].stockData.find(
         (item) => item.suplier_id === selected.value
@@ -253,7 +223,6 @@ function TambahPengiriman() {
         values[index].current_stock = stockEntry.stok;
       }
     }
-
     setInputFields(values);
   };
 
@@ -262,12 +231,15 @@ function TambahPengiriman() {
     navigate(`/${event}`);
   };
 
-  const handleSubmit = async (event, totalDataBox) => {
-    const btnValue = event.nativeEvent.submitter.value; // Mendapatkan nilai button yang di-klik
+  const handleSubmit = async (event) => {
+    const btnValue = event.nativeEvent.submitter.value; 
     event.preventDefault();
+
+    if (isSubmitting) return; 
+    setIsSubmitting(true); 
+
     const toastId = toast.loading("Sending data...");
     try {
-      // console.log(inputFields);
       const data = {
         pengiriman_tgl: pengiriman_tgl,
         nama_pembeli: nama_pembeli || null,
@@ -291,33 +263,29 @@ function TambahPengiriman() {
       if (btnValue === "simcetak") {
         response = await api.post(`/add-Pengiriman`, params, {
           headers: {
-            Authorization: `Bearer ${token}`, // Sisipkan token di header
+            Authorization: `Bearer ${token}`,
           },
-          responseType: "blob", // penting untuk men-download file
+          responseType: "blob", 
         });
-        // console.log(response.data);
-        // Membuat URL untuk file yang didownload
         const url = window.URL.createObjectURL(new Blob([response.data]));
-        // alert(url);
         const link = document.createElement("a");
         link.href = url;
-        link.setAttribute("download", "Pembelian.png"); // Nama file untuk diunduh
+        link.setAttribute("download", "Pengiriman.png"); 
         document.body.appendChild(link);
-        link.click(); // Memicu download
-        document.body.removeChild(link); // Menghapus link setelah download
+        link.click(); 
+        document.body.removeChild(link); 
       } else {
         response = await api.post("/add-Pengiriman", params, {
           headers: {
-            Authorization: `Bearer ${token}`, // Sisipkan token di header
+            Authorization: `Bearer ${token}`, 
             "Content-Type": "application/json",
             Accept: "application/json",
           },
         });
       }
-      // set null
-      // console.log("Response:", response.status);
+      
       if (response.status === 200) {
-        setPengiriman_tgl("");
+        setPengiriman_tgl(new Date().toISOString().slice(0, 10));
         setNama_pembeli("");
         setUang_muka("");
         setStatus("yes");
@@ -335,7 +303,6 @@ function TambahPengiriman() {
             pembayaran_st: "cash",
           },
         ]);
-        //
         toast.update(toastId, {
           render: "Data sent successfully!",
           type: "success",
@@ -358,8 +325,9 @@ function TambahPengiriman() {
         autoClose: 5000,
       });
       console.error("Error posting data:", error);
+    } finally {
+      setIsSubmitting(false); 
     }
-    // console.log("inputFields:", inputFields);
   };
 
   const resTtlPengiriman = inputFields.reduce(
@@ -367,104 +335,101 @@ function TambahPengiriman() {
     0,
   );
 
-  //
   return (
-    <div className="p-1 md:p-2 xl:p-7">
-      <div className=" w-full h-full mx-auto bg-gray-50 shadow-xl p-5">
-        <div className="h-fit xl:flex items-center mb-1 xl:mb-4 justify-between">
-          <div className="font-poppins font-normal grid grid-cols-2 md:flex gap-1 xl:gap-4 items-center">
-            <h3
-              className="text-gray-500 text-xs xl:text-md cursor-pointer border-l-2 px-2"
-              onClick={() => handleTab("tambah-pembelian")}
-            >
-              Pembelian
-            </h3>
-            <h3 className="text-colorBlue text-sm xl:text-lg font-bold border-l-2 px-2">
-              Pengiriman
-            </h3>
-            <h3
-              className="text-gray-500 text-xs xl:text-md cursor-pointer border-l-2 px-2"
-              onClick={() => handleTab("tambah-karyawan")}
-            >
-              Karyawan
-            </h3>
-            <h3
-              className="text-gray-500 text-xs xl:text-md cursor-pointer border-l-2 px-2"
-              onClick={() => handleTab("tambah-kardus")}
-            >
-              Kardus
-            </h3>
-          </div>
+    <div className="p-1 md:p-3 xl:p-5 font-poppins">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full h-full mx-auto flex flex-col">
+        
+        {/* Navigation Tabs */}
+        <div className="flex flex-wrap items-center gap-2 mb-6 border-b border-gray-100 pb-4">
+          <button
+            className="px-4 py-2 text-gray-500 hover:bg-gray-50 font-medium rounded-lg text-sm transition-colors"
+            onClick={() => handleTab("tambah-pembelian")}
+          >
+            Pembelian
+          </button>
+          <button className="px-4 py-2 bg-teal-50 text-teal-700 font-bold rounded-lg text-sm border border-teal-200 transition-colors">
+            Pengiriman
+          </button>
+          <button
+            className="px-4 py-2 text-gray-500 hover:bg-gray-50 font-medium rounded-lg text-sm transition-colors"
+            onClick={() => handleTab("tambah-karyawan")}
+          >
+            Karyawan
+          </button>
+          {/* <button
+            className="px-4 py-2 text-gray-500 hover:bg-gray-50 font-medium rounded-lg text-sm transition-colors"
+            onClick={() => handleTab("tambah-kardus")}
+          >
+            Kardus
+          </button> */}
         </div>
-        <div className="h-[1px] xl:h-[2px] w-full bg-colorBlue mb-2 xl:mb-4"></div>
-        <div className="h-fit">
-          <form onSubmit={handleSubmit} className="h-fit overflow-y-auto">
-            {/* Baris Pertama: Pengiriman & Uang Muka */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2 mb-4">
 
-              {/* Input Tanggal Pengiriman */}
-              <div className="flex flex-col md:flex-row md:items-center font-poppins">
-                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
-                  Pengiriman
-                </label>
-                <div className="flex-1 md:ml-4">
+        {/* Main Content Form */}
+        <div className="flex-1">
+          <form onSubmit={handleSubmit} className="h-fit">
+            
+            {/* Header Form (Detail Pengiriman) */}
+            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                
+                {/* Tanggal Pengiriman */}
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    Tanggal Pengiriman
+                  </label>
                   <input
                     type="date"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue focus:border-transparent transition-all"
+                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
                     name="pengiriman_tgl"
                     value={pengiriman_tgl}
                     onChange={handlePengiriman_tgl}
                     required
                   />
                 </div>
-              </div>
 
-              {/* Input Uang Muka */}
-              <div className="flex flex-col md:flex-row md:items-center font-poppins">
-                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
-                  Uang Muka
-                </label>
-                <div className="flex-1 md:ml-4">
-                  <input
-                    type="number"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue focus:border-transparent transition-all"
-                    placeholder="0"
-                    name="uang_muka"
-                    value={uang_muka}
-                    onChange={handleUang_muka}
-                  />
+                {/* Uang Muka */}
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    Uang Muka
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">Rp</span>
+                    <input
+                      type="number"
+                      className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                      placeholder="0"
+                      name="uang_muka"
+                      value={uang_muka}
+                      onChange={handleUang_muka}
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Baris Kedua: Nama Pembeli & Status */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2 mb-6">
-
-              {/* Input Nama Pembeli */}
-              <div className="flex flex-col md:flex-row md:items-center font-poppins">
-                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
-                  Nama Pembeli
-                </label>
-                <div className="flex-1 md:ml-4">
-                  <input
-                    type="text"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue focus:border-transparent transition-all"
-                    placeholder="Masukkan nama pembeli"
-                    name="nama_pembeli"
-                    value={nama_pembeli}
-                    onChange={handleNama_pembeli}
-                  />
+                {/* Nama Pembeli */}
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    Nama Pembeli
+                  </label>
+                  <div className="relative">
+                    <i className="fa fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <input
+                      type="text"
+                      className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                      placeholder="Masukkan nama pembeli"
+                      name="nama_pembeli"
+                      value={nama_pembeli}
+                      onChange={handleNama_pembeli}
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* Input Status */}
-              <div className="flex flex-col md:flex-row md:items-center font-poppins">
-                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
-                  Status
-                </label>
-                <div className="flex-1 md:ml-4">
+                {/* Status */}
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    Status Publish
+                  </label>
                   <select
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-colorBlue focus:border-transparent transition-all cursor-pointer"
+                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all cursor-pointer"
                     name="status"
                     value={status}
                     onChange={handleStatus}
@@ -473,38 +438,219 @@ function TambahPengiriman() {
                     <option value="draft">Draft</option>
                   </select>
                 </div>
+
               </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-[110%] xl:w-full font-poppins text-xs xl:text-md">
-                <thead>
-                  <tr className="w-full text-white text-center font-poppins text-xs xl:text-md bg-colorBlue">
-                    <th className="border border-black md:w-[5%]">No</th>
-                    <th className="border border-black md:w-[10%]">Tipe</th>
-                    <th className="border border-black md:w-[12%]">Barang</th>
-                    <th className="border border-black md:w-[12%]">Supplier</th>
-                    <th className="border border-black md:w-[8%]">Stock</th>
-                    <th className="border border-black md:w-[8%]">Tonase</th>
-                    <th className="border border-black md:w-[8%]">Harga</th>
-                    <th className="border border-black md:w-[8%]">Total</th>
-                    <th className="border border-black md:w-[10%]">Pembayaran</th>
-                    <th className="border border-black md:w-[5%]"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {inputFields &&
-                    inputFields.map((field, index) => {
+
+            {/* ========================================= */}
+            {/* VIEW MOBILE: CARD LAYOUT (Tampil < 768px)  */}
+            {/* ========================================= */}
+            <div className="md:hidden space-y-4 mb-6">
+              <label className="block text-sm font-bold text-gray-800 border-b border-gray-100 pb-2">
+                Daftar Barang Pengiriman ({inputFields.length} Item)
+              </label>
+              
+              {inputFields.map((field, index) => {
+                let rowNumber = index + 1;
+                return (
+                  <div key={index} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm relative flex flex-col gap-3">
+                    
+                    {/* Header Card & Delete Button */}
+                    <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                      <span className="font-bold text-teal-700 text-sm">Barang #{rowNumber}</span>
+                      {index > 0 && (
+                        <button 
+                          type="button" 
+                          onClick={() => handleRemoveField(index)} 
+                          className="w-7 h-7 flex justify-center items-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+                        >
+                          <i className="fa fa-trash text-xs"></i>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Tipe & Pilih Barang */}
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="col-span-1">
+                          <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Tipe</label>
+                          <select
+                            className="w-full py-2 px-2 bg-white border border-gray-200 rounded-md text-xs text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none"
+                            name="barang_tipe"
+                            value={field.barang_tipe}
+                            onChange={(event) => handleInputChange(index, event)}
+                          >
+                            <option value="beras">Beras</option>
+                            <option value="katul">Katul</option>
+                            <option value="sekam">Sekam</option>
+                          </select>
+                        </div>
+                        <div className="col-span-2">
+                          <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Pilih Barang</label>
+                          <Select
+                            value={field.selectedBarang}
+                            onChange={(selected) => handleSelectBarang(index, selected)}
+                            options={barangOptionsCache[field.barang_tipe] || []}
+                            placeholder="Cari..."
+                            isClearable
+                            menuPortalTarget={document.body}
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                              control: (base, state) => ({
+                                ...base,
+                                minHeight: '34px',
+                                fontSize: '12px',
+                                borderColor: state.isFocused ? '#2dd4bf' : '#e5e7eb',
+                                borderRadius: '0.375rem',
+                              })
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Pilih Supplier */}
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Pilih Supplier</label>
+                        <Select
+                          value={field.selectedSupplier}
+                          onChange={(selected) => handleSelectSupplier(index, selected)}
+                          options={stockDataByIndex[index]?.supplierOptions || []}
+                          placeholder="Pilih Supplier..."
+                          isClearable
+                          menuPortalTarget={document.body}
+                          styles={{
+                            menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                            control: (base, state) => ({
+                              ...base,
+                              minHeight: '34px',
+                              fontSize: '12px',
+                              borderColor: state.isFocused ? '#2dd4bf' : '#e5e7eb',
+                              borderRadius: '0.375rem',
+                            })
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Stock, Tonase, Harga */}
+                    <div className="grid grid-cols-3 gap-2 mt-1">
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block text-center">Stok Sisa</label>
+                        <input
+                          type="text"
+                          className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-center text-gray-700 outline-none"
+                          name="current_stock"
+                          value={field.current_stock}
+                          readOnly
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block text-center">Tonase</label>
+                        <input
+                          type="number"
+                          required
+                          name="data_tonase"
+                          className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-teal-700 font-bold outline-none focus:border-teal-400"
+                          value={field.data_tonase}
+                          onChange={(event) => handleInputChange(index, event)}
+                          onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block text-center">Harga</label>
+                        <input
+                          type="number"
+                          required
+                          name="data_harga"
+                          className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-gray-700 outline-none focus:border-teal-400"
+                          value={field.data_harga}
+                          onChange={(event) => handleInputChange(index, event)}
+                          onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Pembayaran & Subtotal */}
+                    <div className="grid grid-cols-2 gap-3 mt-1 pt-3 border-t border-gray-100">
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Pembayaran</label>
+                        <div className="flex bg-gray-100 rounded-lg p-1 border border-gray-200">
+                          <label className={`flex-1 flex items-center justify-center cursor-pointer py-1.5 rounded-md transition-all ${field.pembayaran_st === "cash" ? "bg-teal-600 text-white shadow-sm" : "text-gray-500"}`}>
+                            <input
+                              type="radio"
+                              className="hidden"
+                              name={`pembayaran_st-${index}`}
+                              value="cash"
+                              onChange={() => handleInputChange(index, { target: { name: 'pembayaran_st', value: 'cash' } })}
+                              checked={field.pembayaran_st === "cash"}
+                            />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Cash</span>
+                          </label>
+                          <label className={`flex-1 flex items-center justify-center cursor-pointer py-1.5 rounded-md transition-all ${field.pembayaran_st === "hutang" ? "bg-red-500 text-white shadow-sm" : "text-gray-500"}`}>
+                            <input
+                              type="radio"
+                              className="hidden"
+                              name={`pembayaran_st-${index}`}
+                              value="hutang"
+                              onChange={() => handleInputChange(index, { target: { name: 'pembayaran_st', value: 'hutang' } })}
+                              checked={field.pembayaran_st === "hutang"}
+                            />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Hutang</span>
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Subtotal</label>
+                        <input
+                          type="text"
+                          className="w-full py-2 px-3 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-800 font-bold text-right outline-none"
+                          value={RupiahFormat(field.data_total || 0)}
+                          readOnly
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+                );
+              })}
+
+              {/* Total Mobile Bawah */}
+              <div className="bg-teal-50/50 border border-teal-200 rounded-xl p-4 shadow-sm flex justify-between items-center">
+                <span className="text-sm font-bold text-teal-900 uppercase">Grand Total</span>
+                <span className="text-lg font-bold text-teal-700">{RupiahFormat(resTtlPengiriman)}</span>
+              </div>
+            </div>
+
+            {/* ========================================= */}
+            {/* VIEW DESKTOP: TABLE LAYOUT (Tampil > 768px) */}
+            {/* ========================================= */}
+            <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-4">
+              <div className="overflow-x-auto min-h-[300px]">
+                <table className="w-full text-left border-collapse min-w-[1200px]">
+                  <thead>
+                    <tr className="bg-gray-50/80 border-b border-gray-200">
+                      <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-12">No</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">Tipe</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-56">Barang</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-56">Supplier</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Stock</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">Tonase</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Harga (Rp)</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Total</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-36">Pembayaran</th>
+                      <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-14">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {inputFields.map((field, index) => {
                       const rowNumber = index + 1;
                       return (
-                        <tr
-                          key={index}
-                          className={`text-center hover:bg-colorBlue  ${rowNumber % 2 === 0 ? "bg-gray-50" : "bg-gray-200"
-                            }`}
-                        >
-                          <td className="border border-black">{rowNumber}</td>
-                          <td className="border border-black">
+                        <tr key={index} className="hover:bg-teal-50/20 transition-colors">
+                          <td className="py-2 px-2 text-center text-sm font-medium text-gray-500 border-r border-gray-100">{rowNumber}</td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
                             <select
-                              className="border m-2 w-24 md:w-3/4 p-1"
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all cursor-pointer"
                               name="barang_tipe"
                               value={field.barang_tipe}
                               onChange={(event) => handleInputChange(index, event)}
@@ -514,130 +660,131 @@ function TambahPengiriman() {
                               <option value="sekam">Sekam</option>
                             </select>
                           </td>
-                          <td className="border border-black">
-                            <div className="p-1">
-                              <Select
-                                value={field.selectedBarang}
-                                onChange={(selected) => handleSelectBarang(index, selected)}
-                                options={barangOptionsCache[field.barang_tipe] || []}
-                                placeholder="Pilih Barang"
-                                isClearable
-                                menuPortalTarget={document.body}
-                                styles={{
-                                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                  control: (base) => ({
-                                    ...base,
-                                    minHeight: '30px',
-                                    fontSize: '12px',
-                                  }),
-                                }}
-                              />
-                            </div>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <Select
+                              value={field.selectedBarang}
+                              onChange={(selected) => handleSelectBarang(index, selected)}
+                              options={barangOptionsCache[field.barang_tipe] || []}
+                              placeholder="Pilih Barang..."
+                              isClearable
+                              menuPortalTarget={document.body}
+                              styles={{
+                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                control: (base, state) => ({
+                                  ...base,
+                                  minHeight: '34px',
+                                  fontSize: '13px',
+                                  borderColor: state.isFocused ? '#2dd4bf' : '#e5e7eb',
+                                  boxShadow: state.isFocused ? '0 0 0 1px #2dd4bf' : 'none',
+                                  borderRadius: '0.375rem',
+                                  '&:hover': { borderColor: '#2dd4bf' }
+                                })
+                              }}
+                            />
                           </td>
-                          <td className="border border-black">
-                            <div className="p-1">
-                              <Select
-                                value={field.selectedSupplier}
-                                onChange={(selected) => handleSelectSupplier(index, selected)}
-                                options={stockDataByIndex[index]?.supplierOptions || []}
-                                placeholder="Pilih Supplier"
-                                isClearable
-                                menuPortalTarget={document.body}
-                                styles={{
-                                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                  control: (base) => ({
-                                    ...base,
-                                    minHeight: '30px',
-                                    fontSize: '12px',
-                                  }),
-                                }}
-                              />
-                            </div>
+
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <Select
+                              value={field.selectedSupplier}
+                              onChange={(selected) => handleSelectSupplier(index, selected)}
+                              options={stockDataByIndex[index]?.supplierOptions || []}
+                              placeholder="Pilih Supplier..."
+                              isClearable
+                              menuPortalTarget={document.body}
+                              styles={{
+                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                control: (base, state) => ({
+                                  ...base,
+                                  minHeight: '34px',
+                                  fontSize: '13px',
+                                  borderColor: state.isFocused ? '#2dd4bf' : '#e5e7eb',
+                                  boxShadow: state.isFocused ? '0 0 0 1px #2dd4bf' : 'none',
+                                  borderRadius: '0.375rem',
+                                  '&:hover': { borderColor: '#2dd4bf' }
+                                })
+                              }}
+                            />
                           </td>
-                          <td className="border border-black bg-slate-300">
+
+                          <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="text"
-                              className="border m-2 w-24 md:w-3/4 p-1 bg-slate-300"
+                              className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-center text-gray-700 font-medium cursor-not-allowed outline-none"
                               name="current_stock"
                               value={field.current_stock}
                               readOnly
-                              required
-                            ></input>
+                            />
                           </td>
-                          <td className="border border-black">
+
+                          <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="number"
                               required
                               name="data_tonase"
-                              className="border m-2 w-24 md:w-3/4 p-1"
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-teal-700 font-bold focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
                               value={field.data_tonase}
                               onChange={(event) => handleInputChange(index, event)}
-                              onFocus={(e) =>
-                                e.target.addEventListener(
-                                  "wheel",
-                                  function (e) {
-                                    e.preventDefault();
-                                  },
-                                  { passive: false }
-                                )
-                              }
-                            ></input>
+                              onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
+                            />
                           </td>
-                          <td className="border border-black">
+
+                          <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="number"
                               required
                               name="data_harga"
-                              className="border m-2 w-24 md:w-3/4 p-1"
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-right text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
                               value={field.data_harga}
                               onChange={(event) => handleInputChange(index, event)}
-                              onFocus={(e) =>
-                                e.target.addEventListener(
-                                  "wheel",
-                                  function (e) {
-                                    e.preventDefault();
-                                  },
-                                  { passive: false }
-                                )
-                              }
-                            ></input>
+                              onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
+                            />
                           </td>
-                          <td className="border border-black bg-slate-300">
+
+                          <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="text"
-                              className="border m-2 w-24 md:w-3/4 p-1 bg-slate-300"
-                              name="data_total"
+                              className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-right text-gray-800 font-bold cursor-not-allowed outline-none"
                               value={RupiahFormat(field.data_total || 0)}
                               readOnly
-                              required
-                            ></input>
+                            />
                           </td>
-                          <td className="border border-black">
-                            <select
-                              className="border m-2 w-24 md:w-3/4 p-1"
-                              name="pembayaran_st"
-                              value={field.pembayaran_st}
-                              onChange={(event) => handleInputChange(index, event)}
-                            >
-                              <option value="cash">Cash</option>
-                              <option value="hutang">Hutang</option>
-                            </select>
+
+                          {/* Toggle Pembayaran UI Modern */}
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <div className="flex bg-gray-100 rounded-lg p-1 border border-gray-200">
+                              <label className={`flex-1 flex flex-col items-center justify-center cursor-pointer py-1 px-2 rounded-md transition-all ${field.pembayaran_st === "cash" ? "bg-teal-600 text-white shadow-sm" : "text-gray-500 hover:bg-gray-200"}`}>
+                                <input
+                                  type="radio"
+                                  className="hidden"
+                                  name={`pembayaran_st-${index}`}
+                                  value="cash"
+                                  onChange={() => handleInputChange(index, { target: { name: 'pembayaran_st', value: 'cash' } })}
+                                  checked={field.pembayaran_st === "cash"}
+                                />
+                                <span className="text-[10px] font-bold uppercase tracking-wider">Cash</span>
+                              </label>
+                              <label className={`flex-1 flex flex-col items-center justify-center cursor-pointer py-1 px-2 rounded-md transition-all ${field.pembayaran_st === "hutang" ? "bg-red-500 text-white shadow-sm" : "text-gray-500 hover:bg-gray-200"}`}>
+                                <input
+                                  type="radio"
+                                  className="hidden"
+                                  name={`pembayaran_st-${index}`}
+                                  value="hutang"
+                                  onChange={() => handleInputChange(index, { target: { name: 'pembayaran_st', value: 'hutang' } })}
+                                  checked={field.pembayaran_st === "hutang"}
+                                />
+                                <span className="text-[10px] font-bold uppercase tracking-wider">Hutang</span>
+                              </label>
+                            </div>
                           </td>
-                          <td className="border border-black">
-                            {rowNumber === 1 ? (
-                              <button
-                                className={` bg-red-400 text-colorGray py-1 px-2 rounded-md my-2 font-sm md:font-normal`}
-                                type="button"
-                                disabled
-                              >
+
+                          <td className="py-2 px-2 text-center">
+                            {index === 0 ? (
+                              <button type="button" className="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed" disabled>
                                 <i className="fa fa-trash"></i>
                               </button>
                             ) : (
-                              <button
-                                className={` bg-red-600 text-colorGray py-1 px-2 rounded-md my-2 font-sm md:font-normal`}
-                                type="button"
-                                onClick={() => handleRemoveField(index)}
-                              >
+                              <button type="button" onClick={() => handleRemoveField(index)} className="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors">
                                 <i className="fa fa-trash"></i>
                               </button>
                             )}
@@ -645,55 +792,56 @@ function TambahPengiriman() {
                         </tr>
                       );
                     })}
-                  {/* Footer Grand Total */}
-                  <tr className="bg-gray-100">
-                    <td className="border border-black text-right py-2 px-4 font-bold" colSpan="7">
-                      GRAND TOTAL
-                    </td>
-                    <td className="border border-black p-1">
-                      <input
-                        type="text"
-                        className="w-full p-1 bg-white border border-red-500 text-red-600 font-bold text-right"
-                        value={RupiahFormat(resTtlPengiriman)}
-                        readOnly
-                      />
-                    </td>
-                    <td className="border border-black" colSpan="2"></td>
-                  </tr>
-                </tbody>
-              </table>
+
+                    {/* Footer Grand Total dalam Tabel */}
+                    <tr className="bg-gray-100/80 border-t-2 border-gray-300">
+                      <td colSpan="7" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
+                        GRAND TOTAL PENGIRIMAN
+                      </td>
+                      <td className="text-right py-3 px-3 text-sm font-bold text-red-600 border-r border-gray-200 bg-red-50/50">
+                        {RupiahFormat(resTtlPengiriman)}
+                      </td>
+                      <td colSpan="2"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div className="w-full flex gap-3 text-right justify-end mt-3">
+            
+            {/* Tombol Tambah & Submit */}
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-2">
               <button
-                className="py-1 px-2 text-sm xl:text-md bg-blue-500 font-poppins text-colorGray rounded hover:bg-blue-400"
-                type="submit"
-                value="simcetak"
-                name="type_submit"
+                type="button"
+                onClick={handleAddField}
+                className="flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-700 border border-teal-200 rounded-lg text-sm font-medium hover:bg-teal-100 transition-colors shadow-sm w-full md:w-auto justify-center"
               >
-                <i className="fa fa-save"></i> Simpan & Cetak
+                <i className="fa fa-plus text-xs"></i> Tambah Baris Barang
               </button>
-              <button
-                className="py-1 px-2 text-sm xl:text-md bg-green-700 font-poppins text-colorGray rounded hover:bg-green-900"
-                type="submit"
-                value="simpan"
-                name="type_submit"
-              >
-                <i className="fa fa-save"></i> Simpan
-              </button>
+
+              <div className="flex gap-3 w-full md:w-auto">
+                <button
+                  type="submit"
+                  value="simcetak"
+                  name="type_submit"
+                  className="flex-1 md:flex-none px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm flex items-center justify-center gap-2"
+                >
+                  <i className="fa fa-print"></i> Simpan & Cetak
+                </button>
+                <button
+                  type="submit"
+                  value="simpan"
+                  name="type_submit"
+                  className="flex-1 md:flex-none px-6 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors shadow-sm flex items-center justify-center gap-2"
+                >
+                  <i className="fa fa-save"></i> Simpan
+                </button>
+              </div>
             </div>
+
           </form>
-          <div className="h-fit">
-            <button
-              className="bg-colorBlue xl:text-md text-colorGray py-1 px-2 rounded-sm my-1 font-poppins text-sm"
-              type="button"
-              onClick={() => handleAddField()}
-            >
-              <i className="fa fa-plus text-sm"></i> Tambah
-            </button>
-          </div>
         </div>
       </div>
-      <ToastContainer />
+      <ToastContainer position="bottom-right" />
     </div>
   );
 }
