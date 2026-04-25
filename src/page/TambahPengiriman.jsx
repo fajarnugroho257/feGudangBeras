@@ -540,6 +540,7 @@ function TambahPengiriman() {
                         <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block text-center">Tonase</label>
                         <input
                           type="number"
+                          min={1}
                           required
                           name="data_tonase"
                           className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-teal-700 font-bold outline-none focus:border-teal-400"
@@ -713,6 +714,7 @@ function TambahPengiriman() {
                           <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="number"
+                              min={1}
                               required
                               name="data_tonase"
                               className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-teal-700 font-bold focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
