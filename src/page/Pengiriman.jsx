@@ -377,13 +377,13 @@ function Pembelian() {
               />
             </div>
 
-            <div className="flex flex-col flex-1 sm:flex-none min-w-[200px]">
-              <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">Merek</label>
+            <div className="flex flex-col flex-1 sm:flex-none min-w-[300px]">
+              <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">Cari</label>
               <div className="relative">
-                <i className="fa fa-tag absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <i className="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                 <input
                   name="data_merek"
-                  placeholder="Cari Merek..."
+                  placeholder="Cari Pembeli, barang, supplier..."
                   className="w-full border border-gray-200 py-2 pl-9 pr-3 rounded-lg bg-white text-sm focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all text-gray-700"
                   value={data_merek}
                   onChange={(event) => handleInputChange(event)}
