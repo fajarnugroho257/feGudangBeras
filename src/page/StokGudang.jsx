@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import api from "../utilities/axiosInterceptor";
+import ModalAddStok from "../components/ModalAddStok";
 
 function StokGudang() {
   const token = localStorage.getItem("token");
@@ -10,6 +11,7 @@ function StokGudang() {
   const [tipeBarang, setTipeBarang] = useState("");
   const [datas, setDatas] = useState([]);
   const [blur, setBlur] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Indikator visual UI untuk urgensi stok (Pill Badges)
   const renderStockBadge = (stock) => {
@@ -76,6 +78,14 @@ function StokGudang() {
         
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+          {/* Tambah Stok Awal Button */}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="w-full md:w-auto px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
+          >
+            <i className="fa fa-plus"></i> Tambah Stok Awal
+          </button>
+
           {/* Filter Barang */}
           <div className="relative w-full md:w-auto flex-1 md:flex-none">
             <i className="fa fa-box absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -225,6 +235,7 @@ function StokGudang() {
         </table>
       </div>
 
+      <ModalAddStok isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} reload={fetchData} />
       <ToastContainer position="bottom-right" />
     </div>
   );
