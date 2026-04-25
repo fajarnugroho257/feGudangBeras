@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { getToken } from "../../utilities/Auth";
-import Input from "../Ui/Input";
+import Input from "../Ui/Input"; // Pastikan path ini benar
 import { toast } from "react-toastify";
 import api from "../../utilities/axiosInterceptor";
 import Select from "react-select";
 
 function ModalEdit({ id, isOpen, onClose, reload }) {
   const [errors, setErrors] = useState({});
+  const [form, setForm] = useState({ nama: "", tipe: "" });
 
   const fectData = async (id) => {
     try {
@@ -14,14 +15,12 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
       const token = localStorage.getItem("token");
       const response = await api.get(`get-barang-by-id/${id}`, {
         headers: {
-          Authorization: `Bearer ${token}`, // Sisipkan token di header
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
           Accept: "application/json",
         },
       });
-      //get response data
       const data = await response.data.detail;
-      console.log(data);
       toast.update(toastId, {
         render: response.data.message,
         type: "success",
@@ -29,19 +28,20 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
         autoClose: 1000,
       });
       setForm(data);
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
   };
+  
   useEffect(() => {
-    fectData(id);
-  }, [id]);
-
-  const [form, setForm] = useState([]);
+    if (isOpen && id) {
+      fectData(id);
+    }
+  }, [id, isOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     let newValue = value;
-
     setForm((prev) => {
       const updated = { ...prev, [name]: newValue };
       return updated;
@@ -60,15 +60,13 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
     const toastId = toast.loading("Menyimpan data...");
     try {
       const token = getToken();
-      // console.log(form);
       const response = await api.post(`update-barang/${id}`, form, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       if (response.data.success) {
-        setErrors({}); // reset error
-        // optional reset form
+        setErrors({}); 
         toast.update(toastId, {
           render: response.data.message,
           type: "success",
@@ -76,11 +74,10 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
           autoClose: 1000,
         });
         reload();
+        onClose(); // Tutup modal otomatis setelah berhasil
       }
     } catch (err) {
-      console.log(err.response);
       if (err.response?.status === 422) {
-        console.log(err.response.data.errors);
         setErrors(err.response.data.errors);
         toast.update(toastId, {
           render: "Validasi gagal",
@@ -89,10 +86,8 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
           autoClose: 1000,
         });
       } else {
-        // toast.update("Terjadi kesalahan server", { id: toastId });
         toast.update(toastId, {
-          render:
-            err?.response?.data?.message || err.message || "Terjadi kesalahan",
+          render: err?.response?.data?.message || err.message || "Terjadi kesalahan",
           type: "error",
           isLoading: false,
           autoClose: 1000,
@@ -109,79 +104,103 @@ function ModalEdit({ id, isOpen, onClose, reload }) {
   ];
 
   if (!isOpen) return null;
+  
   return (
-    <>
-      <form
-        onSubmit={handleSubmit}
-        className="fixed inset-0 flex items-center justify-center z-50 font-poppins p-4"
-      >
-        {/* Overlay */}
-        {/* <div className="absolute inset-0 bg-gray-900 opacity-50" onClick={onClose}></div> */}
-        <div className="absolute inset-0 bg-gray-900 opacity-50"></div>
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4 font-poppins">
+      {/* Background Overlay */}
+      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose}></div>
 
-        {/* Modal Card */}
-        <div className="bg-white w-[95%] md:w-[60%] h-[90%] p-6 rounded-lg shadow-lg relative z-10 flex flex-col">
-          {/* Header: Tetap di atas */}
-          <div className="flex-none">
-            <h2 className="text-base md:text-lg font-bold mb-2 text-black">
-              Ubah Data Suplier
-            </h2>
-            <div className="h-[2px] w-full bg-colorPrimary mb-4"></div>
+      {/* Modal Container */}
+      <div className="bg-white w-full max-w-xl h-auto max-h-[90vh] rounded-2xl shadow-2xl relative z-10 flex flex-col overflow-hidden">
+        
+        {/* Header */}
+        <div className="flex justify-between items-center p-5 md:px-8 border-b border-gray-100 bg-white shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600">
+              <i className="fa fa-pen text-lg"></i>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-800 leading-tight">Ubah Data Barang</h2>
+              <p className="text-xs text-gray-500">Perbarui detail nama atau tipe barang</p>
+            </div>
           </div>
-          <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-            <div className="overflow-x-auto">
-              <div className="grid grid-cols-2 md:grid-cols-2 gap-2">
+          <button type="button" onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+            <i className="fa fa-times text-lg"></i>
+          </button>
+        </div>
+
+        {/* Form Wrap */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto p-5 md:px-8 bg-gray-50/30">
+            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
+              
+              <div className="w-full">
                 <Input
                   label="Nama Barang"
                   name="nama"
                   type="text"
-                  value={form.nama}
+                  value={form.nama || ""}
                   onChange={handleChange}
-                  placeholder="Nama Barang"
+                  placeholder="Contoh: Beras Rojo Lele"
                   error={errors.nama}
+                  className="w-full border border-gray-200 py-2 px-3 rounded-lg text-sm bg-white focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
                 />
-                <div className="w-full">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Tipe
-                  </label>
-                  <Select
-                    value={tipeOptions.find((opt) => opt.value === form.tipe)}
-                    onChange={handleChangeSelect}
-                    options={tipeOptions}
-                    placeholder="Pilih Tipe"
-                    isClearable
-                    menuPortalTarget={document.body}
-                    menuPosition="fixed"
-                    styles={{
-                      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                    }}
-                  />
-                  {errors.tipe && (
-                    <p className="mt-1 text-sm text-red-500">{errors.tipe}</p>
-                  )}
-                </div>
               </div>
+
+              <div className="w-full">
+                <label className="block mb-1.5 text-sm font-bold text-gray-600">
+                  Tipe Barang
+                </label>
+                <Select
+                  value={tipeOptions.find((opt) => opt.value === form.tipe) || null}
+                  onChange={handleChangeSelect}
+                  options={tipeOptions}
+                  placeholder="-- Pilih Tipe --"
+                  isClearable
+                  menuPortalTarget={document.body}
+                  styles={{
+                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    control: (base, state) => ({
+                      ...base,
+                      minHeight: '40px',
+                      fontSize: '14px',
+                      borderColor: state.isFocused ? '#2dd4bf' : '#e5e7eb',
+                      boxShadow: state.isFocused ? '0 0 0 1px #2dd4bf' : 'none',
+                      borderRadius: '0.5rem',
+                      '&:hover': { borderColor: '#2dd4bf' }
+                    })
+                  }}
+                />
+                {errors.tipe && (
+                  <p className="mt-1.5 text-xs text-red-500 font-medium"><i className="fa fa-exclamation-circle mr-1"></i> {errors.tipe}</p>
+                )}
+              </div>
+
             </div>
           </div>
 
-          {/* Footer: Tetap di bawah */}
-          <div className="flex-none flex justify-between mt-5 pt-4 border-t">
+          {/* Footer */}
+          <div className="p-5 md:px-8 bg-white border-t border-gray-100 flex justify-end gap-3 shrink-0">
             <button
-              className="px-4 py-2 bg-gray-200 border border-gray-300 font-bold text-black rounded hover:bg-gray-300 transition-colors"
+              type="button"
+              className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm"
               onClick={onClose}
             >
-              Close
+              Batal
             </button>
             <button
               type="submit"
-              className="px-2 md:px-4 py-1 md:py-2 bg-colorBlue font-poppins text-colorGray rounded hover:bg-blue-400"
+              className="px-6 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors shadow-sm flex items-center gap-2"
             >
-              <i className="fa fa-save"></i> Simpan
+              <i className="fa fa-save"></i> Simpan Perubahan
             </button>
           </div>
-        </div>
-      </form>
-    </>
+          
+        </form>
+      </div>
+    </div>
   );
 }
 

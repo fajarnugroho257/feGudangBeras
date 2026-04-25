@@ -346,42 +346,71 @@ function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) {
   );
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="absolute inset-0 bg-gray-900 opacity-50"></div>
-      <div className="bg-white w-[90%] h-[95%] p-6 rounded-lg shadow-lg relative z-10 flex flex-col">
-        <div className="w-full h-fit flex-shrink-0">
-          <h2 className="text-md xl:text-xl font-semibold mb-1 xl:mb-2 text-colorBlue font-poppins">
-            Ubah Pengiriman
-          </h2>
-          <div className="h-[1px] xl:h-[2px] w-full bg-colorBlue mb-1 xl:mb-3"></div>
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4 sm:p-6 font-poppins">
+      {/* Background Overlay */}
+      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose}></div>
+      
+      {/* Modal Container */}
+      <div className="bg-white w-full max-w-[1400px] h-full max-h-[95vh] rounded-2xl shadow-2xl relative z-10 flex flex-col overflow-hidden">
+        
+        {/* Header Modal */}
+        <div className="flex justify-between items-center p-5 md:px-8 border-b border-gray-100 bg-white shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600">
+              <i className="fa fa-truck text-lg"></i>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-800 leading-tight">Ubah Pengiriman</h2>
+              <p className="text-xs text-gray-500">Edit detail dan atur barang pengiriman</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+            <i className="fa fa-times text-lg"></i>
+          </button>
         </div>
         
-        <div className="flex-grow overflow-auto">
-          <form onSubmit={handleSubmit} className="h-fit">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2 mb-4">
-              <div className="flex flex-col md:flex-row md:items-center font-poppins">
-                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
-                  Pengiriman
-                </label>
-                <div className="flex-1 md:ml-4">
+        {/* Form Container */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          
+          {/* Scrollable Area */}
+          <div className="flex-1 overflow-y-auto p-5 md:px-8 bg-gray-50/30">
+            
+            {/* Header Data Pengiriman (Cards) */}
+            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Tgl Pengiriman</label>
+                <input
+                  type="date"
+                  className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 focus:bg-white focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                  name="pengiriman_tgl"
+                  value={pengiriman_tgl}
+                  onChange={handlePengiriman_tgl}
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Nama Pembeli</label>
+                <div className="relative">
+                  <i className="fa fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                   <input
-                    type="date"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue focus:border-transparent transition-all"
-                    name="pengiriman_tgl"
-                    value={pengiriman_tgl}
-                    onChange={handlePengiriman_tgl}
-                    required
+                    type="text"
+                    className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 focus:bg-white focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                    placeholder="Nama lengkap"
+                    name="nama_pembeli"
+                    value={nama_pembeli}
+                    onChange={handleNama_pembeli}
                   />
                 </div>
               </div>
-              <div className="flex flex-col md:flex-row md:items-center font-poppins">
-                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
-                  Uang Muka
-                </label>
-                <div className="flex-1 md:ml-4">
+
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Uang Muka</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">Rp</span>
                   <input
                     type="number"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue focus:border-transparent transition-all"
+                    className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 focus:bg-white focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
                     placeholder="0"
                     name="uang_muka"
                     value={uang_muka}
@@ -389,83 +418,60 @@ function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) {
                   />
                 </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2 mb-6">
-              <div className="flex flex-col md:flex-row md:items-center font-poppins">
-                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
-                  Nama Pembeli
-                </label>
-                <div className="flex-1 md:ml-4">
-                  <input
-                    type="text"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-colorBlue focus:border-transparent transition-all"
-                    placeholder="Masukkan nama pembeli"
-                    name="nama_pembeli"
-                    value={nama_pembeli}
-                    onChange={handleNama_pembeli}
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col md:flex-row md:items-center font-poppins">
-                <label className="text-sm xl:text-base font-medium text-gray-700 w-32">
-                  Status
-                </label>
-                <div className="flex-1 md:ml-4">
-                  <select
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-colorBlue focus:border-transparent transition-all cursor-pointer"
-                    name="status"
-                    value={status}
-                    onChange={handleStatus}
-                  >
-                    <option value="yes">Yes (Publish)</option>
-                    <option value="draft">Draft</option>
-                  </select>
-                </div>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Status Publish</label>
+                <select
+                  className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 focus:bg-white focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all cursor-pointer"
+                  name="status"
+                  value={status}
+                  onChange={handleStatus}
+                >
+                  <option value="yes">Yes (Publish)</option>
+                  <option value="draft">Draft</option>
+                </select>
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-[110%] xl:w-full font-poppins text-xs xl:text-md">
-                <thead>
-                  <tr className="w-full text-white text-center font-poppins text-xs xl:text-md bg-colorBlue">
-                    <th className="border border-black md:w-[5%]">No</th>
-                    <th className="border border-black md:w-[10%]">Tipe</th>
-                    <th className="border border-black md:w-[12%]">Barang</th>
-                    <th className="border border-black md:w-[12%]">Supplier</th>
-                    <th className="border border-black md:w-[8%]">Stock</th>
-                    <th className="border border-black md:w-[8%]">Tonase</th>
-                    <th className="border border-black md:w-[8%]">Harga</th>
-                    <th className="border border-black md:w-[8%]">Total</th>
-                    <th className="border border-black md:w-[10%]">Pembayaran</th>
-                    <th className="border border-black md:w-[5%]"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {inputFieldsPengiriman.map((field, index) => {
-                    const rowNumber = index + 1;
-                    return (
-                      <tr
-                        key={index}
-                        className={`text-center hover:bg-colorBlue ${
-                          rowNumber % 2 === 0 ? "bg-gray-50" : "bg-gray-200"
-                        }`}
-                      >
-                        <td className="border border-black">{rowNumber}</td>
-                        <td className="border border-black">
-                          <select
-                            className="border m-2 w-24 md:w-3/4 p-1"
-                            name="barang_tipe"
-                            value={field.barang_tipe}
-                            onChange={(event) => handleInputChange(index, event)}
-                          >
-                            <option value="beras">Beras</option>
-                            <option value="katul">Katul</option>
-                            <option value="sekam">Sekam</option>
-                          </select>
-                        </td>
-                        <td className="border border-black">
-                          <div className="p-1">
+            {/* List Barang Table */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto min-h-[300px]">
+                <table className="w-full text-left border-collapse min-w-[1200px]">
+                  <thead>
+                    <tr className="bg-gray-50/80 border-b border-gray-200">
+                      <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-12">No</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">Tipe</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-56">Barang</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-56">Supplier</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Stok</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">Tonase</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Harga</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Total</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-32">Pembayaran</th>
+                      <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-14">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {inputFieldsPengiriman.map((field, index) => {
+                      const rowNumber = index + 1;
+                      return (
+                        <tr key={index} className="hover:bg-teal-50/20 transition-colors">
+                          <td className="py-2 px-2 text-center text-sm font-medium text-gray-500 border-r border-gray-100">{rowNumber}</td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <select
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all cursor-pointer"
+                              name="barang_tipe"
+                              value={field.barang_tipe}
+                              onChange={(event) => handleInputChange(index, event)}
+                            >
+                              <option value="beras">Beras</option>
+                              <option value="katul">Katul</option>
+                              <option value="sekam">Sekam</option>
+                            </select>
+                          </td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
                             <Select
                               value={field.selectedBarang}
                               onChange={(selected) => handleSelectBarang(index, selected)}
@@ -475,17 +481,20 @@ function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) {
                               menuPortalTarget={document.body}
                               styles={{
                                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                control: (base) => ({
+                                control: (base, state) => ({
                                   ...base,
-                                  minHeight: '30px',
-                                  fontSize: '12px',
-                                }),
+                                  minHeight: '34px',
+                                  fontSize: '13px',
+                                  borderColor: state.isFocused ? '#2dd4bf' : '#e5e7eb',
+                                  boxShadow: state.isFocused ? '0 0 0 1px #2dd4bf' : 'none',
+                                  borderRadius: '0.375rem',
+                                  '&:hover': { borderColor: '#2dd4bf' }
+                                })
                               }}
                             />
-                          </div>
-                        </td>
-                        <td className="border border-black">
-                          <div className="p-1">
+                          </td>
+
+                          <td className="py-2 px-3 border-r border-gray-100">
                             <Select
                               value={field.selectedSupplier}
                               onChange={(selected) => handleSelectSupplier(index, selected)}
@@ -495,150 +504,136 @@ function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) {
                               menuPortalTarget={document.body}
                               styles={{
                                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                control: (base) => ({
+                                control: (base, state) => ({
                                   ...base,
-                                  minHeight: '30px',
-                                  fontSize: '12px',
-                                }),
+                                  minHeight: '34px',
+                                  fontSize: '13px',
+                                  borderColor: state.isFocused ? '#2dd4bf' : '#e5e7eb',
+                                  boxShadow: state.isFocused ? '0 0 0 1px #2dd4bf' : 'none',
+                                  borderRadius: '0.375rem',
+                                  '&:hover': { borderColor: '#2dd4bf' }
+                                })
                               }}
                             />
-                          </div>
-                        </td>
-                        <td className="border border-black bg-slate-300">
-                          <input
-                            type="text"
-                            className="border m-2 w-24 md:w-3/4 p-1 bg-slate-300"
-                            name="current_stock"
-                            value={field.current_stock}
-                            readOnly
-                            required
-                          ></input>
-                        </td>
-                        <td className="border border-black">
-                          <input
-                            type="number"
-                            required
-                            name="data_tonase"
-                            className="border m-2 w-24 md:w-3/4 p-1"
-                            value={field.data_tonase}
-                            onChange={(event) => handleInputChange(index, event)}
-                            onFocus={(e) =>
-                              e.target.addEventListener(
-                                "wheel",
-                                function (e) {
-                                  e.preventDefault();
-                                },
-                                { passive: false }
-                              )
-                            }
-                          ></input>
-                        </td>
-                        <td className="border border-black">
-                          <input
-                            type="number"
-                            required
-                            name="data_harga"
-                            className="border m-2 w-24 md:w-3/4 p-1"
-                            value={field.data_harga}
-                            onChange={(event) => handleInputChange(index, event)}
-                            onFocus={(e) =>
-                              e.target.addEventListener(
-                                "wheel",
-                                function (e) {
-                                  e.preventDefault();
-                                },
-                                { passive: false }
-                              )
-                            }
-                          ></input>
-                        </td>
-                        <td className="border border-black bg-slate-300">
-                          <input
-                            type="text"
-                            className="border m-2 w-24 md:w-3/4 p-1 bg-slate-300"
-                            name="data_total"
-                            value={RupiahFormat(field.data_total || 0)}
-                            readOnly
-                            required
-                          ></input>
-                        </td>
-                        <td className="border border-black">
-                          <select
-                            className="border m-2 w-24 md:w-3/4 p-1"
-                            name="pembayaran_st"
-                            value={field.pembayaran_st}
-                            onChange={(event) => handleInputChange(index, event)}
-                          >
-                            <option value="cash">Cash</option>
-                            <option value="hutang">Hutang</option>
-                          </select>
-                        </td>
-                        <td className="border border-black">
-                          {rowNumber === 1 ? (
-                            <button
-                              className={` bg-red-400 text-colorGray py-1 px-2 rounded-md my-2 font-sm md:font-normal`}
-                              type="button"
-                              disabled
+                          </td>
+
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <input
+                              type="text"
+                              className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-center text-gray-700 font-medium cursor-not-allowed outline-none"
+                              name="current_stock"
+                              value={field.current_stock}
+                              readOnly
+                            />
+                          </td>
+
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <input
+                              type="number"
+                              required
+                              name="data_tonase"
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                              value={field.data_tonase}
+                              onChange={(event) => handleInputChange(index, event)}
+                              onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
+                            />
+                          </td>
+
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <input
+                              type="number"
+                              required
+                              name="data_harga"
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-right text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                              value={field.data_harga}
+                              onChange={(event) => handleInputChange(index, event)}
+                              onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
+                            />
+                          </td>
+
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <input
+                              type="text"
+                              className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-right text-gray-800 font-bold cursor-not-allowed outline-none"
+                              name="data_total"
+                              value={RupiahFormat(field.data_total || 0)}
+                              readOnly
+                            />
+                          </td>
+
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <select
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all cursor-pointer"
+                              name="pembayaran_st"
+                              value={field.pembayaran_st}
+                              onChange={(event) => handleInputChange(index, event)}
                             >
-                              <i className="fa fa-trash"></i>
-                            </button>
-                          ) : (
-                            <button
-                              className={` bg-red-600 text-colorGray py-1 px-2 rounded-md my-2 font-sm md:font-normal`}
-                              type="button"
-                              onClick={() => handleRemoveField(index)}
-                            >
-                              <i className="fa fa-trash"></i>
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  <tr className="bg-gray-100">
-                    <td className="border border-black text-right py-2 px-4 font-bold" colSpan="7">
-                      GRAND TOTAL
-                    </td>
-                    <td className="border border-black p-1">
-                      <input
-                        type="text"
-                        className="w-full p-1 bg-white border border-red-500 text-red-600 font-bold text-right"
-                        value={RupiahFormat(resTtlPengiriman)}
-                        readOnly
-                      />
-                    </td>
-                    <td className="border border-black" colSpan="2"></td>
-                  </tr>
-                </tbody>
-              </table>
+                              <option value="cash">Cash</option>
+                              <option value="hutang">Hutang</option>
+                            </select>
+                          </td>
+
+                          <td className="py-2 px-2 text-center">
+                            {rowNumber === 1 ? (
+                              <button type="button" className="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed" disabled>
+                                <i className="fa fa-trash"></i>
+                              </button>
+                            ) : (
+                              <button type="button" onClick={() => handleRemoveField(index)} className="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors">
+                                <i className="fa fa-trash"></i>
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                    {/* Baris Total di dalam Tabel */}
+                    <tr className="bg-gray-100/80 border-t-2 border-gray-300">
+                      <td colSpan="7" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
+                        GRAND TOTAL PENGIRIMAN
+                      </td>
+                      <td className="text-right py-3 px-3 text-sm font-bold text-red-600 border-r border-gray-200 bg-red-50/50">
+                        {RupiahFormat(resTtlPengiriman)}
+                      </td>
+                      <td colSpan="2"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
 
-            <div className="w-full text-right mt-3 flex justify-end gap-2">
+            {/* Tombol Tambah Baris */}
+            <div className="mt-4">
               <button
-                className="py-1 px-4 text-xs xl:text-md bg-green-700 font-poppins text-colorGray rounded hover:bg-green-900"
-                type="submit"
+                type="button"
+                onClick={handleAddField}
+                className="flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-700 border border-teal-200 rounded-lg text-sm font-medium hover:bg-teal-100 transition-colors shadow-sm"
               >
-                <i className="fa fa-save"></i> Simpan
+                <i className="fa fa-plus text-xs"></i> Tambah Baris Pengiriman
               </button>
             </div>
-          </form>
-        </div>
+            
+          </div>
 
-        <div className="w-full flex justify-between items-center mt-4 flex-shrink-0">
-          <button
-            className="bg-colorBlue text-colorGray py-1 px-4 rounded font-poppins text-xs xl:text-md"
-            type="button"
-            onClick={() => handleAddField()}
-          >
-            <i className="fa fa-plus"></i> Tambah Item
-          </button>
-          <button
-            className="px-4 py-1 bg-colorGray border-2 border-colorBlue font-poppins text-colorBlue rounded hover:bg-slate-200"
-            onClick={onClose}
-          >
-            Close
-          </button>
-        </div>
+          {/* Footer Modal (Fixed Bawah) */}
+          <div className="p-5 md:px-8 bg-white border-t border-gray-100 flex justify-end gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors shadow-sm flex items-center gap-2"
+            >
+              <i className="fa fa-save"></i> Simpan Perubahan
+            </button>
+          </div>
+          
+        </form>
       </div>
     </div>
   );

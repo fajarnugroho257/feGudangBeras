@@ -111,9 +111,6 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
     setsuplier_tgl(event.target.value);
   };
 
-  //   console.log(datas);
-
-  // console.log(inputFields);
   const handleAddField = () => {
     setInputFields([
       ...inputFields,
@@ -226,9 +223,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
         },
       });
       // set null
-      // console.log("Response:", response.status);
       if (response.status === 200) {
-        //
         toast.update(toastId, {
           render: "Data update successfully!",
           type: "success",
@@ -253,7 +248,6 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
       });
       console.error("Error updating data:", error);
     }
-    // console.log("inputFields:", inputFields);
   };
 
   let number = 0;
@@ -267,81 +261,93 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="absolute inset-0 bg-gray-900 opacity-50"></div>
-      <div className="bg-white w-[88%] h-[98%] p-6 rounded-lg shadow-lg relative z-10">
-        <div className="w-full h-fit">
-          <h2 className="text-md xl:text-xl font-semibold mb-1 xl:mb-2 text-colorBlue font-poppins">
-            Ubah Pembelian
-          </h2>
-          <div className="h-[1px] xl:h-[2px] w-full bg-colorBlue mb-1 xl:mb-3"></div>
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4 sm:p-6">
+      {/* Background Overlay */}
+      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose}></div>
+      
+      {/* Modal Container */}
+      <div className="bg-white w-full max-w-[1400px] h-full max-h-[95vh] rounded-2xl shadow-2xl relative z-10 flex flex-col font-poppins overflow-hidden">
+        
+        {/* Header Modal */}
+        <div className="flex justify-between items-center p-5 md:px-8 border-b border-gray-100 bg-white">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600">
+              <i className="fa fa-edit text-lg"></i>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-800 leading-tight">Ubah Pembelian</h2>
+              <p className="text-xs text-gray-500">Edit detail transaksi dan supplier</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+            <i className="fa fa-times text-lg"></i>
+          </button>
         </div>
-        <div className="w-full h-fit overflow-auto">
-          <form onSubmit={handleSubmit} className="h-fit overflow-y-auto">
-            <div className="md:grid md:grid-cols-2 md:gap-5 md:mb-2">
-              <div className="text-sm xl:text-md flex font-poppins items-center my-2">
-                <p className="w-fit">Nama Suplier : </p>
-                <input
-                  className="border ml-5 w-1/2  p-2 bg-gray-100"
-                  placeholder="Nama Suplier"
-                  name="suplier_nama"
-                  value={suplier_nama}
-                  onChange={handleSuplier_nama}
-                  disabled
-                ></input>
+
+        {/* Form Wrap */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-5 md:px-8 bg-gray-50/30">
+            
+            {/* Info Suplier Card */}
+            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Nama Suplier</label>
+                <div className="relative">
+                  <i className="fa fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                  <input
+                    className="w-full pl-9 pr-3 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-600 cursor-not-allowed outline-none"
+                    placeholder="Nama Suplier"
+                    name="suplier_nama"
+                    value={suplier_nama}
+                    onChange={handleSuplier_nama}
+                    disabled
+                  />
+                </div>
               </div>
-              <div className="text-sm xl:text-md flex font-poppins items-center my-2">
-                <p className="w-fit">Tanggal : </p>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Tanggal Transaksi</label>
                 <input
                   type="date"
-                  className="border ml-5 w-1/2 p-2"
-                  placeholder="Nama Suplier"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
                   name="suplier_tgl"
                   value={suplier_tgl}
                   onChange={handleSuplier_tgl}
                   required
-                ></input>
+                />
               </div>
             </div>
 
-            <div className="overflow-x-auto" key="table-edit">
-              <table className="w-[115%] xl:w-full font-poppins text-xs xl:text-md">
-                <thead>
-                  <tr className="w-full text-white text-center font-poppins text-xs xl:text-md bg-colorBlue">
-                    <th className="border border-black md:w-[5%]">No</th>
-                    <th className="border border-black md:w-[8%]">Tipe</th>
-                    <th className="border border-black md:w-[15%]">Pilih Barang</th>
-                    <th className="border border-black md:w-[15%]">Nama Barang</th>
-                    <th className="border border-black md:w-[9%]">
-                      Tonase Kotor
-                    </th>
-                    <th className="border border-black md:w-[9%]">Potongan</th>
-                    <th className="border border-black md:w-[9%]">
-                      Tonase Bersih
-                    </th>
-                    <th className="border border-black md:w-[12%]">Harga</th>
-                    <th className="border border-black md:w-[12%]">
-                      Pembayaran
-                    </th>
-                    <th className="border border-black md:w-[12%]">Total</th>
-                    <th className="border border-black md:w-[9%]"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {inputFields.map((field, index) => {
-                    number++;
-                    return (
-                      <tr
-                        key={index}
-                        className={`text-center hover:bg-colorBlue  ${
-                          number % 2 === 0 ? "bg-gray-50" : "bg-gray-200"
-                        }`}
-                      >
-                        <td className="border border-black">{number}</td>
-                        <td className="border border-black">
-                          <div className="m-1">
+            {/* Table Area */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto min-h-[300px]">
+                <table className="w-full text-left border-collapse min-w-[1200px]">
+                  <thead>
+                    <tr className="bg-gray-50/80 border-b border-gray-200">
+                      <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-12">No</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">Tipe</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-48">Pilih Barang</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-40">Nama Barang</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">T. Kotor</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Potongan</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">T. Bersih</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Harga</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-32">Pembayaran</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Subtotal</th>
+                      <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-14">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {inputFields.map((field, index) => {
+                      number++;
+                      return (
+                        <tr key={index} className="hover:bg-teal-50/20 transition-colors">
+                          <td className="py-2 px-2 text-center text-sm font-medium text-gray-500 border-r border-gray-100">{number}</td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
                             <select
-                              className="border w-full p-1"
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all cursor-pointer"
                               name="barang_tipe"
                               value={field.barang_tipe}
                               onChange={(event) => handleInputChange(index, event)}
@@ -349,211 +355,186 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                               <option value="beras">Beras</option>
                               <option value="gabah">Gabah</option>
                             </select>
-                          </div>
-                        </td>
-                        <td className="border border-black">
-                          <div className="p-1">
+                          </td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100 relative">
                             <Select
                               value={field.selectedBarang}
                               onChange={(selected) => {
                                 const values = [...inputFields];
                                 values[index].selectedBarang = selected;
-                                values[index].barang_id =
-                                  selected && selected.value !== 'new' ? selected.value : null;
+                                values[index].barang_id = selected && selected.value !== 'new' ? selected.value : null;
                                 setInputFields(values);
                               }}
-                              options={barangOptionsCache[field.barang_tipe] ? [...barangOptionsCache[field.barang_tipe], { value: 'new', label: 'Barang Baru' }] : [{ value: 'new', label: 'Barang Baru' }]}
+                              options={barangOptionsCache[field.barang_tipe] ? [...barangOptionsCache[field.barang_tipe], { value: 'new', label: '+ Barang Baru' }] : [{ value: 'new', label: '+ Barang Baru' }]}
                               placeholder="Cari..."
                               isClearable
                               menuPortalTarget={document.body}
                               styles={{
                                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                control: (base) => ({ ...base, minHeight: '30px', fontSize: '12px' })
+                                control: (base, state) => ({
+                                  ...base,
+                                  minHeight: '34px',
+                                  fontSize: '13px',
+                                  borderColor: state.isFocused ? '#2dd4bf' : '#e5e7eb', // teal-400 or gray-200
+                                  boxShadow: state.isFocused ? '0 0 0 1px #2dd4bf' : 'none',
+                                  borderRadius: '0.375rem',
+                                  '&:hover': { borderColor: '#2dd4bf' }
+                                })
                               }}
                             />
-                          </div>
-                        </td>
-                        <td className="border border-black">
-                          {field.selectedBarang && field.selectedBarang.value === 'new' ? (
+                          </td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            {field.selectedBarang && field.selectedBarang.value === 'new' ? (
+                              <input
+                                name="barang_nama"
+                                className="w-full py-1.5 px-3 bg-white border border-teal-300 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                                placeholder="Ketik nama..."
+                                value={field.barang_nama}
+                                onChange={(event) => handleInputChange(index, event)}
+                                required
+                              />
+                            ) : (
+                              <span className="text-xs text-gray-400 italic bg-gray-50 px-2 py-1 rounded w-full block border border-gray-100 text-center">Otomatis dari sistem</span>
+                            )}
+                          </td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
                             <input
-                              name="barang_nama"
-                              className="border p-1 w-11/12"
-                              placeholder="Nama Baru"
-                              value={field.barang_nama}
-                              onChange={(event) => handleInputChange(index, event)}
+                              type="number"
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                              name="pembelian_kotor"
+                              value={field.pembelian_kotor}
+                              onChange={(event) => handleInputChangePembelianKotor(index, event)}
+                              required
+                              onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
+                            />
+                          </td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <input
+                              type="number"
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-red-600 font-medium focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all"
+                              name="pembelian_potongan"
+                              value={field.pembelian_potongan}
+                              onChange={(event) => handleInputChangePembelianPotongan(index, event)}
+                              onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
+                            />
+                          </td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <input
+                              className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-center text-green-700 font-bold cursor-not-allowed outline-none"
+                              name="pembelian_bersih"
+                              value={field.pembelian_bersih}
+                              readOnly
                               required
                             />
-                          ) : (
-                            <span className="text-gray-400 italic">Otomatis</span>
-                          )}
-                        </td>
-                        <td className="border border-black">
-                          <input
-                            type="number"
-                            className="border m-2 w-24 md:w-3/4 p-1"
-                            name="pembelian_kotor"
-                            value={field.pembelian_kotor}
-                            onChange={(event) =>
-                              handleInputChangePembelianKotor(index, event)
-                            }
-                            required
-                            onFocus={(e) =>
-                              e.target.addEventListener(
-                                "wheel",
-                                function (e) {
-                                  e.preventDefault();
-                                },
-                                { passive: false },
-                              )
-                            }
-                          ></input>
-                        </td>
-                        <td className="border border-black">
-                          <input
-                            type="number"
-                            className="border m-2 w-24 md:w-3/4 p-1"
-                            name="pembelian_potongan"
-                            value={field.pembelian_potongan}
-                            onChange={(event) =>
-                              handleInputChangePembelianPotongan(index, event)
-                            }
-                            onFocus={(e) =>
-                              e.target.addEventListener(
-                                "wheel",
-                                function (e) {
-                                  e.preventDefault();
-                                },
-                                { passive: false },
-                              )
-                            }
-                          ></input>
-                        </td>
-                        <td className="border border-black">
-                          <input
-                            className="border m-2 w-24 md:w-3/4 p-1 bg-slate-300"
-                            name="pembelian_bersih"
-                            value={field.pembelian_bersih}
-                            readOnly
-                            required
-                          ></input>
-                        </td>
-                        <td className="border border-black">
-                          <input
-                            type="number"
-                            className="border m-2 w-24 md:w-3/4 p-1"
-                            name="pembelian_harga"
-                            value={field.pembelian_harga}
-                            onChange={(event) =>
-                              handleInputChangeHarga(index, event)
-                            }
-                            onFocus={(e) =>
-                              e.target.addEventListener(
-                                "wheel",
-                                function (e) {
-                                  e.preventDefault();
-                                },
-                                { passive: false },
-                              )
-                            }
-                            required
-                          ></input>
-                        </td>
-                        <td className="border border-black">
-                          <div className="flex gap-3 w-3/4 mx-auto">
-                            <div>
-                              <p className="text-xs font-poppins">Cash</p>
-                              <input
-                                type="checkbox"
-                                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                                name="pembayaran"
-                                value="cash"
-                                onChange={(event) =>
-                                  handleInputCheckbox(index, event)
-                                }
-                                checked={field.pembayaran === "cash"}
-                                required={field.pembayaran === ""}
-                              ></input>
+                          </td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <input
+                              type="number"
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-right text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                              name="pembelian_harga"
+                              value={field.pembelian_harga}
+                              onChange={(event) => handleInputChangeHarga(index, event)}
+                              required
+                              onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
+                            />
+                          </td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <div className="flex justify-center gap-3">
+                              <label className="flex items-center gap-1.5 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 cursor-pointer"
+                                  name="pembayaran"
+                                  value="cash"
+                                  onChange={(event) => handleInputCheckbox(index, event)}
+                                  checked={field.pembayaran === "cash"}
+                                  required={field.pembayaran === ""}
+                                />
+                                <span className={`text-[11px] font-bold uppercase tracking-wide ${field.pembayaran === 'cash' ? 'text-green-600' : 'text-gray-500'}`}>Cash</span>
+                              </label>
+                              <label className="flex items-center gap-1.5 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 cursor-pointer"
+                                  name="pembayaran"
+                                  value="hutang"
+                                  onChange={(event) => handleInputCheckbox(index, event)}
+                                  checked={field.pembayaran === "hutang"}
+                                  required={field.pembayaran === ""}
+                                />
+                                <span className={`text-[11px] font-bold uppercase tracking-wide ${field.pembayaran === 'hutang' ? 'text-red-500' : 'text-gray-500'}`}>Hutang</span>
+                              </label>
                             </div>
-                            <div>
-                              <p className="text-xs font-poppins">Hutang</p>
-                              <input
-                                type="checkbox"
-                                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                                name="pembayaran"
-                                value="hutang"
-                                onChange={(event) =>
-                                  handleInputCheckbox(index, event)
-                                }
-                                checked={field.pembayaran === "hutang"}
-                                required={field.pembayaran === ""}
-                              ></input>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="border border-black">
-                          <input
-                            type="text"
-                            className="border m-2 w-24 md:w-3/4 bg-slate-300"
-                            name="pembelian_total"
-                            value={RupiahFormat(field.pembelian_total)}
-                            readOnly
-                            required
-                          ></input>
-                        </td>
-                        <td className="border border-black">
-                          {number === 1 ? (
-                            <button
-                              className={` bg-red-400 text-colorGray py-1 px-2 rounded-md my-2 font-sm md:font-normal`}
-                              type="button"
-                              disabled
-                            >
-                              <i className="fa fa-trash"></i>
-                            </button>
-                          ) : (
-                            <button
-                              className={` bg-red-600 text-colorGray py-1 px-2 rounded-md my-2 font-sm md:font-normal`}
-                              type="button"
-                              onClick={() => handleRemoveField(index)}
-                            >
-                              <i className="fa fa-trash"></i>
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          </td>
+                          
+                          <td className="py-2 px-3 border-r border-gray-100">
+                            <input
+                              type="text"
+                              className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-right text-gray-800 font-bold cursor-not-allowed outline-none"
+                              name="pembelian_total"
+                              value={RupiahFormat(field.pembelian_total)}
+                              readOnly
+                              required
+                            />
+                          </td>
+                          
+                          <td className="py-2 px-2 text-center">
+                            {number === 1 ? (
+                              <button type="button" className="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed" disabled>
+                                <i className="fa fa-trash"></i>
+                              </button>
+                            ) : (
+                              <button type="button" onClick={() => handleRemoveField(index)} className="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors">
+                                <i className="fa fa-trash"></i>
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div className="w-full text-right mt-2">
+
+            {/* Tambah Baris Button - Diletakkan di bawah tabel sedikit agar scrollable */}
+            <div className="mt-4">
               <button
-                className=" py-1 px-2 text-xs xl:text-md bg-green-700 font-poppins text-colorGray rounded hover:bg-green-900"
-                type="submit"
+                type="button"
+                onClick={handleAddField}
+                className="flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-700 border border-teal-200 rounded-lg text-sm font-medium hover:bg-teal-100 transition-colors shadow-sm"
               >
-                <i className="fa fa-save"></i> Simpan
+                <i className="fa fa-plus text-xs"></i> Tambah Baris
               </button>
             </div>
-          </form>
-        </div>
-        <div className="h-fit">
-          <button
-            className="bg-colorBlue text-colorGray py-1 px-2 rounded-sm my-1 font-poppins text-xs xl:text-md"
-            type="button"
-            onClick={() => handleAddField()}
-          >
-            <i className="fa fa-plus"></i> Tambah
-          </button>
-        </div>
-        <div className="w-full h-fit">
-          <div className="flex justify-end">
+            
+          </div>
+
+          {/* Footer Modal (Fixed di Bawah) */}
+          <div className="p-5 md:px-8 bg-white border-t border-gray-100 flex justify-end gap-3 shrink-0">
             <button
-              className="px-4 py-2 bg-colorGray border-2 border-colorBlue font-poppins text-colorBlue rounded hover:bg-slate-200"
+              type="button"
               onClick={onClose}
+              className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm"
             >
-              Close
+              Batal
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors shadow-sm flex items-center gap-2"
+            >
+              <i className="fa fa-save"></i> Simpan Perubahan
             </button>
           </div>
-        </div>
+          
+        </form>
       </div>
     </div>
   );
