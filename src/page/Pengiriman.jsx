@@ -9,7 +9,7 @@ import FormatTanggal from "../utilities/FormatTanggal";
 import ModalPreviewPembelian from "../components/ModalPreviewPembelian";
 import api from "../utilities/axiosInterceptor";
 
-function Pembelian() {
+function Pengiriman() {
   // TOKEN
   const token = localStorage.getItem("token");
   
@@ -47,6 +47,17 @@ function Pembelian() {
   const [dateFrom, setDateFrom] = useState(firsttDate);
   const [dateTo, setDateTo] = useState(lastDate);
   const [data_merek, setdata_merek] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(data_merek);
+    }, 750); // Jeda 1 detik
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [data_merek]);
   
   const handleInputChange = (event) => {
     const val = event.target.value;
@@ -83,7 +94,7 @@ function Pembelian() {
     let params = {
       dateFrom: dateFrom,
       dateTo: dateTo,
-      params: data_merek,
+      params: debouncedSearch,
     };
     setBlur(true);
     const response = await api.post(endPoint, params, {
@@ -123,7 +134,7 @@ function Pembelian() {
     isModalEditOpen,
     stModalBeban,
     valueSt,
-    data_merek,
+    debouncedSearch,
   ]);
 
   const changeAfterAddData = (suplierData) => {};
@@ -860,4 +871,4 @@ function Pembelian() {
   );
 }
 
-export default Pembelian;
+export default Pengiriman;

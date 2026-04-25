@@ -1,19 +1,36 @@
 import React, { useState, useEffect } from "react";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import api from "../utilities/axiosInterceptor";
 import ModalAddStok from "../components/ModalAddStok";
 
 function StokGudang() {
   const token = localStorage.getItem("token");
 
+  // State Input (Real-time untuk ketikan user)
   const [barangNama, setBarangNama] = useState("");
   const [suplierNama, setSuplierNama] = useState("");
   const [tipeBarang, setTipeBarang] = useState("");
+
+  // State Debounced (Digunakan untuk trigger API)
+  const [debouncedBarang, setDebouncedBarang] = useState("");
+  const [debouncedSuplier, setDebouncedSuplier] = useState("");
+
   const [datas, setDatas] = useState([]);
   const [blur, setBlur] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Indikator visual UI untuk urgensi stok (Pill Badges)
+  // 1. LOGIKA DEBOUNCE: Menangani jeda pengetikan 500ms
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedBarang(barangNama);
+      setDebouncedSuplier(suplierNama);
+    }, 750);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [barangNama, suplierNama]);
+
   const renderStockBadge = (stock) => {
     if (stock < 10) {
       return (
@@ -40,8 +57,8 @@ function StokGudang() {
     try {
       setBlur(true);
       const params = {
-        barang_nama: barangNama,
-        suplier: suplierNama,
+        barang_nama: debouncedBarang,
+        suplier: debouncedSuplier,
         tipe: tipeBarang,
       };
 
@@ -56,15 +73,19 @@ function StokGudang() {
         setDatas(response.data.data || []);
       }
     } catch (error) {
+      if (error.response?.status === 429) {
+        toast.error("Terlalu banyak permintaan. Mohon tunggu sebentar.");
+      }
       console.error("Error fetch stok:", error);
     } finally {
       setBlur(false);
     }
   };
 
+  // 2. TRIGGER API: Dipicu saat nilai debounced atau dropdown tipe berubah
   useEffect(() => {
     fetchData();
-  }, [barangNama, suplierNama, tipeBarang]);
+  }, [debouncedBarang, debouncedSuplier, tipeBarang]);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 font-poppins">
@@ -78,7 +99,6 @@ function StokGudang() {
         
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
-          {/* Tambah Stok Awal Button */}
           <button
             onClick={() => setIsModalOpen(true)}
             className="w-full md:w-auto px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
@@ -86,7 +106,6 @@ function StokGudang() {
             <i className="fa fa-plus"></i> Tambah Stok Awal
           </button>
 
-          {/* Filter Barang */}
           <div className="relative w-full md:w-auto flex-1 md:flex-none">
             <i className="fa fa-box absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
             <input
@@ -98,7 +117,6 @@ function StokGudang() {
             />
           </div>
 
-          {/* Filter Supplier */}
           <div className="relative w-full md:w-auto flex-1 md:flex-none">
             <i className="fa fa-truck absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
             <input
@@ -110,7 +128,6 @@ function StokGudang() {
             />
           </div>
 
-          {/* Filter Tipe */}
           <select
             value={tipeBarang}
             onChange={(e) => setTipeBarang(e.target.value)}
@@ -124,7 +141,7 @@ function StokGudang() {
         </div>
       </div>
 
-      {/* TAMPILAN MOBILE (Cards Layout) - Tetap sama */}
+      {/* TAMPILAN MOBILE (Cards Layout) */}
       <div className={`md:hidden space-y-4 ${blur ? "opacity-50" : "opacity-100"} transition-opacity`}>
         {datas.length > 0 ? (
           datas.map((item, idx) => {
@@ -161,7 +178,7 @@ function StokGudang() {
         )}
       </div>
 
-      {/* TAMPILAN DESKTOP (Modern Table Layout) - Diperbarui */}
+      {/* TAMPILAN DESKTOP (Modern Table Layout) */}
       <div className={`hidden md:block overflow-x-auto ${blur ? "opacity-50" : "opacity-100"} transition-opacity`}>
         <table className="w-full text-left border-collapse">
           <thead>
@@ -176,41 +193,30 @@ function StokGudang() {
           <tbody className="divide-y divide-gray-100">
             {datas.length > 0 ? (
               datas.map((item) => {
-                // rowSpan sekarang pas sama jumlah supplier (tidak perlu +1 lagi)
                 const rowSpan = item.suppliers.length; 
                 const totalStok = item.suppliers.reduce((acc, sup) => acc + (sup.stok || 0), 0);
 
                 return (
                   <React.Fragment key={item.barang_id}>
-                    {/* Baris Pertama: Menampilkan data Barang, Supplier 1, dan Kolom Total Stok */}
                     <tr className="hover:bg-blue-50/30 transition-colors border-t-2 border-gray-100">
-                      
                       <td className="py-4 px-4 align-middle" rowSpan={rowSpan}>
                         <div className="font-bold text-gray-800 uppercase">{item.barang_nama}</div>
                       </td>
-                      
                       <td className="py-4 px-4 align-middle" rowSpan={rowSpan}>
                         <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 uppercase border border-gray-200">
                           {item.tipe}
                         </span>
                       </td>
-                      
                       <td className="py-3 px-4 text-sm text-gray-600 font-medium">
                         {item.suppliers[0]?.suplier_nama || "-"}
                       </td>
-                      
                       <td className="py-3 px-4 text-right">
                         {renderStockBadge(item.suppliers[0]?.stok || 0)}
                       </td>
-
-                      {/* Kolom Baru: Total Stok (Di-merge menggunakan rowSpan) */}
                       <td className="py-4 px-4 align-middle text-center border-l border-gray-100 bg-gray-50/30" rowSpan={rowSpan}>
                         {renderStockBadge(totalStok)}
                       </td>
-
                     </tr>
-                    
-                    {/* Baris Supplier Selanjutnya (Hanya Supplier & Stok Supplier) */}
                     {item.suppliers.slice(1).map((sup) => (
                       <tr key={sup.suplier_id} className="hover:bg-blue-50/30 transition-colors">
                         <td className="py-3 px-4 text-sm text-gray-600 font-medium border-l border-gray-50">

@@ -43,6 +43,18 @@ function Pembelian() {
   const [dateTo, setDateTo] = useState(lastDate);
   const [supName, setSupName] = useState("");
   const [pembayaran, setPembayaran] = useState("");
+  const [debouncedSupName, setDebouncedSupName] = useState("");
+
+  // LOGIKA DEBOUNCE: Menunggu user berhenti mengetik selama 500ms
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSupName(supName);
+    }, 750);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [supName]);
   
   const handleInputChange = (event) => {
     const name = event.target.name;
@@ -75,7 +87,7 @@ function Pembelian() {
       let params = {
         dateFrom: dateFrom,
         dateTo: dateTo,
-        supName: supName,
+        supName: debouncedSupName,
         pembayaran: pembayaran,
       };
       const response = await api.post("index-Pembelian", params, {
@@ -100,7 +112,7 @@ function Pembelian() {
     setBlur(true);
     fectData();
     setDraftNota(false);
-  }, [dateFrom, dateTo, supName, pembayaran, draftNota]);
+  }, [dateFrom, dateTo, debouncedSupName, pembayaran, draftNota]);
 
   let ttl_harga = 0;
   let ttl_total = 0;
