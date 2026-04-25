@@ -37,73 +37,114 @@ function Pembayaran() {
   };
 
   return (
-    <div className="px-5 py-3 h-[86%]">
-      <div className="flex items-center">
-        <div className="w-full h-fit">
-          <h3 className="text-center mt-11 font-poppins text-xl xl:text-4xl font-semibold text-gray-800 w-full xl:w-2/5 mx-auto mb-10 xl:mb-20">
-            Aplikasi Pencatatan Barang Masuk & Keluar{isOpen}
-          </h3>
-          <div className="flex items-center justify-center">
-            <div className="md:w-3/5 grid grid-cols-2 gap-20 md:gap-5 md:grid-cols-4 items-center justify-center">
-              <div className="relative">
-                <div
-                  onClick={() => handleModalTambah()}
-                  className="mx-auto w-20 h-28 md:w-28 md:h-36 xl:w-36 xl:h-40 bg-colorBlue rounded-lg shadow-lg flex justify-center items-center cursor-pointer hover:bg-colorBlueHover"
-                >
-                  <img src={Database} className="w-[40%] h-[55%]" alt="Shop" />
-                </div>
-                <h3 className="text-center mt-3 text-gray-800 font-poppins font-semibold text-xs xl:text-sm">
-                  Tambah Data
-                </h3>
-                <div
-                  ref={dropdownRef}
-                  className={` ${
-                    isOpen ? "block" : "hidden"
-                  } absolute bg-gray-100 rounded-md shadow-md shadow-gray-400 font-poppins -top-16 left-10 w-52 py-3 px-4 md:left-32`}
-                >
-                  <div className="">
-                    <p
-                      className="hover:text-colorBlueHover cursor-pointer"
-                      onClick={() => handleSubmit("tambah-pembelian")}
-                    >
-                      Tambah Pembelian
-                    </p>
-                    <hr className="w-full bg-black h-[2px] my-1" />
-                    <p
-                      className="hover:text-colorBlueHover cursor-pointer"
-                      onClick={() => handleSubmit("tambah-pengiriman")}
-                    >
-                      Tambah Pengiriman
-                    </p>
-                  </div>
-                </div>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-12 font-poppins min-h-[75vh] flex flex-col justify-center items-center">
+      
+      <div className="w-full text-center mb-10 xl:mb-16">
+        <h2 className="text-2xl md:text-3xl xl:text-4xl font-bold text-gray-800 mb-3 tracking-tight">
+          Aplikasi Pencatatan Gudang
+        </h2>
+        <p className="text-gray-500 text-sm md:text-base max-w-md mx-auto">
+          Kelola barang masuk, keluar, dan pantau persediaan gudang Anda dengan mudah.
+        </p>
+      </div>
+
+      {/* Grid Menu Cards */}
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          
+          {/* Card 1: Tambah Data (dengan Dropdown) */}
+          <div className="relative" ref={dropdownRef}>
+            <div
+              onClick={handleModalTambah}
+              className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-teal-400 hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col items-center justify-center h-40 md:h-48"
+            >
+              {/* Latar kontainer ikon diubah ke bg-teal-600 agar gambar putih terlihat */}
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-teal-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-teal-500 transition-colors shadow-inner">
+                <img src={Database} className="w-3/5 object-contain" alt="Database" />
               </div>
-              <div onClick={() => handleSubmit("pembelian")}>
-                <div className="mx-auto w-20 h-28 md:w-28 md:h-36 xl:w-36 xl:h-40 bg-colorBlue rounded-lg shadow-lg flex justify-center items-center cursor-pointer hover:bg-colorBlueHover">
-                  <img src={Shop} className="w-4/6" alt="Shop" />
-                </div>
-                <h3 className="text-center mt-3 text-gray-800 font-poppins font-semibold text-xs xl:text-sm">
-                  Pembelian
-                </h3>
+              <h3 className="font-bold text-gray-700 text-xs md:text-sm text-center group-hover:text-teal-600 transition-colors uppercase tracking-wide">
+                Tambah Data
+              </h3>
+            </div>
+
+            {/* Dropdown Menu */}
+            <div
+              className={`absolute top-full mt-3 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-xl border border-gray-100 p-2 w-56 z-50 transition-all duration-200 ${
+                isOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2"
+              }`}
+            >
+              <div 
+                className="px-4 py-3 text-sm text-gray-600 font-medium hover:bg-teal-50 hover:text-teal-600 rounded-lg cursor-pointer transition-colors flex items-center gap-3"
+                onClick={() => handleSubmit("tambah-pembelian")}
+              >
+                <i className="fa fa-shopping-bag w-4 text-center"></i> Tambah Pembelian
               </div>
-              <div onClick={() => handleSubmit("pengiriman")}>
-                <div className="mx-auto w-20 h-28 md:w-28 md:h-36 xl:w-36 xl:h-40 bg-colorBlue rounded-lg shadow-lg flex justify-center items-center cursor-pointer hover:bg-colorBlueHover">
-                  <img src={Shipped} className="w-4/6" alt="Shipped" />
-                </div>
-                <h3 className="text-center mt-3 text-gray-800 font-poppins font-semibold text-xs xl:text-sm">
-                  Pengiriman
-                </h3>
+              
+              <hr className="my-1 border-gray-100" />
+              
+              <div 
+                className="px-4 py-3 text-sm text-gray-600 font-medium hover:bg-teal-50 hover:text-teal-600 rounded-lg cursor-pointer transition-colors flex items-center gap-3"
+                onClick={() => handleSubmit("tambah-pengiriman")}
+              >
+                <i className="fa fa-truck w-4 text-center"></i> Tambah Pengiriman
               </div>
-              <div onClick={() => handleSubmit("laporan")}>
-                <div className="mx-auto w-20 h-28 md:w-28 md:h-36 xl:w-36 xl:h-40 bg-colorBlue rounded-lg shadow-lg flex justify-center items-center cursor-pointer hover:bg-colorBlueHover">
-                  <img src={Report} className="w-4/6" alt="Report" />
-                </div>
-                <h3 className="text-center mt-3 text-gray-800 font-poppins font-semibold text-xs xl:text-sm">
-                  Laporan
-                </h3>
+
+              <hr className="my-1 border-gray-100" />
+              
+              <div 
+                className="px-4 py-3 text-sm text-gray-600 font-medium hover:bg-teal-50 hover:text-teal-600 rounded-lg cursor-pointer transition-colors flex items-center gap-3"
+                onClick={() => handleSubmit("barang")}
+              >
+                <i className="fa fa-box w-4 text-center"></i> Data Barang
+              </div>
+
+              <hr className="my-1 border-gray-100" />
+              
+              <div 
+                className="px-4 py-3 text-sm text-gray-600 font-medium hover:bg-teal-50 hover:text-teal-600 rounded-lg cursor-pointer transition-colors flex items-center gap-3"
+                onClick={() => handleSubmit("suplier")}
+              >
+                <i className="fa fa-users w-4 text-center"></i> Data Suplier
               </div>
             </div>
           </div>
+
+          {/* Card 2: Pembelian */}
+          <div onClick={() => handleSubmit("pembelian")}>
+            <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-teal-400 hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col items-center justify-center h-40 md:h-48">
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-teal-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-teal-500 transition-colors shadow-inner">
+                <img src={Shop} className="w-3/5 object-contain" alt="Shop" />
+              </div>
+              <h3 className="font-bold text-gray-700 text-xs md:text-sm text-center group-hover:text-teal-600 transition-colors uppercase tracking-wide">
+                Pembelian
+              </h3>
+            </div>
+          </div>
+
+          {/* Card 3: Pengiriman */}
+          <div onClick={() => handleSubmit("pengiriman")}>
+            <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-teal-400 hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col items-center justify-center h-40 md:h-48">
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-teal-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-teal-500 transition-colors shadow-inner">
+                <img src={Shipped} className="w-3/5 object-contain" alt="Shipped" />
+              </div>
+              <h3 className="font-bold text-gray-700 text-xs md:text-sm text-center group-hover:text-teal-600 transition-colors uppercase tracking-wide">
+                Pengiriman
+              </h3>
+            </div>
+          </div>
+
+          {/* Card 4: Laporan */}
+          <div onClick={() => handleSubmit("laporan")}>
+            <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-teal-400 hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col items-center justify-center h-40 md:h-48">
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-teal-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-teal-500 transition-colors shadow-inner">
+                <img src={Report} className="w-3/5 object-contain" alt="Report" />
+              </div>
+              <h3 className="font-bold text-gray-700 text-xs md:text-sm text-center group-hover:text-teal-600 transition-colors uppercase tracking-wide">
+                Laporan
+              </h3>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

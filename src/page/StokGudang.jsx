@@ -1,27 +1,39 @@
 import React, { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import api from "../utilities/axiosInterceptor";
 
 function StokGudang() {
   const token = localStorage.getItem("token");
 
-  // ===== FILTER STATES =====
   const [barangNama, setBarangNama] = useState("");
   const [suplierNama, setSuplierNama] = useState("");
   const [tipeBarang, setTipeBarang] = useState("");
-  
   const [datas, setDatas] = useState([]);
   const [blur, setBlur] = useState(true);
 
-  // ===== LOGIKA WARNA STOK =====
-  const getStockColor = (stock) => {
-    if (stock < 10) return "bg-red-500 text-white font-bold"; // Sedikit (Urgent)
-    if (stock <= 50) return "bg-yellow-400 text-black font-bold"; // Medium (Notice)
-    return ""; // Banyak/Normal (Tanpa Indikator)
+  // Indikator visual UI untuk urgensi stok (Pill Badges)
+  const renderStockBadge = (stock) => {
+    if (stock < 10) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+          {stock} Urgent
+        </span>
+      );
+    }
+    if (stock <= 50) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 border border-yellow-200">
+          {stock} Low
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">
+        {stock} Safe
+      </span>
+    );
   };
 
-  // ===== FETCH DATA =====
   const fetchData = async () => {
     try {
       setBlur(true);
@@ -52,121 +64,168 @@ function StokGudang() {
     fetchData();
   }, [barangNama, suplierNama, tipeBarang]);
 
-  let globalNumber = 0;
-
   return (
-    <div className="p-1 md:p-3 xl:p-5 font-poppins">
-      <div className="w-full h-full mx-auto bg-gray-50 shadow-xl p-4 md:p-8">
-        
-        {/* FILTER SECTION */}
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-3 items-center w-full">
-            <div className="flex flex-col">
-              <label className="text-[10px] font-bold text-colorBlue mb-1 ml-1 uppercase">Nama Barang</label>
-              <input
-                type="text"
-                placeholder="Cari Barang..."
-                value={barangNama}
-                onChange={(e) => setBarangNama(e.target.value)}
-                className="w-40 border-2 py-1 px-3 rounded-md border-colorBlue text-xs md:text-sm shadow-sm outline-none"
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-[10px] font-bold text-colorBlue mb-1 ml-1 uppercase">Supplier</label>
-              <input
-                type="text"
-                placeholder="Cari Supplier..."
-                value={suplierNama}
-                onChange={(e) => setSuplierNama(e.target.value)}
-                className="w-40 border-2 py-1 px-3 rounded-md border-colorBlue text-xs md:text-sm shadow-sm outline-none"
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-[10px] font-bold text-colorBlue mb-1 ml-1 uppercase">Tipe Barang</label>
-              <select
-                value={tipeBarang}
-                onChange={(e) => setTipeBarang(e.target.value)}
-                className="w-40 border-2 py-[5px] px-3 rounded-md border-colorBlue text-xs md:text-sm shadow-sm bg-white cursor-pointer outline-none"
-              >
-                <option value="">Semua Tipe</option>
-                <option value="beras">Beras</option>
-                <option value="sekam">Sekam</option>
-                <option value="katul">Katul</option>
-              </select>
-            </div>
-          </div>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 font-poppins">
+      
+      {/* Header & Actions */}
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">Stok Manajemen</h2>
+          <p className="text-sm text-gray-500 mt-1">Pantau persediaan barang dan supplier</p>
         </div>
+        
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+          {/* Filter Barang */}
+          <div className="relative w-full md:w-auto flex-1 md:flex-none">
+            <i className="fa fa-box absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input
+              type="text"
+              placeholder="Cari Barang..."
+              value={barangNama}
+              onChange={(e) => setBarangNama(e.target.value)}
+              className="w-full md:w-44 pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+            />
+          </div>
 
-        {/* TABLE SECTION */}
-        <div className="overflow-x-auto max-h-[75vh]">
-          <table className={`border border-black font-poppins text-gray-700 text-xs md:text-sm w-full ${blur ? "blur-sm" : "blur-none"}`}>
-            <thead className="bg-colorBlue text-white uppercase font-bold sticky top-0 z-10">
-              <tr className="text-center h-12">
-                <th className="border border-black w-[5%] px-2">No</th>
-                <th className="border border-black px-3">Barang</th>
-                <th className="border border-black px-3">Tipe</th>
-                <th className="border border-black px-3">Supplier</th>
-                <th className="border border-black px-3 w-[15%]">Stok</th>
-              </tr>
-            </thead>
+          {/* Filter Supplier */}
+          <div className="relative w-full md:w-auto flex-1 md:flex-none">
+            <i className="fa fa-truck absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input
+              type="text"
+              placeholder="Cari Supplier..."
+              value={suplierNama}
+              onChange={(e) => setSuplierNama(e.target.value)}
+              className="w-full md:w-44 pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+            />
+          </div>
 
-            <tbody>
-              {datas.length > 0 ? (
-                datas.map((item) => {
-                  globalNumber++;
-                  const rowSpan = item.suppliers.length + 1;
-                  const rowColor = globalNumber % 2 === 0 ? "bg-gray-50" : "bg-gray-200";
-                  const totalStokBarang = item.suppliers.reduce((acc, sup) => acc + (sup.stok || 0), 0);
-
-                  return (
-                    <React.Fragment key={item.barang_id}>
-                      <tr className={`${rowColor} hover:bg-blue-50 transition-colors`}>
-                        <td className="border border-black text-center py-2" rowSpan={rowSpan}>{globalNumber}</td>
-                        <td className="border border-black px-3 py-2 font-bold uppercase" rowSpan={rowSpan}>{item.barang_nama}</td>
-                        <td className="border border-black text-center py-2" rowSpan={rowSpan}>
-                          <span className="px-2 py-1 rounded bg-white border border-gray-300 text-[10px] uppercase font-semibold">
-                            {item.tipe}
-                          </span>
-                        </td>
-                        <td className="border border-black px-3 py-2">{item.suppliers[0]?.suplier_nama || "-"}</td>
-                        {/* Kolom Stok Supplier 1 dengan Indikator Warna */}
-                        <td className={`border border-black text-center py-2 ${getStockColor(item.suppliers[0]?.stok)}`}>
-                          {item.suppliers[0]?.stok || 0}
-                        </td>
-                      </tr>
-
-                      {item.suppliers.slice(1).map((sup) => (
-                        <tr key={sup.suplier_id} className={`${rowColor} hover:bg-blue-50 transition-colors`}>
-                          <td className="border border-black px-3 py-2">{sup.suplier_nama}</td>
-                          {/* Kolom Stok Supplier Lain dengan Indikator Warna */}
-                          <td className={`border border-black text-center py-2 ${getStockColor(sup.stok)}`}>
-                            {sup.stok}
-                          </td>
-                        </tr>
-                      ))}
-
-                      {/* Baris Total Stok dengan Indikator Warna */}
-                      <tr className={`${rowColor}`}>
-                        <td className="border border-black px-3 py-2 text-right bg-black/5 uppercase text-[10px] font-bold">Total Stok</td>
-                        <td className={`border border-black text-center py-2 font-bold italic ${getStockColor(totalStokBarang)}`}>
-                          {totalStokBarang}
-                        </td>
-                      </tr>
-                    </React.Fragment>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan="5" className="text-center p-10 border border-black italic text-gray-500 bg-white">Data tidak ditemukan</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          {/* Filter Tipe */}
+          <select
+            value={tipeBarang}
+            onChange={(e) => setTipeBarang(e.target.value)}
+            className="w-full md:w-auto px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none cursor-pointer"
+          >
+            <option value="">Semua Tipe</option>
+            <option value="beras">Beras</option>
+            <option value="sekam">Sekam</option>
+            <option value="katul">Katul</option>
+          </select>
         </div>
       </div>
-      <ToastContainer />
+
+      {/* TAMPILAN MOBILE (Cards Layout) - Tetap sama */}
+      <div className={`md:hidden space-y-4 ${blur ? "opacity-50" : "opacity-100"} transition-opacity`}>
+        {datas.length > 0 ? (
+          datas.map((item, idx) => {
+            const totalStok = item.suppliers.reduce((acc, sup) => acc + (sup.stok || 0), 0);
+            return (
+              <div key={idx} className="border border-gray-100 rounded-xl p-4 shadow-sm bg-white">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="font-bold text-gray-800 uppercase">{item.barang_nama}</h3>
+                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded uppercase">{item.tipe}</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  {item.suppliers.map((sup, sIdx) => (
+                    <div key={sIdx} className="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg border border-gray-100 text-sm">
+                      <span className="text-gray-600 font-medium">{sup.suplier_nama || "-"}</span>
+                      {renderStockBadge(sup.stok)}
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Stok</span>
+                  <div>{renderStockBadge(totalStok)}</div>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl border border-gray-100 text-sm">
+            Data tidak ditemukan
+          </div>
+        )}
+      </div>
+
+      {/* TAMPILAN DESKTOP (Modern Table Layout) - Diperbarui */}
+      <div className={`hidden md:block overflow-x-auto ${blur ? "opacity-50" : "opacity-100"} transition-opacity`}>
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-gray-200 bg-gray-50/50">
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Barang</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tipe</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Supplier</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Stok per Supplier</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center border-l border-gray-200">Total Stok</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {datas.length > 0 ? (
+              datas.map((item) => {
+                // rowSpan sekarang pas sama jumlah supplier (tidak perlu +1 lagi)
+                const rowSpan = item.suppliers.length; 
+                const totalStok = item.suppliers.reduce((acc, sup) => acc + (sup.stok || 0), 0);
+
+                return (
+                  <React.Fragment key={item.barang_id}>
+                    {/* Baris Pertama: Menampilkan data Barang, Supplier 1, dan Kolom Total Stok */}
+                    <tr className="hover:bg-blue-50/30 transition-colors border-t-2 border-gray-100">
+                      
+                      <td className="py-4 px-4 align-middle" rowSpan={rowSpan}>
+                        <div className="font-bold text-gray-800 uppercase">{item.barang_nama}</div>
+                      </td>
+                      
+                      <td className="py-4 px-4 align-middle" rowSpan={rowSpan}>
+                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 uppercase border border-gray-200">
+                          {item.tipe}
+                        </span>
+                      </td>
+                      
+                      <td className="py-3 px-4 text-sm text-gray-600 font-medium">
+                        {item.suppliers[0]?.suplier_nama || "-"}
+                      </td>
+                      
+                      <td className="py-3 px-4 text-right">
+                        {renderStockBadge(item.suppliers[0]?.stok || 0)}
+                      </td>
+
+                      {/* Kolom Baru: Total Stok (Di-merge menggunakan rowSpan) */}
+                      <td className="py-4 px-4 align-middle text-center border-l border-gray-100 bg-gray-50/30" rowSpan={rowSpan}>
+                        {renderStockBadge(totalStok)}
+                      </td>
+
+                    </tr>
+                    
+                    {/* Baris Supplier Selanjutnya (Hanya Supplier & Stok Supplier) */}
+                    {item.suppliers.slice(1).map((sup) => (
+                      <tr key={sup.suplier_id} className="hover:bg-blue-50/30 transition-colors">
+                        <td className="py-3 px-4 text-sm text-gray-600 font-medium border-l border-gray-50">
+                          {sup.suplier_nama}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          {renderStockBadge(sup.stok)}
+                        </td>
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center py-12 text-gray-500 italic bg-gray-50 rounded-lg border-t border-gray-100">
+                  Data tidak ditemukan
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <ToastContainer position="bottom-right" />
     </div>
   );
 }
