@@ -221,7 +221,7 @@ function Pembelian() {
           : [...prevSelected, id], 
     );
     const values = [...datas];
-    values[index]["suplier_nota_st"] = values[index]["suplier_nota_st"] === "yes" ? "no" : "yes";
+    values[index]["pembelian_nota_st"] = values[index]["pembelian_nota_st"] === "yes" ? "no" : "yes";
     setDatas(values);
   };
 
@@ -360,10 +360,10 @@ function Pembelian() {
                     <input
                       type="checkbox"
                       className="w-5 h-5 text-teal-600 bg-gray-50 border-gray-300 rounded focus:ring-teal-500 cursor-pointer disabled:opacity-50"
-                      name="suplier_nota_st"
+                      name="pembelian_nota_st"
                       onChange={(event) => handleCheckboxChange(item.id, index)}
-                      checked={item.suplier_nota_st === "yes"}
-                      disabled={item.suplier_nota_st === "yes"}
+                      checked={item.pembelian_nota_st === "yes"}
+                      disabled={item.pembelian_nota_st === "yes"}
                     />
                   </div>
                 </div>
@@ -588,13 +588,13 @@ function Pembelian() {
                                     <input
                                       type="checkbox"
                                       className="w-4 h-4 text-teal-600 bg-white border-gray-300 rounded focus:ring-teal-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                                      name="suplier_nota_st"
+                                      name="pembelian_nota_st"
                                       onChange={(event) => handleCheckboxChange(item.id, index)}
-                                      checked={item.suplier_nota_st === "yes"}
-                                      disabled={item.suplier_nota_st === "yes"}
+                                      checked={item.pembelian_nota_st === "yes"}
+                                      disabled={item.pembelian_nota_st === "yes"}
                                     />
                                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                                      {item.suplier_nota_st === "yes" ? "Done" : "Draft"}
+                                      {item.pembelian_nota_st === "yes" ? "Done" : "Draft"}
                                     </span>
                                   </div>
                                 </td>

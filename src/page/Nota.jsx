@@ -106,8 +106,8 @@ function Nota() {
 
   const [notaId, setNotaId] = useState([]);
   //
-  const handleDetailBayar = (nota_id) => {
-    setNotaId(nota_id);
+  const handleDetailBayar = (id) => {
+    setNotaId(id);
     setModalBayar(!modalBayar);
   };
 
@@ -213,7 +213,7 @@ function Nota() {
                 const first_nota_data = item.nota_data[0];
                 const notaDataExceptFirst = item.nota_data.slice(1);
                 const length = item.nota_data.length;
-                const pembelian_pertama = first_nota_data.suplier.pembelian;
+                const pembelian_pertama = first_nota_data.pembelian.pembelian_data;
                 let jlh_pembelian_pertama = 0;
                 return (
                   <>
@@ -245,10 +245,10 @@ function Nota() {
                         <span className="text-blue-500"> Jam {item.waktu}</span>
                       </td>
                       <td className="border border-black px-2">
-                        {first_nota_data.suplier.suplier_nama}
+                        {first_nota_data.pembelian.suplier.suplier_nama}
                       </td>
                       <td className="border border-black text-center">
-                        {FormatTanggal(first_nota_data.suplier.suplier_tgl)}
+                        {FormatTanggal(first_nota_data.pembelian.pembelian_tgl)}
                       </td>
                       <td className="border border-black text-right px-2">
                         {/* pembelian_pertama */}
@@ -278,13 +278,13 @@ function Nota() {
                           <i
                             className="fa fa-edit cursor-pointer text-green-500"
                             onClick={() => {
-                              handleDetailBayar(item.nota_id);
+                              handleDetailBayar(item.id);
                             }}
                           ></i>
                           <i
                             className="fa fa-trash cursor-pointer text-red-500"
                             onClick={() => {
-                              handleDelete(item.nota_id);
+                              handleDelete(item.id);
                             }}
                           ></i>
                         </div>
@@ -292,7 +292,7 @@ function Nota() {
                     </tr>
                     {notaDataExceptFirst &&
                       notaDataExceptFirst.map((value, index) => {
-                        const pembelian = value.suplier.pembelian;
+                        const pembelian = value.pembelian.pembelian_data;
                         jlh_pembelian = 0;
                         return (
                           <tr
@@ -301,10 +301,10 @@ function Nota() {
                             }`}
                           >
                             <td className="border border-black px-2">
-                              {value.suplier.suplier_nama}
+                              {value.pembelian.suplier.suplier_nama}
                             </td>
                             <td className="border border-black text-center">
-                              {FormatTanggal(value.suplier.suplier_tgl)}
+                              {FormatTanggal(value.pembelian.pembelian_tgl)}
                             </td>
                             <td className="border border-black text-right px-2">
                               {pembelian.map((pem, inpem) => {

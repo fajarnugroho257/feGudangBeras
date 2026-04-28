@@ -556,8 +556,9 @@ function ModalNota({ isOpen, nota_id, isClose }) {
             <tbody key="t-body-pembelian">
               {datasPembelian &&
                 datasPembelian.map((nota_data, index) => {
-                  let pembeli = nota_data.suplier.pembelian[0];
-                  let pembeli_2 = nota_data.suplier.pembelian;
+                  console.log(nota_data)
+                  let pembeli = nota_data.pembelian.pembelian_data[0];
+                  let pembeli_2 = nota_data.pembelian.pembelian_data;
                   let ttlpem = pembeli_2.length;
                   let resGrandTotal = 0;
                   ttlpembelian_1 += parseInt(pembeli["pembelian_total"]);
@@ -580,13 +581,13 @@ function ModalNota({ isOpen, nota_id, isClose }) {
                           className="border border-black text-center"
                           rowSpan={ttlpem}
                         >
-                          {nota_data.suplier.suplier_nama}
+                          {nota_data.pembelian.suplier_id}
                         </td>
                         <td
                           className="border border-black text-center py-1 px-2"
                           rowSpan={ttlpem}
                         >
-                          {FormatTanggal(nota_data.suplier.suplier_tgl)}
+                          {FormatTanggal(nota_data.pembelian.suplier_id)}
                         </td>
                         <td className="border border-black text-center py-1 px-2">
                           {pembeli["pembelian_nama"]}
@@ -610,7 +611,7 @@ function ModalNota({ isOpen, nota_id, isClose }) {
                           rowSpan={ttlpem}
                           className="border border-black text-right py-1 px-2"
                         >
-                          {nota_data.suplier.pembelian.map((grTtl) => {
+                          {nota_data.pembelian.pembelian_data.map((grTtl) => {
                             resGrandTotal += parseInt(grTtl.pembelian_total);
                           })}
                           {RupiahFormat(resGrandTotal)}
