@@ -521,13 +521,13 @@ function TambahKaryawan() {
               <h2 className="text-xl font-bold text-gray-800">Daftar Karyawan</h2>
               <p className="text-xs text-gray-500 mt-1">Manajemen data dan gaji karyawan operasional</p>
             </div>
-            <button
+            {/* <button
               className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
               type="button"
               onClick={() => handleModalAdd()}
             >
               <i className="fa fa-plus text-xs"></i> Tambah Karyawan
-            </button>
+            </button> */}
           </div>
 
           {/* VIEW MOBILE: CARD LAYOUT (Tampil < 768px)  */}
@@ -549,13 +549,13 @@ function TambahKaryawan() {
                     >
                       <i className="fa fa-credit-card text-xs"></i>
                     </button>
-                    <button 
+                    {/* <button 
                       onClick={() => handleEdit(item.id)}
                       className="w-8 h-8 flex justify-center items-center rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-100 transition-colors"
                       title="Edit Karyawan"
                     >
                       <i className="fa fa-pen text-xs"></i>
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               ))
@@ -598,13 +598,13 @@ function TambahKaryawan() {
                               >
                                 <i className="fa fa-credit-card text-sm"></i>
                               </button>
-                              <button 
+                              {/* <button 
                                 onClick={() => handleEdit(item.id)}
                                 className="w-8 h-8 flex justify-center items-center rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-100 transition-colors"
                                 title="Edit"
                               >
                                 <i className="fa fa-pen text-sm"></i>
-                              </button>
+                              </button> */}
                             </div>
                           </td>
                         </tr>

@@ -2,7 +2,8 @@ import axios from "axios";
 
 // Instance Axios
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/api", // Ganti dengan URL backend Anda
+  // baseURL: "http://127.0.0.1:8000/api", // Ganti dengan URL backend Anda
+  baseURL: "/api", // Ganti dengan URL backend Anda
   // baseURL: "/api", // Untuk proxy di development
 });
 

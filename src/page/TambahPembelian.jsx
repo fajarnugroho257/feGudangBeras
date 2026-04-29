@@ -662,7 +662,8 @@ function TambahPembelian() {
                         <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block text-center">Kotor</label>
                         <input
                           type="number"
-                          min={1}
+                          min={0}
+                          step={'any'}
                           className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-gray-700 outline-none focus:border-teal-400"
                           name="pembelian_kotor"
                           value={field.pembelian_kotor}
@@ -675,6 +676,7 @@ function TambahPembelian() {
                         <input
                           type="number"
                           min={0}
+                          step={'any'}
                           className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-red-600 font-medium outline-none focus:border-red-400"
                           name="pembelian_potongan"
                           value={field.pembelian_potongan}
@@ -856,7 +858,8 @@ function TambahPembelian() {
                           <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="number"
-                              min={1}
+                              min={0}
+                              step={'any'}
                               className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
                               name="pembelian_kotor"
                               value={field.pembelian_kotor}
@@ -870,6 +873,7 @@ function TambahPembelian() {
                             <input
                               type="number"
                               min={0}
+                              step={'any'}
                               className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-center text-red-600 font-medium focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all"
                               name="pembelian_potongan"
                               value={field.pembelian_potongan}

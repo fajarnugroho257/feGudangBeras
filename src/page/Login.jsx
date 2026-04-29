@@ -17,7 +17,8 @@ function Login() {
       username: usermail,
       password: password,
     };
-    const endPoint = "http://127.0.0.1:8000/api/login-api";
+    // const endPoint = "http://127.0.0.1:8000/api/login-api";
+    const endPoint = "/api/login-api";
     // login
     try {
       const response = await fetch(endPoint, {
@@ -40,7 +41,7 @@ function Login() {
   };
 
   return (
-    <div className="bg-white w-full overflow-hidden flex flex-col md:flex-row min-h-[600px] h-full">
+    <div className="bg-white w-full overflow-hidden flex flex-col md:flex-row min-h-screen">
       <div className="w-full md:w-1/2 p-8 lg:p-16 flex flex-col justify-center">
         <div className="flex items-center gap-2 mb-8">
           <svg
