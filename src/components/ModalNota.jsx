@@ -113,7 +113,7 @@ function ModalNota({ isOpen, nota_id, isClose }) {
   };
   const handleDelete = async (id) => {
     const isConfirmed = window.confirm(
-      "Apakah Anda yakin ingin menghapus data ini?"
+      "Apakah Anda yakin ingin menghapus data ini?",
     );
     if (isConfirmed) {
       try {
@@ -244,13 +244,13 @@ function ModalNota({ isOpen, nota_id, isClose }) {
   const handleLunas = async (nota_st) => {
     // alert(nota_id);
     const isConfirmed = window.confirm(
-      "Apakah Anda yakin akan merubah status pelunasan ?"
+      "Apakah Anda yakin akan merubah status pelunasan ?",
     );
     if (isConfirmed) {
       try {
         setSaveBayar(false);
         let params = {
-          nota_id: nota_id,
+          id: nota_id,
           nota_st: nota_st,
         };
         const response = await api.post("/update-bayar-nota", params, {
@@ -295,7 +295,7 @@ function ModalNota({ isOpen, nota_id, isClose }) {
       const grandTotal = items.reduce((grandSum, item) => {
         const supplierTotal = item.suplier.pembelian.reduce(
           (sum, pembelian) => sum + parseInt(pembelian.pembelian_total, 10),
-          0
+          0,
         );
         return grandSum + supplierTotal;
       }, 0);
@@ -325,7 +325,7 @@ function ModalNota({ isOpen, nota_id, isClose }) {
               item.suplier.suplier_nama,
               FormatTanggal(item.suplier.suplier_tgl),
             ],
-            [10, 15]
+            [10, 15],
           );
           // Format pembelian untuk setiap suplier
           const pembelianRows = item.suplier.pembelian.map((item2) =>
@@ -336,8 +336,8 @@ function ModalNota({ isOpen, nota_id, isClose }) {
                 formatRupiah(parseInt(item2.pembelian_harga)),
                 formatRupiah(parseInt(item2.pembelian_total)),
               ],
-              columnWidths
-            )
+              columnWidths,
+            ),
           );
           // Gabungkan header dengan detail pembelian
           return [headerRow, ...pembelianRows];
@@ -352,7 +352,7 @@ function ModalNota({ isOpen, nota_id, isClose }) {
       const columnWidths_2 = [15, 15, 17];
       const rows_2 = formatRow(
         [formatRupiah(parseInt(grandTotal)), ""],
-        columnWidths_2
+        columnWidths_2,
       );
       let ttl_pembayaran = 0;
       const rows_3 = dataBayar
@@ -368,7 +368,7 @@ function ModalNota({ isOpen, nota_id, isClose }) {
               formatRupiah(parseInt(val.bayar_value)),
               formatDate(val.updated_at),
             ],
-            columnWidths_2
+            columnWidths_2,
           );
         })
         .join("\n");
@@ -403,10 +403,10 @@ function ModalNota({ isOpen, nota_id, isClose }) {
 
       const server = await device.gatt.connect();
       const service = await server.getPrimaryService(
-        "000018f0-0000-1000-8000-00805f9b34fb"
+        "000018f0-0000-1000-8000-00805f9b34fb",
       );
       const characteristic = await service.getCharacteristic(
-        "00002af1-0000-1000-8000-00805f9b34fb"
+        "00002af1-0000-1000-8000-00805f9b34fb",
       );
 
       // Kirim data ke printer
@@ -556,7 +556,7 @@ function ModalNota({ isOpen, nota_id, isClose }) {
             <tbody key="t-body-pembelian">
               {datasPembelian &&
                 datasPembelian.map((nota_data, index) => {
-                  console.log(nota_data)
+                  console.log(nota_data);
                   let pembeli = nota_data.pembelian.pembelian_data[0];
                   let pembeli_2 = nota_data.pembelian.pembelian_data;
                   let ttlpem = pembeli_2.length;
@@ -581,16 +581,16 @@ function ModalNota({ isOpen, nota_id, isClose }) {
                           className="border border-black text-center"
                           rowSpan={ttlpem}
                         >
-                          {nota_data.pembelian.suplier_id}
+                          {nota_data.pembelian.suplier.suplier_nama}
                         </td>
                         <td
                           className="border border-black text-center py-1 px-2"
                           rowSpan={ttlpem}
                         >
-                          {FormatTanggal(nota_data.pembelian.suplier_id)}
+                          {FormatTanggal(nota_data.pembelian.pembelian_tgl)}
                         </td>
                         <td className="border border-black text-center py-1 px-2">
-                          {pembeli["pembelian_nama"]}
+                          {pembeli["barang"]["nama"]}
                         </td>
                         <td className="border border-black text-center py-1 px-2">
                           {pembeli["pembelian_kotor"]}
@@ -627,7 +627,7 @@ function ModalNota({ isOpen, nota_id, isClose }) {
                             }`}
                           >
                             <td className="border border-black text-center py-1 px-2">
-                              {pemb.pembelian_nama}
+                              {pemb.barang.nama}
                             </td>
                             <td className="border border-black text-center py-1 px-2">
                               {pemb.pembelian_kotor}

@@ -13,7 +13,7 @@ function Nota() {
   // TOKEN
   const token = localStorage.getItem("token");
   //
-  let number = 1;
+  let number = 0;
   const handleInputChange = (event) => {
     const name = event.target.name;
     const val = event.target.value;
@@ -213,8 +213,10 @@ function Nota() {
                 const first_nota_data = item.nota_data[0];
                 const notaDataExceptFirst = item.nota_data.slice(1);
                 const length = item.nota_data.length;
-                const pembelian_pertama = first_nota_data.pembelian.pembelian_data;
+                const pembelian_pertama =
+                  first_nota_data.pembelian.pembelian_data;
                 let jlh_pembelian_pertama = 0;
+                number++;
                 return (
                   <>
                     <tr
@@ -315,7 +317,6 @@ function Nota() {
                           </tr>
                         );
                       })}
-                    <p className="hidden">{number++}</p>
                   </>
                 );
               })}
