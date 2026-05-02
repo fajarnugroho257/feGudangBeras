@@ -28,7 +28,7 @@ const menuItems = [
   { name: "Data Pembelian",  url: "/pembelian",         icon: "fa-shopping-bag" },
   { name: "Data Pengiriman", url: "/pengiriman",        icon: "fa-truck" },
   { name: "Stok Gudang",     url: "/stok-gudang",       icon: "fa-warehouse" },
-  { name: "Laporan",         url: "/laporan",           icon: "fa-chart-bar" },
+  // { name: "Laporan",         url: "/laporan",           icon: "fa-chart-bar" },
   { name: "Nota Pembelian",  url: "/nota",              icon: "fa-file-invoice" },
 ];
 

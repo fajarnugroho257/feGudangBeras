@@ -9,9 +9,7 @@ import FormatTanggal from "../utilities/FormatTanggal";
 function ModalNota({ isOpen, nota_id, isClose }) {
   // TOKEN
   const token = localStorage.getItem("token");
-  //
-  //
-  let number = 1;
+  
   const [blur, setBlur] = useState(true);
   let [grandTtlPembelian, setGrandTtlPembelian] = useState("0");
   const [bayarValue, setBayarValue] = useState("");
@@ -26,12 +24,8 @@ function ModalNota({ isOpen, nota_id, isClose }) {
   const handleInputChange = (event) => {
     const name = event.target.name;
     const val = event.target.value;
-    if (name === "bayar_value") {
-      setBayarValue(val);
-    }
-    if (name === "edit_bayar_value") {
-      setBayarEditValue(val);
-    }
+    if (name === "bayar_value") setBayarValue(val);
+    if (name === "edit_bayar_value") setBayarEditValue(val);
   };
 
   const formatDate = (timestamp) => {
@@ -43,750 +37,327 @@ function ModalNota({ isOpen, nota_id, isClose }) {
     }).format(date);
   };
 
-  //
   const fectData = async () => {
     const toastId = toast.loading("Getting data...");
-    const response = await api.get(`/detail-draft-nota/${nota_id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`, // Sisipkan token di header
-      },
-    });
-    if (response.status === 200) {
+    try {
+      const response = await api.get(`/detail-draft-nota/${nota_id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.status === 200) {
+        toast.update(toastId, {
+          render: "Data diperbaharui!",
+          type: "success",
+          isLoading: false,
+          autoClose: 2000,
+        });
+        setGrandTtlPembelian(response.data.ttl_pembelian.pembelian_total);
+        setDataBayar(response.data.data.nota_bayar);
+        setNotaSt(response.data.data.nota_st);
+        setPembelian(response.data.pembelian.nota_data);
+        setBlur(false);
+      }
+    } catch (error) {
       toast.update(toastId, {
-        render: "Data telah diperbaharui !",
-        type: "success",
+        render: "Error getting data!",
+        type: "error",
         isLoading: false,
         autoClose: 3000,
       });
-      setGrandTtlPembelian(response.data.ttl_pembelian.pembelian_total);
-      setDataBayar(response.data.data.nota_bayar);
-      setNotaSt(response.data.data.nota_st);
-      setPembelian(response.data.pembelian.nota_data);
-      // console.log(response.data.pembelian.nota_data);
-      setBlur(false);
-    } else {
-      toast.update(toastId, {
-        render: "Error getting data!" + response.status,
-        type: "error",
-        isLoading: false,
-        autoClose: 5000,
-      });
     }
   };
+
   useEffect(() => {
-    //
-    fectData();
-  }, []);
+    if (isOpen) fectData();
+  }, [isOpen]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (bayarValue === 0 || bayarValue === null) {
-      alert("Nilai harus diisi");
-      return;
-    }
-    // alert(bayarValue);
+    if (!bayarValue) return alert("Nilai harus diisi");
     try {
-      setSaveBayar(false);
-      let params = {
-        bayarValue: bayarValue,
-        notaId: nota_id,
-      };
+      let params = { bayarValue, notaId: nota_id };
       const response = await api.post("/add-bayar-nota", params, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Sisipkan token di header
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      // set null
-      // console.log("Response:", response.status);
       if (response.status === 200) {
         fectData();
         setBayarValue("");
-      } else {
-        alert(response.status);
       }
     } catch (error) {
-      alert(error.response.data.message);
-      console.error("Error updating data:", error);
+      alert(error.response?.data?.message || "Terjadi kesalahan");
     }
   };
+
   const handleDelete = async (id) => {
-    const isConfirmed = window.confirm(
-      "Apakah Anda yakin ingin menghapus data ini?",
-    );
-    if (isConfirmed) {
+    if (window.confirm("Apakah Anda yakin ingin menghapus data ini?")) {
       try {
-        let params = {
-          id: id,
-        };
-        const response = await api.post("/delete-bayar-nota", params, {
-          headers: {
-            Authorization: `Bearer ${token}`, // Sisipkan token di header
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
+        const response = await api.post("/delete-bayar-nota", { id }, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        // set null
-        // console.log("Response:", response.status);
-        if (response.status === 200) {
-          fectData();
-        }
+        if (response.status === 200) fectData();
       } catch (error) {
-        alert(error.response.data.message);
+        alert(error.response?.data?.message);
       }
     }
   };
+
   const handleEdit = async (id) => {
     setBayarId(id);
     try {
-      let params = {
-        id: id,
-      };
-      const response = await api.post("/show-bayar-nota", params, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Sisipkan token di header
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+      const response = await api.post("/show-bayar-nota", { id }, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      // set null
-      // console.log("Response:", response.status);
       if (response.status === 200) {
-        // fectData();
         setBayarEditValue(response.data.data.bayar_value);
         setstEdit(false);
       }
     } catch (error) {
-      alert(error.response.data.message);
+      alert(error.response?.data?.message);
     }
   };
+
   const handleEditSubmit = async (event) => {
     event.preventDefault();
-    if (bayarValue === 0 || bayarValue === null) {
-      alert("Nilai harus diisi");
-      return;
-    }
-    // alert(bayarValue);
     try {
-      setSaveBayar(false);
-      let params = {
-        bayarValue: bayarEditValue,
-        notaId: nota_id,
-        id: bayarId,
-      };
+      let params = { bayarValue: bayarEditValue, notaId: nota_id, id: bayarId };
       const response = await api.post("/edit-proses-bayar-nota", params, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Sisipkan token di header
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      // set null
-      // console.log("Response:", response.status);
       if (response.status === 200) {
         fectData();
-        setBayarId("");
-        setBayarEditValue("");
         setstEdit(true);
-      } else {
-        alert(response.status);
       }
     } catch (error) {
-      alert(error.response.data.message);
-      console.error("Error updating data:", error);
+      alert(error.response?.data?.message);
     }
-  };
-  const renderRow = (key, val, temp_sisa, number) => {
-    return (
-      <>
-        <tr
-          key={key + val}
-          className={`${number % 2 === 0 ? "bg-gray-50" : "bg-gray-200"}`}
-        >
-          <td className="border border-black text-center">
-            {/* {RupiahFormat(grandTtlPembelian)} */}
-          </td>
-          <td className="border border-black text-center">
-            {RupiahFormat(val.bayar_value)}
-          </td>
-          <td className="border border-black text-center">
-            {formatDate(val.updated_at)}
-          </td>
-          <td className="border border-black text-center">
-            <div className="flex gap-2 justify-center">
-              <i
-                onClick={() => handleEdit(val.id)}
-                className="fa fa-pen text-green-500 cursor-pointer"
-              ></i>
-              <i
-                onClick={() => handleDelete(val.id)}
-                className="fa fa-trash text-red-500 cursor-pointer"
-              ></i>
-            </div>
-          </td>
-        </tr>
-        <tr
-          key={key}
-          className={`${number % 2 === 0 ? "bg-gray-50" : "bg-gray-200"}`}
-        >
-          <td className="border border-black text-center">
-            {RupiahFormat(temp_sisa)}
-          </td>
-          <td className="border border-black text-center"></td>
-          <td className="border border-black text-center"></td>
-          <td className="border border-black text-center"></td>
-        </tr>
-      </>
-    );
   };
 
   const handleLunas = async (nota_st) => {
-    // alert(nota_id);
-    const isConfirmed = window.confirm(
-      "Apakah Anda yakin akan merubah status pelunasan ?",
-    );
-    if (isConfirmed) {
+    if (window.confirm("Apakah Anda yakin akan merubah status pelunasan?")) {
       try {
-        setSaveBayar(false);
-        let params = {
-          id: nota_id,
-          nota_st: nota_st,
-        };
-        const response = await api.post("/update-bayar-nota", params, {
-          headers: {
-            Authorization: `Bearer ${token}`, // Sisipkan token di header
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
+        const response = await api.post("/update-bayar-nota", { id: nota_id, nota_st }, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        // set null
-        if (response.status === 200) {
-          isClose();
-        } else {
-          alert(response.status);
-        }
+        if (response.status === 200) isClose();
       } catch (error) {
-        alert(error.response.data.message);
-        console.error("Error updating data:", error);
+        alert(error.response?.data?.message);
       }
     }
   };
-  let ttl_harga = 0;
-  let ttl_total = 0;
-  let no = 0;
-  let ttlPembelian = 0;
-  let ttlpembelian_1 = 0;
 
-  // PRINT
-  const handlePrint = async () => {
-    try {
-      // ESC/POS Commands
-      const ESC = "\x1B";
-      const fontSmall = `${ESC}!\x01`; // Ukuran font kecil
-      const fontNormal = `${ESC}!\x00`; // Ukuran font normal
-
-      // Data nota
-      // const supplier = dataSuplier.suplier_nama;
-      // const tanggal = FormatTanggal(dataSuplier.suplier_tgl);
-      const items = datasPembelian;
-      // console.log(items);
-      const currentDateTime = getCurrentDateTime(); // Ambil tanggal dan jam sekarang
-      const grandTotal = items.reduce((grandSum, item) => {
-        const supplierTotal = item.suplier.pembelian.reduce(
-          (sum, pembelian) => sum + parseInt(pembelian.pembelian_total, 10),
-          0,
-        );
-        return grandSum + supplierTotal;
-      }, 0);
-      // console.log(grandTotal);
-      // Format kolom
-      const columnWidths = [6, 9, 16, 16]; // Lebar kolom untuk nama, tonase, dan harga
-
-      // Format header
-      const header =
-        `${fontSmall}` + // Atur font kecil
-        "Putra Cabe\n-------------------------------------------\n" +
-        // `Supplier    : ${supplier}\n` +
-        // `Tanggal     : ${tanggal}\n` +
-        `Nota Cetak  : ${currentDateTime[0]}\n` + // Tambahkan tanggal dan jam sekarang
-        `Nota Jam    : ${currentDateTime[1]}\n\n`; // Tambahkan tanggal dan jam sekarang
-      // formatRow(["Brg", "Ton", "Harga", "Total"], columnWidths) +
-      // "\n" +
-      // "-------------------------------\n";
-
-      // console.log(item.suplier.suplier_tgl)
-      // Format isi tabel
-      const rows = items
-        .flatMap((item) => {
-          const headerRow = formatRow(
-            [
-              "-------------------------------------------\n",
-              item.suplier.suplier_nama,
-              FormatTanggal(item.suplier.suplier_tgl),
-            ],
-            [10, 15],
-          );
-          // Format pembelian untuk setiap suplier
-          const pembelianRows = item.suplier.pembelian.map((item2) =>
-            formatRow(
-              [
-                item2.pembelian_nama,
-                item2.pembelian_kotor + "|" + item2.pembelian_bersih,
-                formatRupiah(parseInt(item2.pembelian_harga)),
-                formatRupiah(parseInt(item2.pembelian_total)),
-              ],
-              columnWidths,
-            ),
-          );
-          // Gabungkan header dengan detail pembelian
-          return [headerRow, ...pembelianRows];
-        })
-        .join("\n");
-
-      // Format footer
-      const footer =
-        "-------------------------------------------\n" +
-        formatRow(["Grand Total", formatRupiah(grandTotal)], [33, 16]) +
-        "\n-------------------------------------------\n\n";
-      const columnWidths_2 = [15, 15, 17];
-      const rows_2 = formatRow(
-        [formatRupiah(parseInt(grandTotal)), ""],
-        columnWidths_2,
-      );
-      let ttl_pembayaran = 0;
-      const rows_3 = dataBayar
-        .map((val) => {
-          // console.log(grandTotal);
-          ttl_pembayaran += parseInt(val.bayar_value);
-          let temp_sisa = parseInt(grandTotal) - ttl_pembayaran;
-          // grandTtlPembelian = temp_sisa;
-          number++;
-          return formatRow(
-            [
-              formatRupiah(temp_sisa),
-              formatRupiah(parseInt(val.bayar_value)),
-              formatDate(val.updated_at),
-            ],
-            columnWidths_2,
-          );
-        })
-        .join("\n");
-      // Gabungkan semuanya
-      // const nota = header + rows + "\n" + footer;
-      const nota =
-        `${fontSmall}` +
-        header +
-        rows +
-        "\n" +
-        footer +
-        formatRow(["Pembayaran"], [30]) +
-        "\n-------------------------------------------" +
-        "\n" +
-        rows_2 +
-        "\n" +
-        rows_3 +
-        `${fontSmall}`; // Kembalikan ke font normal jika perlu
-
-      // console.log(nota); // Debug: lihat output di konsol
-
-      // Kirim ke printer thermal
-      const printData = new TextEncoder().encode(nota);
-
-      // Hubungkan ke perangkat Bluetooth
-      const device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: ["000018f0-0000-1000-8000-00805f9b34fb"],
-      });
-
-      console.log("Perangkat ditemukan:", device.name);
-
-      const server = await device.gatt.connect();
-      const service = await server.getPrimaryService(
-        "000018f0-0000-1000-8000-00805f9b34fb",
-      );
-      const characteristic = await service.getCharacteristic(
-        "00002af1-0000-1000-8000-00805f9b34fb",
-      );
-
-      // Kirim data ke printer
-      // await characteristic.writeValue(printData);
-      // mambagi dua
-      function chunkArrayBuffer(buffer, chunkSize) {
-        let chunks = [];
-        for (let i = 0; i < buffer.byteLength; i += chunkSize) {
-          chunks.push(buffer.slice(i, i + chunkSize));
-        }
-        return chunks;
-      }
-
-      async function sendDataInChunks(characteristic, data) {
-        const chunkSize = 512; // Batas maksimum byte
-        const chunks = chunkArrayBuffer(data, chunkSize);
-
-        for (const chunk of chunks) {
-          await characteristic.writeValue(chunk);
-          // Tunggu sedikit waktu jika perangkat memerlukan jeda
-          await new Promise((resolve) => setTimeout(resolve, 50));
-        }
-      }
-      // end membagi dua
-      await sendDataInChunks(characteristic, printData);
-
-      console.log("Nota berhasil dicetak.");
-    } catch (error) {
-      console.error("Gagal mencetak nota:", error);
-    }
-    // console.log(response);
-  };
-
-  function getCurrentDateTime() {
-    const now = new Date();
-    const options = {
-      weekday: "long",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    };
-    const tanggal = now.toLocaleDateString("id-ID", options); // Format: "Kamis, 16 November 2024"
-    const jam = now.toLocaleTimeString("id-ID"); // Format: "13:45:30" atau sesuai lokal
-    // return `${tanggal} ${jam}`;
-    return [tanggal, jam];
-  }
-
-  // Fungsi untuk memformat baris teks
-  function formatRow(columns, columnWidths) {
-    return columns
-      .map((col, index) => {
-        const width = columnWidths[index];
-        return col.toString().padEnd(width, " "); // Tambahkan spasi untuk alignment
-      })
-      .join(" ");
-  }
-
-  // Fungsi untuk memformat angka ke rupiah
-  function formatRupiah(angka) {
-    return `Rp${angka.toLocaleString("id-ID")}`;
-  }
-  // END PRINT
-  // START IMAGE
   const downloadImage = async () => {
-    // alert(suplier_id);
-
-    const toastId = toast.loading("Sending data...");
+    const toastId = toast.loading("Preparing image...");
     try {
       const response = await api.get(`/nota-cetak-image/${nota_id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Sisipkan token di header
-        },
-        responseType: "blob", // penting untuk men-download file
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
       });
-      // console.log(response.data);
-      // Membuat URL untuk file yang didownload
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      // alert(url);
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "Nota" + nota_id + ".png"); // Nama file untuk diunduh
+      link.setAttribute("download", `Nota_${nota_id}.png`);
       document.body.appendChild(link);
-      link.click(); // Memicu download
-      document.body.removeChild(link); // Menghapus link setelah download
-
-      // set null
-      // console.log("Response:", response.status);
-      if (response.status === 200) {
-        //
-        toast.update(toastId, {
-          render: "Download successfully!",
-          type: "success",
-          isLoading: false,
-          autoClose: 3000,
-        });
-      } else {
-        toast.update(toastId, {
-          render: "Error Download!" + response.status,
-          type: "error",
-          isLoading: false,
-          autoClose: 5000,
-        });
-      }
+      link.click();
+      document.body.removeChild(link);
+      toast.update(toastId, { render: "Success!", type: "success", isLoading: false, autoClose: 2000 });
     } catch (error) {
-      toast.update(toastId, {
-        render: "Error Download! " + error.message,
-        type: "error",
-        isLoading: false,
-        autoClose: 5000,
-      });
-      console.error("Error downloading the file:", error);
+      toast.dismiss();
     }
   };
-  // END IMAGE
+
   if (!isOpen) return null;
-  // console.log(datasPengiriman);
+
+  let no = 0;
+  let totalBeliFix = 0;
+  let runningSisaHutang = grandTtlPembelian;
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="absolute inset-0 bg-gray-900 opacity-50"></div>
-      <div className="bg-white w-[90%] md:w-[85%] md:h-[85%] h-[90%] p-6 rounded-lg shadow-lg relative z-10">
-        <div className="w-full h-[10%]">
-          <h2 className="text-xl font-semibold mb-2 text-colorBlue font-poppins">
-            Bayar / Nitip Pembelian
-          </h2>
-          <div className="h-[2px] w-full bg-colorBlue mb-4"></div>
+    <div className="fixed inset-0 flex items-center justify-center z-[9999] p-4 font-poppins">
+      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={isClose}></div>
+      
+      <div className="bg-white w-full max-w-7xl h-full max-h-[95vh] rounded-2xl shadow-2xl relative z-10 flex flex-col overflow-hidden">
+        
+        {/* Header */}
+        <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-white">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600">
+              <i className="fa fa-file-invoice-dollar text-lg"></i>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-800">Detail Nota & Pembayaran</h2>
+              <p className="text-xs text-gray-500">Nota ID: #ORD{nota_id}</p>
+            </div>
+          </div>
+          <button onClick={isClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+            <i className="fa fa-times text-xl"></i>
+          </button>
         </div>
-        <div className="w-full h-[80%] overflow-auto">
-          <table
-            className={`border font-poppins bg-colorBlue text-gray-700 text-xs md:text-sm w-full ${
-              blur ? "blur-sm" : "blur-none"
-            }`}
-          >
-            <thead>
-              <tr className="text-center h-14 text-white" key="head-pembelian">
-                <th className="border border-black w-[5%]">No</th>
-                <th className="border border-black w-[12%]">Suplier</th>
-                <th className="border border-black w-[13%]">Tanggal</th>
-                <th className="border border-black w-[15%]">Nama Barang</th>
-                <th className="border border-black w-[10%]">Tonase Kotor</th>
-                <th className="border border-black w-[5%]">Potongan</th>
-                <th className="border border-black w-[10%]">Tonase Bersih</th>
-                <th className="border border-black w-[10%]">Harga</th>
-                <th className="border border-black w-[10%]">Total</th>
-                <th className="border border-black w-[10%]">Grand Total</th>
-              </tr>
-            </thead>
-            <tbody key="t-body-pembelian">
-              {datasPembelian &&
-                datasPembelian.map((nota_data, index) => {
-                  console.log(nota_data);
-                  let pembeli = nota_data.pembelian.pembelian_data[0];
-                  let pembeli_2 = nota_data.pembelian.pembelian_data;
-                  let ttlpem = pembeli_2.length;
-                  let resGrandTotal = 0;
-                  ttlpembelian_1 += parseInt(pembeli["pembelian_total"]);
-                  no++;
-                  return (
-                    <>
-                      <tr
-                        key={nota_data.id}
-                        className={`${
-                          no % 2 === 0 ? "bg-gray-50" : "bg-gray-300"
-                        }`}
-                      >
-                        <td
-                          className="border border-black text-center"
-                          rowSpan={ttlpem}
-                        >
-                          {no}
-                        </td>
-                        <td
-                          className="border border-black text-center"
-                          rowSpan={ttlpem}
-                        >
-                          {nota_data.pembelian.suplier.suplier_nama}
-                        </td>
-                        <td
-                          className="border border-black text-center py-1 px-2"
-                          rowSpan={ttlpem}
-                        >
-                          {FormatTanggal(nota_data.pembelian.pembelian_tgl)}
-                        </td>
-                        <td className="border border-black text-center py-1 px-2">
-                          {pembeli["barang"]["nama"]}
-                        </td>
-                        <td className="border border-black text-center py-1 px-2">
-                          {pembeli["pembelian_kotor"]}
-                        </td>
-                        <td className="border border-black text-center py-1 px-2">
-                          {pembeli["pembelian_potongan"]}
-                        </td>
-                        <td className="border border-black text-center py-1 px-2">
-                          {pembeli["pembelian_bersih"]}
-                        </td>
-                        <td className="border border-black text-right py-1 px-2">
-                          {RupiahFormat(pembeli["pembelian_harga"])}
-                        </td>
-                        <td className="border border-black text-right py-1 px-2">
-                          {RupiahFormat(pembeli["pembelian_total"])}
-                        </td>
-                        <td
-                          rowSpan={ttlpem}
-                          className="border border-black text-right py-1 px-2"
-                        >
-                          {nota_data.pembelian.pembelian_data.map((grTtl) => {
-                            resGrandTotal += parseInt(grTtl.pembelian_total);
-                          })}
-                          {RupiahFormat(resGrandTotal)}
-                        </td>
-                      </tr>
-                      {pembeli_2.slice(1).map((pemb, inxpem) => {
-                        ttlPembelian += parseInt(pemb.pembelian_total);
-                        return (
-                          <tr
-                            key={nota_data.nota_id}
-                            className={`${
-                              no % 2 === 0 ? "bg-gray-50" : "bg-gray-300"
-                            }`}
-                          >
-                            <td className="border border-black text-center py-1 px-2">
-                              {pemb.barang.nama}
-                            </td>
-                            <td className="border border-black text-center py-1 px-2">
-                              {pemb.pembelian_kotor}
-                            </td>
-                            <td className="border border-black text-center py-1 px-2">
-                              {pemb.pembelian_potongan}
-                            </td>
-                            <td className="border border-black text-center py-1 px-2">
-                              {pemb.pembelian_bersih}
-                            </td>
-                            <td className="border border-black text-right py-1 px-2">
-                              {RupiahFormat(pemb.pembelian_harga)}
-                            </td>
-                            <td className="border border-black text-right py-1 px-2">
-                              {RupiahFormat(pemb.pembelian_total)}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </>
-                  );
-                })}
-              <tr>
-                <td
-                  colSpan="9"
-                  className="border border-black text-right py-1 px-2"
-                >
-                  TOTAL
-                </td>
-                <td className="border border-black text-right py-1 px-2">
-                  {RupiahFormat(ttlPembelian + ttlpembelian_1)}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="xl:grid xl:grid-cols-2 gap-3">
-            <div className="my-2 flex justify-between">
-              <div className="text-xs">
+
+        {/* Content Body */}
+        <div className="flex-1 overflow-y-auto p-5 md:p-8 bg-gray-50/30">
+          
+          {/* Section 1: Tabel Barang */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-8">
+            <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+              <h3 className="text-sm font-bold text-gray-700 uppercase">Daftar Barang Pembelian</h3>
+              <div className="flex gap-2">
                 {notaSt === "no" ? (
-                  <button
-                    onClick={() => handleLunas("yes")}
-                    className="bg-green-500 text-white font-poppins py-1 px-2 rounded-sm"
-                  >
-                    <i className="fa fa-check"></i> Lunas
+                  <button onClick={() => handleLunas("yes")} className="px-3 py-1.5 bg-green-50 text-green-600 border border-green-200 rounded-lg text-xs font-bold hover:bg-green-100">
+                    <i className="fa fa-check mr-1"></i> Set Lunas
                   </button>
                 ) : (
-                  <button
-                    onClick={() => handleLunas("no")}
-                    className="bg-red-500 text-white font-poppins py-1 px-2 rounded-sm"
-                  >
-                    <i className="fa fa-times"></i> Batalkan Pelunasan
+                  <button onClick={() => handleLunas("no")} className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg text-xs font-bold hover:bg-red-100">
+                    <i className="fa fa-times mr-1"></i> Batal Lunas
                   </button>
                 )}
-              </div>
-              <div className="text-xs">
-                {/* <button
-                  onClick={handlePrint}
-                  className="bg-yellow-500 text-white font-poppins py-1 px-2 rounded-sm"
-                >
-                  <i className="fa fa-print"></i> Cetak
-                </button> */}
-                <button
-                  onClick={downloadImage}
-                  className="bg-yellow-500 text-white font-poppins py-1 px-2 rounded-sm"
-                >
-                  <i className="fa fa-image"></i> Cetak
+                <button onClick={downloadImage} className="px-3 py-1.5 bg-teal-50 text-teal-600 border border-teal-200 rounded-lg text-xs font-bold hover:bg-teal-100">
+                  <i className="fa fa-image mr-1"></i> Cetak Gambar
                 </button>
               </div>
             </div>
-            <div></div>
-            <table
-              className={`border font-poppins bg-colorBlue text-gray-700 text-xs md:text-sm  w-full  ${
-                blur ? "blur-sm" : "blur-none"
-              }`}
-            >
-              <thead>
-                <tr key="table3" className="text-center h-14 text-white">
-                  <th className="border border-black w-[30%]">Sisa Hutang</th>
-                  <th className="border border-black w-[30%]">Bayar / Cicil</th>
-                  <th className="border border-black w-[25%]">Update</th>
-                  <th className="border border-black w-[15%]">Aksi</th>
-                </tr>
-                <tr
-                  className={`${
-                    number % 2 === 0 ? "bg-gray-50" : "bg-gray-200"
-                  }`}
-                >
-                  <td className="border border-black text-center">
-                    {RupiahFormat(grandTtlPembelian)}
-                  </td>
-                  <td className="border border-black text-center"></td>
-                  <td className="border border-black text-center"></td>
-                  <td className="border border-black text-center"></td>
-                </tr>
-                {dataBayar &&
-                  dataBayar.map((val, key) => {
-                    let temp_sisa = grandTtlPembelian - val.bayar_value;
-                    grandTtlPembelian = temp_sisa;
-                    number++;
-                    return renderRow(key, val, temp_sisa, number);
+            
+            <div className="overflow-x-auto">
+              <table className={`w-full text-left border-collapse ${blur ? "blur-sm" : ""}`}>
+                <thead>
+                  <tr className="bg-gray-50 text-[11px] font-bold text-gray-500 uppercase">
+                    <th className="py-3 px-4 border-r w-12 text-center">No</th>
+                    <th className="py-3 px-4 border-r">Supplier</th>
+                    <th className="py-3 px-4 border-r text-center">Tanggal</th>
+                    <th className="py-3 px-4 border-r">Barang</th>
+                    <th className="py-3 px-4 border-r text-center">Kotor</th>
+                    <th className="py-3 px-4 border-r text-center">Bersih</th>
+                    <th className="py-3 px-4 border-r text-right">Harga</th>
+                    <th className="py-3 px-4 text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-sm">
+                  {datasPembelian && datasPembelian.map((nota_data) => {
+                    const pembeliArr = nota_data.pembelian.pembelian_data;
+                    const rowSpan = pembeliArr.length;
+                    no++;
+                    return (
+                      <React.Fragment key={nota_data.id}>
+                        <tr className="hover:bg-gray-50/50">
+                          <td className="py-3 px-4 text-center font-medium border-r" rowSpan={rowSpan}>{no}</td>
+                          <td className="py-3 px-4 font-bold text-gray-800 border-r uppercase" rowSpan={rowSpan}>
+                            {nota_data.pembelian.suplier.suplier_nama}
+                          </td>
+                          <td className="py-3 px-4 text-center border-r" rowSpan={rowSpan}>
+                            {FormatTanggal(nota_data.pembelian.pembelian_tgl)}
+                          </td>
+                          <td className="py-3 px-4 border-r">{pembeliArr[0].barang.nama}</td>
+                          <td className="py-3 px-4 text-center border-r">{pembeliArr[0].pembelian_kotor}</td>
+                          <td className="py-3 px-4 text-center border-r font-bold text-green-600">{pembeliArr[0].pembelian_bersih}</td>
+                          <td className="py-3 px-4 text-right border-r">{RupiahFormat(pembeliArr[0].pembelian_harga)}</td>
+                          <td className="py-3 px-4 text-right font-bold">{RupiahFormat(pembeliArr[0].pembelian_total)}</td>
+                          <div className="hidden">{totalBeliFix += parseInt(pembeliArr[0].pembelian_total)}</div>
+                        </tr>
+                        {pembeliArr.slice(1).map((pemb, idx) => {
+                          totalBeliFix += parseInt(pemb.pembelian_total);
+                          return (
+                            <tr key={idx} className="hover:bg-gray-50/50">
+                              <td className="py-3 px-4 border-r">{pemb.barang.nama}</td>
+                              <td className="py-3 px-4 text-center border-r">{pemb.pembelian_kotor}</td>
+                              <td className="py-3 px-4 text-center border-r font-bold text-green-600">{pemb.pembelian_bersih}</td>
+                              <td className="py-3 px-4 text-right border-r">{RupiahFormat(pemb.pembelian_harga)}</td>
+                              <td className="py-3 px-4 text-right font-bold">{RupiahFormat(pemb.pembelian_total)}</td>
+                            </tr>
+                          );
+                        })}
+                      </React.Fragment>
+                    );
                   })}
-              </thead>
-            </table>
-            <div className="">
-              <div className="">
-                <h2 className="font-poppins">Bayar / Cicil</h2>
-                <form onSubmit={handleSubmit}>
-                  <div className="flex font-poppins gap-4 mt-1 items-center">
-                    {/* <label>Bayar</label> */}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-teal-50/50 font-bold text-teal-800 border-t-2 border-teal-100">
+                    <td colSpan="7" className="py-3 px-4 text-right">TOTAL NOTA</td>
+                    <td className="py-3 px-4 text-right text-lg">{RupiahFormat(totalBeliFix)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          {/* Section 2: Cicilan & Bayar */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="p-4 border-b bg-gray-50/50 text-sm font-bold text-gray-700">RIWAYAT CICILAN</div>
+              <table className="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr className="bg-gray-50 text-[10px] font-bold text-gray-400 uppercase border-b">
+                    <th className="py-3 px-4 text-center">Sisa</th>
+                    <th className="py-3 px-4 text-center">Bayar</th>
+                    <th className="py-3 px-4 text-center">Waktu</th>
+                    <th className="py-3 px-4 text-center w-20">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  <tr className="bg-gray-50/50 font-bold">
+                    <td className="py-3 px-4 text-center text-teal-700">{RupiahFormat(grandTtlPembelian)}</td>
+                    <td className="py-3 px-4 text-center text-gray-400 italic">Mulai</td>
+                    <td colSpan="2"></td>
+                  </tr>
+                  {dataBayar && dataBayar.map((val, key) => {
+                    runningSisaHutang -= val.bayar_value;
+                    return (
+                      <tr key={key} className="hover:bg-gray-50/50">
+                        <td className="py-3 px-4 text-center font-bold text-red-500">{RupiahFormat(runningSisaHutang)}</td>
+                        <td className="py-3 px-4 text-center font-bold text-green-600">{RupiahFormat(val.bayar_value)}</td>
+                        <td className="py-3 px-4 text-center text-[10px] text-gray-500">{formatDate(val.updated_at)}</td>
+                        <td className="py-3 px-4 text-center">
+                          <div className="flex gap-1 justify-center">
+                            <button onClick={() => handleEdit(val.id)} className="p-1.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100"><i className="fa fa-pen text-xs"></i></button>
+                            <button onClick={() => handleDelete(val.id)} className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100"><i className="fa fa-trash text-xs"></i></button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                <h4 className="text-sm font-bold text-gray-700 uppercase mb-4 tracking-widest">Tambah Pembayaran</h4>
+                <form onSubmit={handleSubmit} className="flex gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">Rp</span>
                     <input
-                      className="border border-black px-2 py-1 w-32 md:w-full"
+                      className="w-full pl-9 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-100 outline-none transition-all"
                       name="bayar_value"
                       required
+                      placeholder="0"
                       value={bayarValue}
                       type="number"
-                      onChange={(event) => handleInputChange(event)}
-                    ></input>
-                    <button
-                      type="submit"
-                      className="bg-blue-400 py-1 px-2 text-white rounded-sm"
-                    >
-                      Simpan
-                    </button>
+                      onChange={handleInputChange}
+                    />
                   </div>
+                  <button type="submit" className="px-6 py-2 bg-teal-600 text-white rounded-lg text-sm font-bold hover:bg-teal-700">Simpan</button>
                 </form>
               </div>
-              <div className={`${stEdit ? "hidden" : "block"} mt-5 `}>
-                <h2 className="font-poppins">Ubah</h2>
-                <form onSubmit={handleEditSubmit}>
-                  <div className="flex font-poppins gap-4 mt-1 items-center">
-                    {/* <label>Bayar</label> */}
+
+              {!stEdit && (
+                <div className="bg-blue-50 p-6 rounded-xl border border-blue-200">
+                  <h4 className="text-sm font-bold text-blue-700 uppercase mb-4 tracking-widest">Ubah Pembayaran</h4>
+                  <form onSubmit={handleEditSubmit} className="flex gap-2">
                     <input
-                      className="border border-black px-2 py-1 w-32 md:w-full"
+                      className="flex-1 px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none"
                       name="edit_bayar_value"
                       value={bayarEditValue}
                       type="number"
-                      onChange={(event) => handleInputChange(event)}
-                    ></input>
-                    <button
-                      type="submit"
-                      className="bg-green-400 py-1 px-2 text-white rounded-sm"
-                    >
-                      Ubah
-                    </button>
-                  </div>
-                </form>
-              </div>
+                      onChange={handleInputChange}
+                    />
+                    <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">Update</button>
+                    <button type="button" onClick={() => setstEdit(true)} className="px-3 py-2 bg-white text-gray-400 rounded-lg text-xs">Batal</button>
+                  </form>
+                </div>
+              )}
             </div>
           </div>
         </div>
-        <div className="w-full h-[10%]">
-          <div className="flex justify-end">
-            <button
-              className="px-4 py-2 bg-colorGray border-2 border-colorBlue font-poppins text-colorBlue rounded hover:bg-slate-200"
-              onClick={() => isClose()}
-            >
-              Close
-            </button>
-          </div>
+
+        <div className="p-5 border-t bg-white flex justify-end">
+          <button className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-50" onClick={isClose}>Tutup</button>
         </div>
       </div>
     </div>

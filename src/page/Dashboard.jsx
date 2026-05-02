@@ -134,13 +134,13 @@ function Pembayaran() {
           </div>
 
           {/* Card 4: Laporan */}
-          <div onClick={() => handleSubmit("laporan")}>
+          <div onClick={() => handleSubmit("nota")}>
             <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-teal-400 hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col items-center justify-center h-40 md:h-48">
               <div className="w-14 h-14 md:w-16 md:h-16 bg-teal-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-teal-500 transition-colors shadow-inner">
                 <img src={Report} className="w-3/5 object-contain" alt="Report" />
               </div>
               <h3 className="font-bold text-gray-700 text-xs md:text-sm text-center group-hover:text-teal-600 transition-colors uppercase tracking-wide">
-                Laporan
+                Nota
               </h3>
             </div>
           </div>

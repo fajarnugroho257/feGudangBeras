@@ -787,7 +787,7 @@ function TambahPembelian() {
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-36">Pembayaran</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Harga (Rp)</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Total</th>
-                      <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-16">Nota</th>
+                      {/* <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-16">Nota</th> */}
                       <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-14">Aksi</th>
                     </tr>
                   </thead>
@@ -939,7 +939,7 @@ function TambahPembelian() {
                             />
                           </td>
 
-                          <td className="py-2 px-2 text-center border-r border-gray-100">
+                          {/* <td className="py-2 px-2 text-center border-r border-gray-100">
                             <input
                               type="checkbox"
                               className="w-5 h-5 text-teal-600 bg-white border-gray-300 rounded focus:ring-teal-500 cursor-pointer"
@@ -948,7 +948,7 @@ function TambahPembelian() {
                               onChange={(event) => handleInputCheckbox(index, event)}
                               checked={field.pembelian_nota_st === "yes"}
                             />
-                          </td>
+                          </td> */}
 
                           <td className="py-2 px-2 text-center">
                             {index === 0 ? (
