@@ -90,7 +90,7 @@ function App() {
         <Topbar onMenuClick={() => setMobileOpen(true)} />
 
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-10xl mx-auto">
             <Routes>
               <Route path="/dashboard"        element={<AuthRoute element={<Dashboard />}        isPrivate={true} />} />
               <Route path="/penjualan"         element={<AuthRoute element={<Penjualan />}         isPrivate={true} />} />

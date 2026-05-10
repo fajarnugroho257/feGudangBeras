@@ -112,7 +112,7 @@ function Nota() {
 
   return (
     <>
-      <div className="p-1 md:p-3 xl:p-5 font-poppins">
+      <div className="p-4 md:p-6 font-poppins">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full mx-auto">
           
           {/* Header Title */}
