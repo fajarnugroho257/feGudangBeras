@@ -53,7 +53,7 @@ function Laporan() {
   const [datas, setDatas] = useState([]);
   let [number] = useState(1);
   const [blur, setBlur] = useState(true);
-  const endPoint = "/index-Laporan";
+  const endPoint = "/get-data-laporan";
 
   //useEffect hook
   useEffect(() => {
@@ -66,7 +66,7 @@ function Laporan() {
     const fectData = async () => {
       //fetching
       try {
-        const response = await api.post(endPoint, params, {
+        const response = await api.get(`${endPoint}/${dateFrom}/${dateTo}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -74,8 +74,8 @@ function Laporan() {
           },
         });
         //get response data
-        const data = await response.data.data.data;
-        // console.log(data);
+        const data = await response.data.rs_data;
+        console.log(data);
         if (response.status === 200) {
           setBlur(false);
         }
@@ -93,148 +93,124 @@ function Laporan() {
     setIsModalOpen(!isModalOpen);
     setSuplierTgl(tanggal);
   };
-  let ttl_operasional = 0;
-  let ttl_ttl_pembelian = 0;
-  let ttl_modal = 0;
-  let ttl_pngiriman = 0;
-  let ttl_laba = 0;
+  let rowCounter = 0;
   //
   return (
-    <div className="p-1 md:p-3 xl:p-5">
-      <div className=" w-full h-full mx-auto bg-gray-50 shadow-xl p-10">
-        <div className="h-[5%] md:flex items-center mb-5 justify-between">
-          <div className="flex gap-1 items-center w-full">
-            <input
-              name="dateFrom"
-              type="date"
-              className="w-36 border-2 px-1 py-1 md:px-3 rounded-md border-colorBlue"
-              placeholder="Dari"
-              value={dateFrom}
-              onChange={(event) => handleInputChange(event)}
-            ></input>
-            <p className="hidden md:block">Sampai</p>
-            <input
-              name="dateTo"
-              type="date"
-              className="w-36 md:mt-0 border-2 py-1 px-3 rounded-md border-colorBlue"
-              placeholder="Dari"
-              value={dateTo}
-              onChange={(event) => handleInputChange(event)}
-            ></input>
+    <>
+      <div className="p-4 md:p-6 font-poppins">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full mx-auto">
+          {/* Header Title */}
+          <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-gray-800">Laporan</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Laporan pemasukkan & pengeluaran
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="h-[95%] overflow-x-scroll">
-          <table
-            className={`border font-poppins bg-colorBlue text-gray-700 text-xs md:text-sm w-full ${
-              blur ? "blur-sm" : "blur-none"
-            }`}
+
+          {/* Filters Panel */}
+          <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 flex flex-wrap items-end gap-4 mb-6">
+            <div className="flex flex-col">
+              <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase tracking-wider">
+                Dari
+              </label>
+              <input
+                name="dateFrom"
+                type="date"
+                className="w-full sm:w-40 border border-gray-200 py-2 px-3 rounded-lg bg-white text-sm focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all text-gray-700"
+                value={dateFrom}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase tracking-wider">
+                Sampai
+              </label>
+              <input
+                name="dateTo"
+                type="date"
+                className="w-full sm:w-40 border border-gray-200 py-2 px-3 rounded-lg bg-white text-sm focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all text-gray-700"
+                value={dateTo}
+                onChange={handleInputChange}
+              />
+            </div>
+          </div>
+
+          {/* Table Container */}
+          <div
+            className={`overflow-x-auto rounded-xl border border-gray-200 transition-opacity duration-300 ${blur ? "opacity-50" : "opacity-100"}`}
           >
-            <thead>
-              <tr
-                key="tbllpoaran"
-                className="text-center h-14 font-semibold text-white"
-              >
-                <th className="border border-black w-[5%]">No</th>
-                <th className="border border-black w-[20%]">Tanggal</th>
-                <th className="border border-black w-[15%]">Pembelian</th>
-                <th className="border border-black w-[15%]">Operasional</th>
-                <th className="border border-black w-[15%]">Modal</th>
-                <th className="border border-black w-[15%]">pengiriman</th>
-                <th className="border border-black w-[15%]">Laba/Rugi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {datas &&
-                datas.map((item, index) => {
-                  const dateKey = Object.keys(item)[0]; // Ambil tanggal
-                  const {
-                    pembelian,
-                    pengiriman,
-                    grand_ttl,
-                    operasional,
-                    modal,
-                  } = item[dateKey]; // Ambil pembelian & pengiriman untuk tanggal tersebut
-                  ttl_operasional += parseInt(operasional);
-                  ttl_ttl_pembelian += parseInt(pembelian.ttl_pembelian);
-                  ttl_modal += parseInt(modal);
-                  ttl_pngiriman += parseInt(pengiriman.ttl_pengiriman ?? 0);
-                  ttl_laba += parseInt(grand_ttl);
+            <table className="w-full text-left border-collapse min-w-[1000px]">
+              <thead>
+                <tr className="bg-gray-50/80 text-center border-b border-gray-200">
+                  <th className="py-3.5 px-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-12">
+                    No
+                  </th>
+                  <th className="py-3.5 px-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200">
+                    Tanggal
+                  </th>
+                  <th className="py-3.5 px-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 bg-green-300">
+                    Total Pembelian{" "}
+                    <i className="fa fa-arrow-down text-green-500"></i>
+                  </th>
+                  <th className="py-3.5 px-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 bg-green-300">
+                    Tonase Pembelian{" "}
+                    <i className="fa fa-arrow-down text-green-500"></i>
+                  </th>
+                  <th className="py-3.5 px-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 bg-yellow-200">
+                    Total beban <i className="fa fa-arrow- text-red-500"></i>
+                  </th>
+                  <th className="py-3.5 px-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 bg-red-200">
+                    Total Penjualan{" "}
+                    <i className="fa fa-arrow-up text-red-500"></i>
+                  </th>
+                  <th className="py-3.5 px-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 bg-red-200">
+                    Tonase Penjualan{" "}
+                    <i className="fa fa-arrow-up text-red-500"></i>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {datas.map((item, key) => {
+                  rowCounter++;
+
                   return (
-                    <>
-                      <tr
-                        key={index}
-                        className={`text-right hover:bg-colorBlue hover:text-white cursor-pointer ${
-                          number % 2 === 0 ? "bg-gray-50" : "bg-gray-200"
-                        }`}
-                        onClick={() => detailLaporan(dateKey)}
-                      >
-                        <td className="text-center border border-black px-2 py-1">
-                          {number}
-                        </td>
-                        <td className="text-center border border-black px-2 py-1">
-                          {FormatTanggal(dateKey)}
-                        </td>
-                        {/* Render pembelian data */}
-                        {pembelian && (
-                          <td className="border border-black px-2 py-1">
-                            {RupiahFormat(pembelian.ttl_pembelian)}
-                          </td>
-                        )}
-                        <td className="border border-black px-2 py-1">
-                          {RupiahFormat(operasional)}
-                        </td>
-                        <td className="border border-black px-2 py-1">
-                          {RupiahFormat(modal)}
-                        </td>
-                        {pembelian && (
-                          <td className="border border-black px-2 py-1">
-                            {RupiahFormat(pengiriman.ttl_pengiriman)}
-                          </td>
-                        )}
-                        <td className="border border-black px-2 py-1">
-                          {RupiahFormat(grand_ttl)}
-                        </td>
-                      </tr>
-                      <p className="hidden">{number++}</p>
-                    </>
+                    <tr
+                      key={key}
+                      className="hover:bg-teal-50/10 transition-colors border-t-2 border-gray-100"
+                    >
+                      <td className="py-4 px-4 text-center text-sm font-medium text-gray-600 border-r border-gray-100">
+                        {rowCounter}
+                      </td>
+                      <td className="py-5 px-4 align-middle text-center border-r border-gray-200 bg-gray-50/50">
+                        {FormatTanggal(item.tanggal)}
+                      </td>
+                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 bg-gray-50/50 bg-green-200">
+                        {RupiahFormat(item.total_pembelian)}
+                      </td>
+                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 bg-gray-50/50 bg-green-200">
+                        {item.total_pembelian_tonase} Kg
+                      </td>
+                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 bg-gray-50/50 bg-yellow-200">
+                        {RupiahFormat(item.total_bebanSemua)}
+                      </td>
+                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 bg-gray-50/50 bg-red-200">
+                        {RupiahFormat(item.total_pengiriman)}
+                      </td>
+                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 bg-gray-50/50 bg-red-200">
+                        {item.total_pengiriman_tonase} Kg
+                      </td>
+                    </tr>
                   );
                 })}
-              <tr className="font-semibold text-white">
-                <td
-                  colSpan="2"
-                  className="border border-black px-2 py-1 text-right"
-                >
-                  Total
-                </td>
-                <td className="border border-black px-2 py-1 text-right">
-                  {RupiahFormat(ttl_ttl_pembelian)}
-                </td>
-                <td className="border border-black px-2 py-1 text-right">
-                  {RupiahFormat(ttl_operasional)}
-                </td>
-                <td className="border border-black px-2 py-1 text-right">
-                  {RupiahFormat(ttl_modal)}
-                </td>
-                <td className="border border-black px-2 py-1 text-right">
-                  {RupiahFormat(ttl_pngiriman)}
-                </td>
-                <td className="border border-black px-2 py-1 text-right">
-                  {RupiahFormat(ttl_laba)}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         </div>
+        <ToastContainer position="bottom-right" />
       </div>
-      <ToastContainer />
-      {isModalOpen && (
-        <ModalLaporan
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(!isModalOpen)}
-          suplier_tgl={suplier_tgl}
-        />
-      )}
-    </div>
+    </>
     //
   );
 }
