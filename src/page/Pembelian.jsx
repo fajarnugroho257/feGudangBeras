@@ -10,14 +10,20 @@ import api from "../utilities/axiosInterceptor";
 
 function Pembelian() {
   const token = localStorage.getItem("token");
-  
+  const tipeColors = {
+    beras: "bg-emerald-600 border-emerald-700",
+    gabah: "bg-amber-500 border-amber-600",
+    katul: "bg-orange-700 border-orange-800",
+    sekam: "bg-slate-600 border-slate-700",
+  };
+
   const getLastDateOfMonth = () => {
-    const today = new Date(); 
+    const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
     const lastDate = new Date(year, month + 1, 0);
     const date = lastDate.getDate();
-    const formattedMonth = String(lastDate.getMonth() + 1).padStart(2, "0"); 
+    const formattedMonth = String(lastDate.getMonth() + 1).padStart(2, "0");
     const formattedYear = lastDate.getFullYear();
     return `${formattedYear}-${formattedMonth}-${date}`;
   };
@@ -25,12 +31,12 @@ function Pembelian() {
   const lastDate = getLastDateOfMonth();
 
   const getFirstDateOfMonth = () => {
-    const today = new Date(); 
+    const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
     const firstDate = new Date(year, month, 1);
-    const date = String(firstDate.getDate()).padStart(2, "0"); 
-    const formattedMonth = String(firstDate.getMonth() + 1).padStart(2, "0"); 
+    const date = String(firstDate.getDate()).padStart(2, "0");
+    const formattedMonth = String(firstDate.getMonth() + 1).padStart(2, "0");
     const formattedYear = firstDate.getFullYear();
     return `${formattedYear}-${formattedMonth}-${date}`;
   };
@@ -55,7 +61,7 @@ function Pembelian() {
       clearTimeout(handler);
     };
   }, [supName]);
-  
+
   const handleInputChange = (event) => {
     const name = event.target.name;
     const val = event.target.value;
@@ -66,7 +72,7 @@ function Pembelian() {
   };
 
   const closeModal = () => setIsModalOpen(false);
-  
+
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
   const [draftNota, setDraftNota] = useState(false);
   const openEditModal = (id) => {
@@ -81,7 +87,7 @@ function Pembelian() {
   const [datas, setDatas] = useState([]);
   let number = 0;
   const [blur, setBlur] = useState(true);
-  
+
   const fectData = async () => {
     try {
       let params = {
@@ -92,7 +98,7 @@ function Pembelian() {
       };
       const response = await api.post("index-Pembelian", params, {
         headers: {
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
           Accept: "application/json",
         },
@@ -160,21 +166,21 @@ function Pembelian() {
       }
     }
   };
-  
+
   const downloadImage = async (id) => {
     const toastId = toast.loading("Sending data...");
     try {
       const response = await api.get(`/test-cetak-image/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
-        responseType: "blob", 
+        responseType: "blob",
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "Pembelian" + id + ".png"); 
+      link.setAttribute("download", "Pembelian" + id + ".png");
       document.body.appendChild(link);
-      link.click(); 
-      document.body.removeChild(link); 
+      link.click();
+      document.body.removeChild(link);
 
       if (response.status === 200) {
         toast.update(toastId, { render: "Download successfully!", type: "success", isLoading: false, autoClose: 3000 });
@@ -192,15 +198,15 @@ function Pembelian() {
     try {
       const response = await api.post(`/cetak-laporan`, params, {
         headers: { Authorization: `Bearer ${token}` },
-        responseType: "blob", 
+        responseType: "blob",
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "Laporan-Pembelian.pdf"); 
+      link.setAttribute("download", "Laporan-Pembelian.pdf");
       document.body.appendChild(link);
-      link.click(); 
-      document.body.removeChild(link); 
+      link.click();
+      document.body.removeChild(link);
 
       if (response.status === 200) {
         toast.update(toastId, { render: "Download successfully!", type: "success", isLoading: false, autoClose: 3000 });
@@ -217,8 +223,8 @@ function Pembelian() {
     setSelectedIds(
       (prevSelected) =>
         prevSelected.includes(id)
-          ? prevSelected.filter((itemId) => itemId !== id) 
-          : [...prevSelected, id], 
+          ? prevSelected.filter((itemId) => itemId !== id)
+          : [...prevSelected, id],
     );
     const values = [...datas];
     values[index]["pembelian_nota_st"] = values[index]["pembelian_nota_st"] === "yes" ? "no" : "yes";
@@ -234,7 +240,7 @@ function Pembelian() {
         const params = { selectedIds: selectedIds };
         const response = await api.post("/make-draft-nota", params, {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
             Accept: "application/json",
           },
@@ -265,14 +271,14 @@ function Pembelian() {
   return (
     <div className="p-1 md:p-3 xl:p-5 font-poppins">
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full h-full mx-auto">
-        
+
         {/* Header & Actions */}
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
           <div>
             <h2 className="text-xl font-bold text-gray-800">Data Pembelian</h2>
             <p className="text-sm text-gray-500 mt-1">Kelola transaksi dan cetak nota</p>
           </div>
-          
+
           <div className="flex flex-wrap gap-3">
             <button
               onClick={() => buatNota()}
@@ -301,7 +307,7 @@ function Pembelian() {
               onChange={(event) => handleInputChange(event)}
             />
           </div>
-          
+
           <div className="flex flex-col flex-1 sm:flex-none">
             <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">Sampai</label>
             <input
@@ -348,7 +354,7 @@ function Pembelian() {
           {datas && datas.length > 0 ? (
             datas.map((item, index) => (
               <div key={item.id} className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                
+
                 {/* Header Card (Supplier & Nota) */}
                 <div className="bg-gray-50/80 p-4 border-b border-gray-100 flex justify-between items-center">
                   <div>
@@ -391,17 +397,19 @@ function Pembelian() {
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <p className="font-bold text-gray-700 text-sm">{detail.barang.nama}</p>
-                          <span className="inline-block mt-1 text-[10px] bg-white border border-gray-200 px-1.5 py-0.5 rounded text-gray-500 uppercase font-semibold">
+                          <span
+                            className={`inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded text-white uppercase font-semibold tracking-widest border shadow-sm transition-colors ${tipeColors[detail.barang.tipe?.toLowerCase()] || "bg-teal-600 border-teal-700"
+                              }`}
+                          >
                             {detail.barang.tipe}
                           </span>
                         </div>
-                        <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${
-                          detail.pembayaran === 'cash' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                        }`}>
+                        <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${detail.pembayaran === 'cash' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                          }`}>
                           {detail.pembayaran}
                         </span>
                       </div>
-                      
+
                       {/* Grid Tonase */}
                       <div className="grid grid-cols-3 gap-2 mb-3 text-center">
                         <div className="bg-white rounded border border-gray-100 py-1.5 shadow-sm">
@@ -425,8 +433,8 @@ function Pembelian() {
                           <span className="font-semibold text-gray-600">{RupiahFormat(detail.pembelian_harga)}</span>
                         </div>
                         <div className="text-right">
-                           <span className="text-gray-400 block text-[10px] uppercase">Subtotal</span>
-                           <span className="font-bold text-gray-800">{RupiahFormat(detail.pembelian_total)}</span>
+                          <span className="text-gray-400 block text-[10px] uppercase">Subtotal</span>
+                          <span className="font-bold text-gray-800">{RupiahFormat(detail.pembelian_total)}</span>
                         </div>
                       </div>
                     </div>
@@ -460,9 +468,9 @@ function Pembelian() {
                 <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200">Tanggal</th>
                 <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200">Barang</th>
                 <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200">Tipe</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200" title="Tonase Kotor">T. Kotor</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200">Pot.</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200" title="Tonase Bersih">T. Bersih</th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200" title="Tonase Kotor">T. Kotor (Kg)</th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200">Pot. (kg)</th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200" title="Tonase Bersih">T. Bersih (Kg)</th>
                 <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">Harga</th>
                 <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">Subtotal</th>
                 <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200">Status</th>
@@ -475,7 +483,7 @@ function Pembelian() {
                 datas.map((item, index) => {
                   number++;
                   const totalPembelianData = item.pembelian_data.length;
-                  
+
                   item.pembelian_data.forEach((pembelianDetail) => {
                     ttl_harga += parseInt(pembelianDetail.pembelian_harga, 10);
                     ttl_total += parseInt(pembelianDetail.pembelian_total, 10);
@@ -483,9 +491,9 @@ function Pembelian() {
                     ttl_tonase_potongan += parseFloat(pembelianDetail.pembelian_potongan ?? 0);
                     ttl_tonase_bersih += parseFloat(pembelianDetail.pembelian_bersih);
                   });
-                  
+
                   let firstPembelianDataOfSupplier = true;
-                  
+
                   return (
                     <React.Fragment key={item.id}>
                       {item.pembelian_data.map((pembelianDetail, dataIndex) => {
@@ -493,7 +501,7 @@ function Pembelian() {
                         if (firstPembelianDataOfSupplier) {
                           firstPembelianDataOfSupplier = false;
                         }
-                        
+
                         return (
                           <tr
                             key={"data" + item.id + dataIndex}
@@ -543,8 +551,11 @@ function Pembelian() {
                             <td className="border-r border-gray-100 py-2 px-3 text-sm text-gray-700">
                               {pembelianDetail.barang.nama}
                             </td>
-                            <td className="border-r border-gray-100 text-center py-2 px-2">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200 uppercase tracking-wider">
+                            <td className="border-r border-gray-50 text-center py-2 px-2">
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold text-white border uppercase tracking-widest shadow-sm transition-colors ${tipeColors[pembelianDetail.barang.tipe?.toLowerCase()] || "bg-teal-600 border-teal-700"
+                                  }`}
+                              >
                                 {pembelianDetail.barang.tipe}
                               </span>
                             </td>
@@ -564,11 +575,10 @@ function Pembelian() {
                               {RupiahFormat(pembelianDetail.pembelian_total)}
                             </td>
                             <td className="border-r border-gray-100 text-center py-2 px-3">
-                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                                pembelianDetail.pembayaran === "cash"
-                                  ? "bg-green-100 text-green-700 border-green-200"
-                                  : "bg-red-100 text-red-700 border-red-200"
-                              }`}>
+                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${pembelianDetail.pembayaran === "cash"
+                                ? "bg-green-100 text-green-700 border-green-200"
+                                : "bg-red-100 text-red-700 border-red-200"
+                                }`}>
                                 {pembelianDetail.pembayaran}
                               </span>
                             </td>
@@ -606,7 +616,7 @@ function Pembelian() {
                     </React.Fragment>
                   );
                 })}
-              
+
               <tr key="jumlah" className="bg-gray-100/80 border-t-2 border-gray-300">
                 <td colSpan="6" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
                   TOTAL KESELURUHAN
@@ -632,15 +642,15 @@ function Pembelian() {
           </table>
         </div>
       </div>
-      
+
       <ToastContainer position="bottom-right" />
-      
+
       {isModalEditOpen ? (
         <ModalEditPembelian isOpen={isModalEditOpen} onClose={closeEditModal} id={edit_id} />
       ) : (
         <ModalAddPembelian isOpen={isModalOpen} onClose={closeModal} />
       )}
-      
+
       {isModalCetak && (
         <ModalPreview isOpen={true} onClose={() => setIsModalCetak(!isModalCetak)} id={edit_id} />
       )}

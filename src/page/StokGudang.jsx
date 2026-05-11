@@ -16,6 +16,13 @@ function StokGudang() {
   const [blur, setBlur] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const tipeColors = {
+    beras: "bg-emerald-600", // Hijau untuk produk jadi
+    gabah: "bg-amber-500",   // Kuning/Emas untuk bahan baku
+    katul: "bg-orange-700",  // Oranye untuk hasil sampingan halus
+    sekam: "bg-slate-600",   // Abu-abu untuk hasil sampingan kasar
+  };
+
   // Debounce logic
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -26,23 +33,23 @@ function StokGudang() {
   }, [barangNama, suplierNama]);
 
   const renderStockBadge = (stock) => {
-    if (stock < 10) {
+    if (stock < 500) {
       return (
         <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-50 text-red-600 border border-red-100">
-          {stock} Urgent
+          {stock}
         </span>
       );
     }
-    if (stock <= 50) {
+    if (stock <= 1000) {
       return (
         <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-100">
-          {stock} Low
+          {stock}
         </span>
       );
     }
     return (
       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
-        {stock} Safe
+        {stock}
       </span>
     );
   };
@@ -74,14 +81,14 @@ function StokGudang() {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 font-poppins">
-      
+
       {/* Header & Filters */}
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
         <div>
           <h2 className="text-xl font-bold text-gray-800">Manajemen Stok</h2>
           <p className="text-sm text-gray-500 mt-1">Laporan stok barang per kelompok supplier</p>
         </div>
-        
+
         <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
           <button
             onClick={() => setIsModalOpen(true)}
@@ -169,28 +176,28 @@ function StokGudang() {
           <tbody className="divide-y divide-gray-100">
             {datas.length > 0 ? (
               datas.map((item, index) => {
-                const rowSpan = item.suppliers.length; 
+                const rowSpan = item.suppliers.length;
                 const totalStok = item.suppliers.reduce((acc, sup) => acc + (sup.stok || 0), 0);
 
                 return (
                   <React.Fragment key={item.barang_id}>
                     <tr className="hover:bg-teal-50/5 transition-colors border-t-4 border-gray-400">
-                      
+
                       <td className="py-5 px-4 align-middle border-r border-gray-200 bg-gray-50/50" rowSpan={rowSpan}>
                         <div className="font-extrabold text-gray-900 text-sm uppercase tracking-tight">{item.barang_nama}</div>
                         <div className="text-[10px] text-gray-400 mt-1">ID: #{item.barang_id}</div>
                       </td>
-                      
+
                       <td className="py-5 px-4 align-middle text-center border-r border-gray-200 bg-gray-50/50" rowSpan={rowSpan}>
-                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-black bg-teal-600 text-white uppercase tracking-widest shadow-sm">
+                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold text-white uppercase tracking-widest shadow-sm transition-colors ${tipeColors[item.tipe?.toLowerCase()] || "bg-teal-600"}`}>
                           {item.tipe}
                         </span>
                       </td>
-                      
+
                       <td className="py-4 px-4 text-sm text-gray-700 font-medium border-r border-gray-100">
                         {item.suppliers[0]?.suplier_nama || "-"}
                       </td>
-                      
+
                       <td className="py-4 px-4 text-right border-r border-gray-100">
                         {renderStockBadge(item.suppliers[0]?.stok || 0)}
                       </td>
@@ -201,7 +208,7 @@ function StokGudang() {
                       </td>
 
                     </tr>
-                    
+
                     {/* Baris Supplier Selanjutnya: Border standar saja */}
                     {item.suppliers.slice(1).map((sup) => (
                       <tr key={sup.suplier_id} className="hover:bg-teal-50/5 transition-colors">

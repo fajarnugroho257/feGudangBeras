@@ -527,7 +527,7 @@ function TambahPengiriman() {
                     {/* Stock, Tonase, Harga */}
                     <div className="grid grid-cols-3 gap-2 mt-1">
                       <div>
-                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block text-center">Stok Sisa</label>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block text-center">Stok Sisa (Kg)</label>
                         <input
                           type="text"
                           className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-center text-gray-700 outline-none"
@@ -537,7 +537,7 @@ function TambahPengiriman() {
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block text-center">Tonase</label>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block text-center">Tonase (Kg)</label>
                         <input
                           type="number"
                           min={0}
@@ -627,8 +627,8 @@ function TambahPengiriman() {
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">Tipe</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-56">Barang</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-56">Supplier</th>
-                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Stock</th>
-                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">Tonase</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Stock (Kg)</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">Tonase (Kg)</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Harga (Rp)</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Total</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-36">Pembayaran</th>

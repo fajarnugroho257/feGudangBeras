@@ -21,7 +21,7 @@ function TambahPembelian() {
   // State untuk options
   const [supplierOptions, setSupplierOptions] = useState([{ value: 'new', label: 'Suplier Baru' }]);
   const [barangOptionsCache, setBarangOptionsCache] = useState({});
-  
+
   // State untuk loading indicator
   const [loadingSuppliers, setLoadingSuppliers] = useState(false);
   const [loadingBarang, setLoadingBarang] = useState(false);
@@ -40,7 +40,7 @@ function TambahPembelian() {
           value: item.id,
           label: item.suplier_nama,
         }));
-        setSupplierOptions([...options, { value: 'new', label: 'Suplier Baru' }]);
+        setSupplierOptions([{ value: 'new', label: '+ Suplier Baru' }, ...options]);
       }
     } catch (error) {
       console.error('Failed to fetch suppliers:', error);
@@ -237,7 +237,7 @@ function TambahPembelian() {
           type: btnValue,
         };
         let response = "";
-        
+
         if (btnValue === "simcetak") {
           response = await api.post(`/add-Pembelian`, params, {
             headers: {
@@ -263,7 +263,7 @@ function TambahPembelian() {
             );
 
             // Format kolom
-            const columnWidths = [6, 9, 16, 16]; 
+            const columnWidths = [6, 9, 16, 16];
 
             // Format header
             const header =
@@ -274,8 +274,8 @@ function TambahPembelian() {
               "\n-----------------------------------------------\n" +
               `Supplier    : ${supplier}\n` +
               `Tanggal     : ${tanggal}\n` +
-              `Nota Cetak  : ${currentDateTime[0]}\n` + 
-              `Nota Jam    : ${currentDateTime[1]}\n` + 
+              `Nota Cetak  : ${currentDateTime[0]}\n` +
+              `Nota Jam    : ${currentDateTime[1]}\n` +
               "-----------------------------------------------\n" +
               formatRow(["Brg", "Ton", "Harga", "Total"], columnWidths) +
               "\n" +
@@ -302,8 +302,8 @@ function TambahPembelian() {
               formatRow(["Grand Total", formatRupiah(grandTotal)], [33, 16]) +
               "\n-----------------------------------------------\n\n";
 
-            const nota = `${fontSmall}` + header + rows + "\n" + footer + `${fontSmall}`; 
-            console.log(nota); 
+            const nota = `${fontSmall}` + header + rows + "\n" + footer + `${fontSmall}`;
+            console.log(nota);
 
             // Kirim ke printer thermal
             const printData = new TextEncoder().encode(nota);
@@ -341,16 +341,16 @@ function TambahPembelian() {
         } else {
           response = await api.post("/add-Pembelian", params, {
             headers: {
-              Authorization: `Bearer ${token}`, 
+              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
               Accept: "application/json",
             },
           });
         }
-        
+
         if (response.status === 200) {
           setsuplier_nama("");
-          setpembelian_tgl(new Date().toISOString().slice(0, 10)); 
+          setpembelian_tgl(new Date().toISOString().slice(0, 10));
           setalamat("");
           setno_hp("");
           setSelectedSupplier(null);
@@ -418,7 +418,7 @@ function TambahPembelian() {
     const now = new Date();
     const options = { weekday: "long", year: "numeric", month: "short", day: "numeric" };
     const tanggal = now.toLocaleDateString("id-ID", options);
-    const jam = now.toLocaleTimeString("id-ID"); 
+    const jam = now.toLocaleTimeString("id-ID");
     return [tanggal, jam];
   }
 
@@ -439,11 +439,11 @@ function TambahPembelian() {
     (sum, val) => sum + Number(val.pembelian_total || 0),
     0,
   );
-  
+
   return (
     <div className="p-1 md:p-3 xl:p-5 font-poppins">
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full h-full mx-auto flex flex-col">
-        
+
         {/* Navigation Tabs */}
         <div className="flex flex-wrap items-center gap-2 mb-6 border-b border-gray-100 pb-4">
           <button className="px-4 py-2 bg-teal-50 text-teal-700 font-bold rounded-lg text-sm border border-teal-200 transition-colors">
@@ -472,11 +472,11 @@ function TambahPembelian() {
         {/* Main Content Form */}
         <div className="flex-1">
           <form onSubmit={handleSubmit} className="h-fit">
-            
+
             {/* Header Form (Supplier & Date) */}
             <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                
+
                 {/* Select Supplier */}
                 <div>
                   <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
@@ -577,19 +577,19 @@ function TambahPembelian() {
               <label className="block text-sm font-bold text-gray-800 border-b border-gray-100 pb-2">
                 Daftar Barang ({inputFields.length} Item)
               </label>
-              
+
               {inputFields.map((field, index) => {
                 let rowNumber = index + 1;
                 return (
                   <div key={index} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm relative flex flex-col gap-3">
-                    
+
                     {/* Header Card & Delete Button */}
                     <div className="flex justify-between items-center border-b border-gray-100 pb-2">
                       <span className="font-bold text-teal-700 text-sm">Item #{rowNumber}</span>
                       {index > 0 && (
-                        <button 
-                          type="button" 
-                          onClick={() => handleRemoveField(index)} 
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveField(index)}
                           className="w-7 h-7 flex justify-center items-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
                         >
                           <i className="fa fa-trash text-xs"></i>
@@ -610,6 +610,7 @@ function TambahPembelian() {
                           >
                             <option value="beras">Beras</option>
                             <option value="gabah">Gabah</option>
+                            <option value="katul">Katul</option>
                           </select>
                         </div>
                         <div className="col-span-2">
@@ -659,7 +660,7 @@ function TambahPembelian() {
                     {/* Tonase: Kotor, Potongan, Bersih */}
                     <div className="grid grid-cols-3 gap-2 mt-1">
                       <div>
-                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block text-center">Kotor</label>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block text-center">Kotor (Kg)</label>
                         <input
                           type="number"
                           min={0}
@@ -672,7 +673,7 @@ function TambahPembelian() {
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-red-400 uppercase mb-1 block text-center">Potongan</label>
+                        <label className="text-[10px] font-bold text-red-400 uppercase mb-1 block text-center">Potongan (Kg)</label>
                         <input
                           type="number"
                           min={0}
@@ -684,7 +685,7 @@ function TambahPembelian() {
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-green-600 uppercase mb-1 block text-center">Bersih</label>
+                        <label className="text-[10px] font-bold text-green-600 uppercase mb-1 block text-center">Bersih (Kg)</label>
                         <input
                           className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-center text-green-700 font-bold outline-none"
                           name="pembelian_bersih"
@@ -744,7 +745,7 @@ function TambahPembelian() {
                           <span className="text-[10px] font-bold uppercase tracking-wider">Hutang</span>
                         </label>
                       </div>
-                      
+
                       <label className="flex items-center gap-2 cursor-pointer bg-white border border-gray-200 px-3 py-1.5 rounded-lg">
                         <input
                           type="checkbox"
@@ -781,9 +782,9 @@ function TambahPembelian() {
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">Tipe</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-56">Pilih Barang</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-48">Nama Barang Baru</th>
-                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">T. Kotor</th>
-                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Potongan</th>
-                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">T. Bersih</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">T. Kotor (kg)</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Potongan (Kg)</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">T. Bersih (Kg)</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-36">Pembayaran</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Harga (Rp)</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Total</th>
@@ -794,11 +795,11 @@ function TambahPembelian() {
                   <tbody className="divide-y divide-gray-100">
 
                     {inputFields.map((field, index) => {
-                     const rowNumber = index + 1;
+                      const rowNumber = index + 1;
                       return (
                         <tr key={index} className="hover:bg-teal-50/20 transition-colors">
                           <td className="py-2 px-2 text-center text-sm font-medium text-gray-500 border-r border-gray-100">{rowNumber}</td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100">
                             <select
                               className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all cursor-pointer"
@@ -808,9 +809,10 @@ function TambahPembelian() {
                             >
                               <option value="beras">Beras</option>
                               <option value="gabah">Gabah</option>
+                              <option value="katul">Katul</option>
                             </select>
                           </td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100">
                             <Select
                               value={field.selectedBarang}
@@ -821,8 +823,10 @@ function TambahPembelian() {
                                 values[index].barang_id = selected && selected.value !== 'new' ? selected.value : null;
                                 setInputFields(values);
                               }}
-                              options={barangOptionsCache[field.barang_tipe] ? [...barangOptionsCache[field.barang_tipe], { value: 'new', label: '+ Barang Baru' }] : [{ value: 'new', label: '+ Barang Baru' }]}
-                              placeholder="Cari Barang..."
+                              options={[
+                                { value: 'new', label: '+ Barang Baru' },
+                                ...(barangOptionsCache[field.barang_tipe] || [])
+                              ]} placeholder="Cari Barang..."
                               isClearable
                               menuPortalTarget={document.body}
                               styles={{
@@ -839,7 +843,7 @@ function TambahPembelian() {
                               }}
                             />
                           </td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100">
                             {field.selectedBarang && field.selectedBarang.value === 'new' ? (
                               <input
@@ -854,7 +858,7 @@ function TambahPembelian() {
                               <span className="text-xs text-gray-400 italic bg-gray-50 px-2 py-1.5 rounded w-full block border border-gray-100 text-center">Otomatis dari sistem</span>
                             )}
                           </td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="number"
@@ -868,7 +872,7 @@ function TambahPembelian() {
                               onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
                             />
                           </td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="number"
@@ -881,7 +885,7 @@ function TambahPembelian() {
                               onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
                             />
                           </td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-center text-green-700 font-bold cursor-not-allowed outline-none"
@@ -978,7 +982,7 @@ function TambahPembelian() {
                 </table>
               </div>
             </div>
-            
+
             {/* Tombol Tambah & Submit */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-2">
               <button

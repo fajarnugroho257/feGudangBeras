@@ -54,12 +54,19 @@ function Barang() {
   };
 
   // Helper fungsi untuk warna badge Tipe
-  const getBadgeStyle = (tipe) => {
-    if (tipe === "beras") return "bg-red-100 text-red-700 border-red-200";
-    if (tipe === "katul") return "bg-gray-100 text-gray-700 border-gray-200";
-    if (tipe === "sekam") return "bg-green-100 text-green-700 border-green-200";
-    return "bg-yellow-100 text-yellow-700 border-yellow-200";
-  };
+const tipeColors = {
+  beras: "bg-emerald-600 border-emerald-700",
+  gabah: "bg-amber-500 border-amber-600",
+  katul: "bg-orange-700 border-orange-800",
+  sekam: "bg-slate-600 border-slate-700",
+};
+
+const getBadgeStyle = (tipe) => {
+  const key = tipe?.toLowerCase();
+  const colorClass = tipeColors[key] || "bg-teal-600 border-teal-700";
+  
+  return `${colorClass} text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-widest border shadow-sm`;
+};
 
   return (
     <div className="p-1 md:p-3 xl:p-5 font-poppins">
