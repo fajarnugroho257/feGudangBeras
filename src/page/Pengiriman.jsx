@@ -410,6 +410,7 @@ function Pengiriman() {
             {datas && datas.length > 0 ? (
               datas.map((item, index) => {
                 ttl_operational += item.totalBeban;
+                ttl_data_total += parseInt(item.total_biaya || 0, 10);
                 return (
                   <div key={item.id} className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                     {/* Header Card */}
@@ -442,13 +443,17 @@ function Pengiriman() {
                     </div>
 
                     {/* Uang Muka & Operasional */}
-                    <div className="p-4 border-b border-gray-100 bg-white grid grid-cols-2 gap-4">
+                    <div className="p-4 border-b border-gray-100 bg-white grid grid-cols-3 gap-2">
                       <div>
                         <span className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Uang Muka</span>
                         <span className="font-bold text-gray-700">{RupiahFormat(item.uang_muka)}</span>
                       </div>
+                      <div className="text-center border-l border-r border-gray-100">
+                        <span className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Total Biaya</span>
+                        <span className="font-bold text-teal-700">{RupiahFormat(item.total_biaya || 0)}</span>
+                      </div>
                       <div className="text-right">
-                        <span className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Atur Operasional</span>
+                        <span className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Operasional</span>
                         <div className="flex justify-end items-center gap-2">
                           <button 
                             onClick={() => handleModalBeban(item.id, item.pengiriman_tgl)}
@@ -465,7 +470,6 @@ function Pengiriman() {
                     <div className="p-4 space-y-3 bg-white">
                       <span className="block text-xs font-bold text-gray-800 border-b border-gray-100 pb-2">Detail Pengiriman</span>
                       {item.listPengiriman && item.listPengiriman.map((listPem, key) => {
-                        ttl_data_total += parseInt(listPem.data_total ?? 0, 10);
                         return (
                           <div key={listPem.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200/60 shadow-sm">
                             <div className="flex justify-between items-start mb-2">
@@ -482,12 +486,8 @@ function Pengiriman() {
                             
                             <div className="flex justify-between items-center text-xs mt-3 pt-2 border-t border-gray-200/60">
                               <div>
-                                <span className="text-gray-400 block text-[9px] uppercase">Tonase / Harga</span>
-                                <span className="font-medium text-gray-600">{listPem.data_tonase} x {RupiahFormat(listPem.data_harga)}</span>
-                              </div>
-                              <div className="text-right">
-                                <span className="text-gray-400 block text-[9px] uppercase">Subtotal</span>
-                                <span className="font-bold text-gray-800">{RupiahFormat(listPem.data_total)}</span>
+                                <span className="text-gray-400 block text-[9px] uppercase">Tonase</span>
+                                <span className="font-medium text-gray-600">{listPem.data_tonase} Kg</span>
                               </div>
                             </div>
                           </div>
@@ -538,17 +538,17 @@ function Pengiriman() {
                   <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Uang Muka</th>
                   <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Status</th>
                   <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-36">Atur Ops</th>
+                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-36">Total Biaya</th>
                   <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-40">Barang</th>
                   <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-36">Supplier</th>
                   <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Tonase</th>
-                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Harga</th>
-                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Total</th>
                   <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Pembayaran</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {datas.map((item, key) => {
                   ttl_operational += item.totalBeban;
+                  ttl_data_total += parseInt(item.total_biaya || 0, 10);
                   local_number++;
                   return (
                     <React.Fragment key={item.id}>
@@ -598,6 +598,9 @@ function Pengiriman() {
                             <span className="text-sm font-bold text-red-500">{RupiahFormat(item.totalBeban)}</span>
                           </div>
                         </td>
+                        <td className="align-middle text-right border-r border-b border-gray-200 py-2 px-3 text-sm text-teal-700 font-bold bg-teal-50/10" rowSpan={item.listPengiriman.length || 1}>
+                          {RupiahFormat(item.total_biaya || 0)}
+                        </td>
                         
                         {/* Data pertama listPengiriman */}
                         <td className="border-r border-gray-100 py-2 px-3 text-sm text-gray-700 font-medium">
@@ -608,12 +611,6 @@ function Pengiriman() {
                         </td>
                         <td className="border-r border-gray-100 text-center py-2 px-3 text-sm text-gray-700">
                           {item.listPengiriman[0] && item.listPengiriman[0]["data_tonase"]}
-                        </td>
-                        <td className="border-r border-gray-100 text-right py-2 px-3 text-sm text-gray-700">
-                          {RupiahFormat(item.listPengiriman[0] && item.listPengiriman[0]["data_harga"])}
-                        </td>
-                        <td className="border-r border-gray-100 text-right py-2 px-3 text-sm font-semibold text-gray-800">
-                          {RupiahFormat(item.listPengiriman[0] && item.listPengiriman[0]["data_total"])}
                         </td>
                         <td className="text-center py-2 px-3">
                           {item.listPengiriman[0] && (
@@ -630,7 +627,6 @@ function Pengiriman() {
                       
                       {/* Data sisa listPengiriman (jika ada) */}
                       {item.listPengiriman && item.listPengiriman.map((listPem, keyIndex) => {
-                        ttl_data_total += parseInt(listPem.data_total ?? 0, 10);
                         return (
                           <React.Fragment key={listPem.id}>
                             {JSON.stringify(keyIndex) === "0" ? null : (
@@ -643,12 +639,6 @@ function Pengiriman() {
                                 </td>
                                 <td className="border-r border-gray-100 text-center py-2 px-3 text-sm text-gray-700">
                                   {listPem.data_tonase}
-                                </td>
-                                <td className="border-r border-gray-100 text-right py-2 px-3 text-sm text-gray-700">
-                                  {RupiahFormat(listPem.data_harga)}
-                                </td>
-                                <td className="border-r border-gray-100 text-right py-2 px-3 text-sm font-semibold text-gray-800">
-                                  {RupiahFormat(listPem.data_total)}
                                 </td>
                                 <td className="text-center py-2 px-3">
                                   <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
@@ -671,17 +661,15 @@ function Pengiriman() {
                 {/* Total Row */}
                 <tr className="bg-gray-100/80 border-t-2 border-gray-300">
                   <td colSpan="6" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
-                    TOTAL OPERATIONAL
+                    TOTAL OPERASIONAL & BIAYA
                   </td>
                   <td className="text-right py-3 px-3 text-sm font-bold text-red-600 border-r border-gray-200">
                     {RupiahFormat(ttl_operational)}
                   </td>
-                  <td colSpan="4" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-200">
-                    GRAND TOTAL
-                  </td>
-                  <td colSpan="2" className="text-right py-3 px-4 text-sm font-bold text-teal-700">
+                  <td className="text-right py-3 px-3 text-sm font-bold text-teal-700 border-r border-gray-200">
                     {RupiahFormat(ttl_data_total)}
                   </td>
+                  <td colSpan="4"></td>
                 </tr>
               </tbody>
             </table>

@@ -101,7 +101,7 @@ const PengirimanRow = memo(function PengirimanRow({
         />
       </td>
 
-      {/* Harga */}
+      {/* Harga
       <td className="py-2 px-3 border-r border-gray-100">
         <input
           type="number"
@@ -116,9 +116,9 @@ const PengirimanRow = memo(function PengirimanRow({
             })
           }
         />
-      </td>
+      </td> */}
 
-      {/* Total (read-only) */}
+      {/* Total (read-only)
       <td className="py-2 px-3 border-r border-gray-100">
         <input
           readOnly
@@ -126,7 +126,7 @@ const PengirimanRow = memo(function PengirimanRow({
           className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-right text-gray-800 font-bold cursor-not-allowed outline-none"
           value={RupiahFormat(field.data_total || 0)}
         />
-      </td>
+      </td> */}
 
       {/* Pembayaran */}
       <td className="py-2 px-3 border-r border-gray-100">
@@ -202,6 +202,7 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
   const [nama_pembeli, setNama_pembeli]     = useState("");
   const [uang_muka, setUang_muka]           = useState("");
   const [status, setStatus]                 = useState("yes");
+  const [grand_total, setGrand_total]       = useState("");
 
   // Line items
   const [rows, setRows] = useState([]);
@@ -306,6 +307,7 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
         setNama_pembeli(d.nama_pembeli || "");
         setUang_muka(d.uang_muka || "");
         setStatus(d.status || "yes");
+        setGrand_total(d.total_biaya || "");
 
         const list = d.listPengiriman || [];
 
@@ -500,7 +502,7 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
           "/edit-Pengiriman",
           {
             pengiriman_id,
-            pengirimanData: { id: pengiriman_id, pengiriman_tgl, nama_pembeli, uang_muka, status },
+            pengirimanData: { id: pengiriman_id, pengiriman_tgl, nama_pembeli, uang_muka, status, total_biaya: grand_total || null },
             formData: rows.map(({ id, barang_id, data_tonase, data_harga, data_total, pembayaran_st, supplier_id }) => ({
               id, barang_id, data_tonase, data_harga, data_total, pembayaran_st, supplier_id,
             })),
@@ -524,12 +526,10 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
         toast.update(toastId, { render: `Error: ${err.message}`, type: "error", isLoading: false, autoClose: 5000 });
       }
     },
-    [pengiriman_id, pengiriman_tgl, nama_pembeli, uang_muka, status, rows, token, onClose]
+    [pengiriman_id, pengiriman_tgl, nama_pembeli, uang_muka, status, grand_total, rows, token, onClose]
   );
 
   if (!isOpen) return null;
-
-  const grandTotal = rows.reduce((sum, r) => sum + Number(r.data_total || 0), 0);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 p-4 sm:p-6 font-poppins">
@@ -619,7 +619,7 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
                 <table className="w-full text-left border-collapse min-w-[1200px]">
                   <thead>
                     <tr className="bg-gray-50/80 border-b border-gray-200">
-                      {["No","Tipe","Barang","Supplier","Stok","Tonase","Harga","Total","Pembayaran","Aksi"].map((h) => (
+                      {["No","Tipe","Barang","Supplier","Stok","Tonase","Pembayaran","Aksi"].map((h) => (
                         <th key={h} className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 last:border-r-0">
                           {h}
                         </th>
@@ -645,13 +645,22 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
 
                     {/* Grand total row */}
                     <tr className="bg-gray-100/80 border-t-2 border-gray-300">
-                      <td colSpan="7" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
+                      <td colSpan="6" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
                         GRAND TOTAL PENGIRIMAN
                       </td>
-                      <td className="text-right py-3 px-3 text-sm font-bold text-red-600 border-r border-gray-200 bg-red-50/50">
-                        {RupiahFormat(grandTotal)}
+                      <td colSpan="2" className="py-2 px-3 border-r border-gray-200 bg-red-50/50">
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">Rp</span>
+                          <input
+                            type="number"
+                            className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                            placeholder="0"
+                            name="grand_total"
+                            value={grand_total}
+                            onChange={(e) => setGrand_total(e.target.value)}
+                          />
+                        </div>
                       </td>
-                      <td colSpan="2" />
                     </tr>
                   </tbody>
                 </table>

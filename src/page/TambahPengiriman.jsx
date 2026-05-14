@@ -15,6 +15,7 @@ function TambahPengiriman() {
   const [nama_pembeli, setNama_pembeli] = useState("");
   const [uang_muka, setUang_muka] = useState("");
   const [status, setStatus] = useState("yes");
+  const [grand_total, setGrand_total] = useState("");
   const [boxHarga, setBoxHarga] = useState(null);
   const [boxJumlah, setBoxJumlah] = useState(0);
   const [barangOptionsCache, setBarangOptionsCache] = useState({});
@@ -27,6 +28,7 @@ function TambahPengiriman() {
   const handleNama_pembeli = (event) => setNama_pembeli(event.target.value);
   const handleUang_muka = (event) => setUang_muka(event.target.value);
   const handleStatus = (event) => setStatus(event.target.value);
+  const handleGrand_total = (event) => setGrand_total(event.target.value);
 
   const [inputFields, setInputFields] = useState([
     {
@@ -235,6 +237,7 @@ function TambahPengiriman() {
         nama_pembeli: nama_pembeli || null,
         uang_muka: uang_muka || null,
         status: status || null,
+        total_biaya: grand_total || null,
       };
       const sanitizedFields = inputFields.map((item) => ({
         barang_id: item.barang_id || null,
@@ -279,6 +282,7 @@ function TambahPengiriman() {
         setNama_pembeli("");
         setUang_muka("");
         setStatus("yes");
+        setGrand_total("");
         setInputFields([
           {
             barang_tipe: "beras",
@@ -320,11 +324,6 @@ function TambahPengiriman() {
       setIsSubmitting(false); 
     }
   };
-
-  const resTtlPengiriman = inputFields.reduce(
-    (sum, val) => sum + Number(val.data_total || 0),
-    0,
-  );
 
   return (
     <div className="p-1 md:p-3 xl:p-5 font-poppins">
@@ -550,7 +549,7 @@ function TambahPengiriman() {
                           onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
                         />
                       </div>
-                      <div>
+                      {/* <div>
                         <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block text-center">Harga</label>
                         <input
                           type="number"
@@ -561,7 +560,7 @@ function TambahPengiriman() {
                           onChange={(event) => handleInputChange(index, event)}
                           onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
                         />
-                      </div>
+                      </div> */}
                     </div>
 
                     {/* Pembayaran & Subtotal */}
@@ -593,7 +592,7 @@ function TambahPengiriman() {
                           </label>
                         </div>
                       </div>
-                      <div>
+                      {/* <div>
                         <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Subtotal</label>
                         <input
                           type="text"
@@ -601,7 +600,7 @@ function TambahPengiriman() {
                           value={RupiahFormat(field.data_total || 0)}
                           readOnly
                         />
-                      </div>
+                      </div> */}
                     </div>
 
                   </div>
@@ -609,9 +608,19 @@ function TambahPengiriman() {
               })}
 
               {/* Total Mobile Bawah */}
-              <div className="bg-teal-50/50 border border-teal-200 rounded-xl p-4 shadow-sm flex justify-between items-center">
+              <div className="bg-teal-50/50 border border-teal-200 rounded-xl p-4 shadow-sm flex flex-col gap-2">
                 <span className="text-sm font-bold text-teal-900 uppercase">Grand Total</span>
-                <span className="text-lg font-bold text-teal-700">{RupiahFormat(resTtlPengiriman)}</span>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">Rp</span>
+                  <input
+                    type="number"
+                    className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                    placeholder="0"
+                    name="grand_total"
+                    value={grand_total}
+                    onChange={handleGrand_total}
+                  />
+                </div>
               </div>
             </div>
 
@@ -629,8 +638,8 @@ function TambahPengiriman() {
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-56">Supplier</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Stock (Kg)</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">Tonase (Kg)</th>
-                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Harga (Rp)</th>
-                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Total</th>
+                      {/* <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Harga (Rp)</th> */}
+                      {/* <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Total</th> */}
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-36">Pembayaran</th>
                       <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-14">Aksi</th>
                     </tr>
@@ -726,7 +735,7 @@ function TambahPengiriman() {
                             />
                           </td>
 
-                          <td className="py-2 px-3 border-r border-gray-100">
+                          {/* <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="number"
                               required
@@ -736,16 +745,16 @@ function TambahPengiriman() {
                               onChange={(event) => handleInputChange(index, event)}
                               onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
                             />
-                          </td>
+                          </td> */}
 
-                          <td className="py-2 px-3 border-r border-gray-100">
+                          {/* <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="text"
                               className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-right text-gray-800 font-bold cursor-not-allowed outline-none"
                               value={RupiahFormat(field.data_total || 0)}
                               readOnly
                             />
-                          </td>
+                          </td> */}
 
                           {/* Toggle Pembayaran UI Modern */}
                           <td className="py-2 px-3 border-r border-gray-100">
@@ -792,13 +801,22 @@ function TambahPengiriman() {
 
                     {/* Footer Grand Total dalam Tabel */}
                     <tr className="bg-gray-100/80 border-t-2 border-gray-300">
-                      <td colSpan="7" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
+                      <td colSpan="6" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
                         GRAND TOTAL PENGIRIMAN
                       </td>
-                      <td className="text-right py-3 px-3 text-sm font-bold text-red-600 border-r border-gray-200 bg-red-50/50">
-                        {RupiahFormat(resTtlPengiriman)}
+                      <td colSpan="2" className="py-2 px-3 border-r border-gray-200 bg-red-50/50">
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">Rp</span>
+                          <input
+                            type="number"
+                            className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                            placeholder="0"
+                            name="grand_total"
+                            value={grand_total}
+                            onChange={handleGrand_total}
+                          />
+                        </div>
                       </td>
-                      <td colSpan="2"></td>
                     </tr>
                   </tbody>
                 </table>
