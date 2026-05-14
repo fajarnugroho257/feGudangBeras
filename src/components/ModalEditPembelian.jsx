@@ -98,6 +98,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
   useEffect(() => {
     fetchBarangByType('beras');
     fetchBarangByType('gabah');
+    fetchBarangByType('katul');
   }, [fetchBarangByType]);
 
   const [suplier_nama, setsuplier_nama] = useState("");
@@ -379,6 +380,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                             >
                               <option value="beras">Beras</option>
                               <option value="gabah">Gabah</option>
+                              <option value="katul">Katul</option>
                             </select>
                           </td>
                           
