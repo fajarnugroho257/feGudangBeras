@@ -42,6 +42,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
         setsuplier_nama(suplier.suplier_nama);
         setsuplier_tgl(formattedDate);
         setsuplier_id(suplier.suplier_id);
+        setTotal_operasional(suplier.ttlOperasional || "");
         //
         toast.update(toastId, {
           render: "Data getting successfully!",
@@ -102,6 +103,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
   const [suplier_nama, setsuplier_nama] = useState("");
   const [suplier_tgl, setsuplier_tgl] = useState("");
   const [suplier_id, setsuplier_id] = useState("");
+  const [total_operasional, setTotal_operasional] = useState("");
   //
   const handleSuplier_nama = (event) => {
     setsuplier_nama(event.target.value);
@@ -109,6 +111,9 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
   //
   const handleSuplier_tgl = (event) => {
     setsuplier_tgl(event.target.value);
+  };
+  const handleTotal_operasional = (event) => {
+    setTotal_operasional(event.target.value);
   };
 
   const handleAddField = () => {
@@ -202,6 +207,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
         pembelian_tgl: suplier_tgl,
         id: suplier_id,
         suplier_nama: suplier_nama,
+        total_operasional: total_operasional || null,
       };
       const sanitizedFields = inputFields.map(item => ({
         ...item,
@@ -258,6 +264,11 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
     setInputFields(values);
   };
 
+  const resTtlPembelian = inputFields.reduce(
+    (sum, val) => sum + Number(val.pembelian_total || 0),
+    0,
+  );
+
   if (!isOpen) return null;
 
   return (
@@ -291,7 +302,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
           <div className="flex-1 overflow-y-auto p-5 md:px-8 bg-gray-50/30">
             
             {/* Info Suplier Card */}
-            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-3 gap-5">
               <div>
                 <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Nama Suplier</label>
                 <div className="relative">
@@ -303,6 +314,20 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                     value={suplier_nama}
                     onChange={handleSuplier_nama}
                     disabled
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Total Operasional</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">Rp</span>
+                  <input
+                    type="number"
+                    className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                    placeholder="0"
+                    name="total_operasional"
+                    value={total_operasional}
+                    onChange={handleTotal_operasional}
                   />
                 </div>
               </div>
@@ -499,6 +524,15 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                         </tr>
                       );
                     })}
+                    <tr className="bg-gray-100/80 border-t-2 border-gray-300">
+                      <td colSpan="9" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
+                        GRAND TOTAL KESELURUHAN
+                      </td>
+                      <td className="text-right py-3 px-3 text-sm font-bold text-red-600 border-r border-gray-200 bg-red-50/50">
+                        {RupiahFormat(resTtlPembelian)}
+                      </td>
+                      <td></td>
+                    </tr>
                   </tbody>
                 </table>
               </div>

@@ -15,6 +15,7 @@ function TambahPembelian() {
   const [pembelian_tgl, setpembelian_tgl] = useState(new Date().toISOString().slice(0, 10));
   const [alamat, setalamat] = useState("");
   const [no_hp, setno_hp] = useState("");
+  const [total_operasional, setTotal_operasional] = useState("");
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -93,6 +94,9 @@ function TambahPembelian() {
   };
   const handleNo_hp = (event) => {
     setno_hp(event.target.value);
+  };
+  const handleTotal_operasional = (event) => {
+    setTotal_operasional(event.target.value);
   };
 
   const [inputFields, setInputFields] = useState([
@@ -226,6 +230,7 @@ function TambahPembelian() {
           pembelian_tgl: pembelian_tgl,
           alamat: selectedSupplier.value === 'new' ? alamat : null,
           no_hp: selectedSupplier.value === 'new' ? no_hp : null,
+          total_operasional: total_operasional || null,
         };
         const sanitizedFields = inputFields.map(item => ({
           ...item,
@@ -353,6 +358,7 @@ function TambahPembelian() {
           setpembelian_tgl(new Date().toISOString().slice(0, 10));
           setalamat("");
           setno_hp("");
+          setTotal_operasional("");
           setSelectedSupplier(null);
           setInputFields([
             {
@@ -503,6 +509,24 @@ function TambahPembelian() {
                       }),
                     }}
                   />
+                </div>
+
+                {/* Total Operasional */}
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    Total Operasional
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">Rp</span>
+                    <input
+                      type="number"
+                      className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                      placeholder="0"
+                      name="total_operasional"
+                      value={total_operasional}
+                      onChange={handleTotal_operasional}
+                    />
+                  </div>
                 </div>
 
                 {/* Tanggal Pembelian */}
