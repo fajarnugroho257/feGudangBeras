@@ -504,6 +504,12 @@ function TambahKaryawan() {
             >
               Pengiriman
             </button>
+            <button
+            className="px-4 py-2 text-gray-500 hover:bg-gray-50 font-medium rounded-lg text-sm transition-colors"
+            onClick={() => handleTab("tambah-process")}
+            >
+              Proses Gabah
+            </button>
             <button className="px-4 py-2 bg-teal-50 text-teal-700 font-bold rounded-lg text-sm border border-teal-200 transition-colors">
               Karyawan
             </button>

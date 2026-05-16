@@ -125,6 +125,7 @@ function StokGudang() {
             className="w-full md:w-auto px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-teal-100 outline-none cursor-pointer transition-all"
           >
             <option value="">Semua Tipe</option>
+            <option value="gabah">Gabah</option>
             <option value="beras">Beras</option>
             <option value="sekam">Sekam</option>
             <option value="katul">Katul</option>

@@ -10,12 +10,14 @@ import Penjualan from "./page/Penjualan";
 import Pembelian from "./page/Pembelian";
 import Pembayaran from "./page/Pembayaran";
 import Pengiriman from "./page/Pengiriman";
+import Process from "./page/Process";
 import StokGudang from "./page/StokGudang";
 import Laporan from "./page/Laporan";
 import TambahPengiriman from "./page/TambahPengiriman";
 import TambahPembelian from "./page/TambahPembelian";
 import TambahKaryawan from "./page/TambahKaryawan";
 import TambahKardus from "./page/TambahKardus";
+import TambahProcess from "./page/TambahProcess";
 import Nota from "./page/Nota";
 import Suplier from "./page/Suplier";
 import Barang from "./page/Barang";
@@ -92,21 +94,23 @@ function App() {
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="max-w-10xl mx-auto">
             <Routes>
-              <Route path="/dashboard"        element={<AuthRoute element={<Dashboard />}        isPrivate={true} />} />
-              <Route path="/penjualan"         element={<AuthRoute element={<Penjualan />}         isPrivate={true} />} />
-              <Route path="/pembelian"         element={<AuthRoute element={<Pembelian />}         isPrivate={true} />} />
-              <Route path="/pembayaran"        element={<AuthRoute element={<Pembayaran />}        isPrivate={true} />} />
-              <Route path="/pengiriman"        element={<AuthRoute element={<Pengiriman />}        isPrivate={true} />} />
-              <Route path="/stok-gudang"       element={<AuthRoute element={<StokGudang />}       isPrivate={true} />} />
-              <Route path="/laporan"           element={<AuthRoute element={<Laporan />}           isPrivate={true} />} />
+              <Route path="/dashboard" element={<AuthRoute element={<Dashboard />} isPrivate={true} />} />
+              <Route path="/penjualan" element={<AuthRoute element={<Penjualan />} isPrivate={true} />} />
+              <Route path="/pembelian" element={<AuthRoute element={<Pembelian />} isPrivate={true} />} />
+              <Route path="/pembayaran" element={<AuthRoute element={<Pembayaran />} isPrivate={true} />} />
+              <Route path="/pengiriman" element={<AuthRoute element={<Pengiriman />} isPrivate={true} />} />
+              <Route path="/process" element={<AuthRoute element={<Process />} isPrivate={true} />} />
+              <Route path="/stok-gudang" element={<AuthRoute element={<StokGudang />} isPrivate={true} />} />
+              <Route path="/laporan" element={<AuthRoute element={<Laporan />} isPrivate={true} />} />
               <Route path="/tambah-pengiriman" element={<AuthRoute element={<TambahPengiriman />} isPrivate={true} />} />
-              <Route path="/tambah-pembelian"  element={<AuthRoute element={<TambahPembelian />}  isPrivate={true} />} />
-              <Route path="/tambah-karyawan"   element={<AuthRoute element={<TambahKaryawan />}   isPrivate={true} />} />
-              <Route path="/tambah-kardus"     element={<AuthRoute element={<TambahKardus />}     isPrivate={true} />} />
-              <Route path="/nota"              element={<AuthRoute element={<Nota />}             isPrivate={true} />} />
-              <Route path="/suplier"           element={<AuthRoute element={<Suplier />}          isPrivate={true} />} />
-              <Route path="/barang"            element={<AuthRoute element={<Barang />}           isPrivate={true} />} />
-              <Route path="/karyawan"          element={<AuthRoute element={<Karyawan />}         isPrivate={true} />} />
+              <Route path="/tambah-pembelian" element={<AuthRoute element={<TambahPembelian />} isPrivate={true} />} />
+              <Route path="/tambah-karyawan" element={<AuthRoute element={<TambahKaryawan />} isPrivate={true} />} />
+              <Route path="/tambah-kardus" element={<AuthRoute element={<TambahKardus />} isPrivate={true} />} />
+              <Route path="/tambah-process" element={<AuthRoute element={<TambahProcess />} isPrivate={true} />} />
+              <Route path="/nota" element={<AuthRoute element={<Nota />} isPrivate={true} />} />
+              <Route path="/suplier" element={<AuthRoute element={<Suplier />} isPrivate={true} />} />
+              <Route path="/barang" element={<AuthRoute element={<Barang />} isPrivate={true} />} />
+              <Route path="/karyawan" element={<AuthRoute element={<Karyawan />} isPrivate={true} />} />
             </Routes>
           </div>
         </main>

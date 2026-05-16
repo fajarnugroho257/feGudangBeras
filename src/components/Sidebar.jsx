@@ -24,8 +24,9 @@ const menuItems = [
       },
     ],
   },
-  { name: "Tambah Data",     url: "/tambah-pembelian", icon: "fa-plus-circle" },
+  { name: "Tambah Data",     url: "/tambah-pembelian",  icon: "fa-plus-circle" },
   { name: "Data Pembelian",  url: "/pembelian",         icon: "fa-shopping-bag" },
+  { name: "Data Proses",     url: "/process",           icon: "fa-sync" },
   { name: "Data Pengiriman", url: "/pengiriman",        icon: "fa-truck" },
   { name: "Stok Gudang",     url: "/stok-gudang",       icon: "fa-warehouse" },
   { name: "Laporan",         url: "/laporan",           icon: "fa-chart-bar" },
@@ -92,7 +93,7 @@ function Sidebar({ isMobileOpen, setMobileOpen, isDesktopOpen, setDesktopOpen })
   }, [showContent]);
 
   let activeUri = location.pathname;
-  if (["/tambah-pembelian", "/tambah-pengiriman", "/tambah-karyawan"].includes(activeUri)) {
+  if (["/tambah-pembelian", "/tambah-pengiriman", "/tambah-karyawan", "/tambah-process"].includes(activeUri)) {
     activeUri = "/tambah-pembelian";
   }
 

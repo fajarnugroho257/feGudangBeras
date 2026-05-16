@@ -463,6 +463,12 @@ function TambahPembelian() {
           </button>
           <button
             className="px-4 py-2 text-gray-500 hover:bg-gray-50 font-medium rounded-lg text-sm transition-colors"
+            onClick={() => handleTab("tambah-process")}
+          >
+            Proses Gabah
+          </button>
+          <button
+            className="px-4 py-2 text-gray-500 hover:bg-gray-50 font-medium rounded-lg text-sm transition-colors"
             onClick={() => handleTab("tambah-karyawan")}
           >
             Karyawan
