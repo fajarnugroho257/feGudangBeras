@@ -720,7 +720,7 @@ function Pengiriman() {
                 <input type="hidden" value={pengiriman_tgl} />
                 
                 {/* 1. Kardus */}
-                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-5">
+                {/* <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-5">
                   <h3 className="text-sm font-bold text-gray-700 uppercase mb-2 border-b border-gray-100 pb-2">1. Operasional Kardus</h3>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-orange-50 text-orange-500 rounded flex justify-center items-center">
@@ -730,11 +730,11 @@ function Pengiriman() {
                       {RupiahFormat(bebanKardus)}
                     </p>
                   </div>
-                </div>
+                </div> */}
 
                 {/* 2. Karyawan */}
                 <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-5">
-                  <h3 className="text-sm font-bold text-gray-700 uppercase mb-3 border-b border-gray-100 pb-2">2. Operasional Karyawan</h3>
+                  <h3 className="text-sm font-bold text-gray-700 uppercase mb-3 border-b border-gray-100 pb-2">1. Operasional Karyawan</h3>
                   
                   <div className="space-y-3 mb-3">
                     {inputBebanKaryawan.map((field, index) => (
@@ -786,7 +786,7 @@ function Pengiriman() {
 
                 {/* 3. Lainnya */}
                 <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-5">
-                  <h3 className="text-sm font-bold text-gray-700 uppercase mb-3 border-b border-gray-100 pb-2">3. Operasional Lainnya</h3>
+                  <h3 className="text-sm font-bold text-gray-700 uppercase mb-3 border-b border-gray-100 pb-2">2. Operasional Lainnya</h3>
                   
                   <div className="space-y-3 mb-3">
                     {inputBebanLain.map((field, index) => (
