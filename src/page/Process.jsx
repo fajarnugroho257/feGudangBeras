@@ -4,7 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 import RupiahFormat from "../utilities/RupiahFormat";
 import FormatTanggal from "../utilities/FormatTanggal";
 import api from "../utilities/axiosInterceptor";
-// import ModalEditProcess from "../components/ModalEditProcess"; // Asumsikan Anda akan membuat komponen ini nanti
+import ModalEditProcess from "../components/ModalEditProcess";
 
 function Process() {
   // TOKEN
@@ -427,10 +427,9 @@ function Process() {
         
         <ToastContainer position="bottom-right" />
         
-        {/* Jika Anda sudah memiliki ModalEditProcess, hilangkan komentar baris di bawah */}
-        {/* {isModalEditOpen && (
+        {isModalEditOpen && (
           <ModalEditProcess isOpen={isModalEditOpen} onClose={closeEditModal} id={edit_id} />
-        )} */}
+        )}
       </div>
     </>
   );
