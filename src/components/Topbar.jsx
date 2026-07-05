@@ -27,7 +27,7 @@ function Topbar({ onMenuClick }) {
     localStorage.removeItem("page");
     
     // Arahkan kembali ke halaman login
-    navigate("/login");
+    navigate("/");
   };
 
   return (
