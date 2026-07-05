@@ -65,8 +65,8 @@ function App() {
   if (isAuthPage) {
     return (
       <Routes>
-        <Route path="/login" element={<AuthRoute element={<Login />} isPrivate={false} />} />
-        <Route path="/" element={<AuthRoute element={<Splash />} isPrivate={false} />} />
+        <Route path="/" element={<AuthRoute element={<Login />} isPrivate={false} />} />
+        {/* <Route path="/" element={<AuthRoute element={<Splash />} isPrivate={false} />} /> */}
       </Routes>
     );
   }
