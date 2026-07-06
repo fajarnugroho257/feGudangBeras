@@ -9,6 +9,9 @@ function ModalPreviewPembelian({ isOpen, onClose, pengiriman_id }) {
   // TOKEN
   const token = localStorage.getItem("token");
   //
+  function formatRupiah(angka) {
+    return `Rp${angka.toLocaleString("id-ID")}`;
+  }
   //
   const [dataSuplier, setDataSuplier] = useState([]);
   const [dataPembelian, setDataPembelian] = useState([]);
@@ -23,8 +26,9 @@ function ModalPreviewPembelian({ isOpen, onClose, pengiriman_id }) {
         },
       });
       if (response.status === 200) {
+        console.log(response.data.data.listPengiriman)
         setDataSuplier(response.data.data);
-        setDataPembelian(response.data.data.listPembelian);
+        setDataPembelian(response.data.data.listPengiriman);
         //
         toast.update(toastId, {
           render: "Data getting successfully!",
@@ -71,36 +75,40 @@ function ModalPreviewPembelian({ isOpen, onClose, pengiriman_id }) {
       0
     );
 
-    const columnWidths = [6, 5, 8, 7];
+    const columnWidths = [25, 7, 15];
 
     const header =
-      `${fontSmall}` +
-      "Putra Cabe\n------------------------\n" +
-      `Tanggal     : ${tanggal}\n` +
-      `Nota Cetak  : ${currentDateTime[0]}\n` +
-      `Nota Jam    : ${currentDateTime[1]}\n` +
-      "-------------------------------\n" +
-      formatRow(["Brg", "Ton", "Harga", "Total"], columnWidths) +
-      "\n-------------------------------\n";
+        `${fontSmall}` + // Atur font kecil
+        "UD. DAFFA PUTRA\n" +
+        "Alamat Jln Kuwaluhan, Secang, Kab. Magelang\n" +
+        "HP. 0813 1300 5249 / 0813 9123 1224" +
+        "\n-----------------------------------------------\n" +
+        `Tanggal     : ${tanggal}\n` +
+        `Nota Cetak  : ${currentDateTime[0]}\n` + // Tambahkan tanggal dan jam sekarang
+        `Nota Jam    : ${currentDateTime[1]}\n` + // Tambahkan tanggal dan jam sekarang
+        "-----------------------------------------------\n" +
+        formatRow(["Barang", "Tonase", "Harga"], columnWidths) +
+        "\n" +
+        "-----------------------------------------------\n";
 
+    console.log(items)
     const rows = items
       .map((item) =>
         formatRow(
           [
-            item.data_merek,
-            item.data_tonase.toString(),
-            formatRupiah(parseInt(item.data_harga) || 0),
-            formatRupiah(parseInt(item.data_total) || 0),
+            item.barang.nama,
+            item.data_tonase,
+            "",
           ],
-          columnWidths
-        )
+          columnWidths,
+        ),
       )
       .join("\n");
 
     const footer =
-      "-------------------------------\n" +
-      formatRow(["Gr Tot", "", "", formatRupiah(grandTotal)], columnWidths) +
-      "\n-------------------------------\n\n";
+      "-----------------------------------------------\n" +
+      formatRow(["Grand Total", grand_tonase, RupiahFormat(dataSuplier.total_biaya)], columnWidths) +
+      "\n-----------------------------------------------\n\n";
 
     // Gabungkan semua
     const nota = `${fontSmall}` + header + rows + "\n" + footer + `${fontSmall}`;
@@ -157,11 +165,9 @@ function ModalPreviewPembelian({ isOpen, onClose, pengiriman_id }) {
   }
 
   // Fungsi untuk memformat angka ke rupiah
-  function formatRupiah(angka) {
-    return `Rp${angka.toLocaleString("id-ID")}`;
-  }
   //
   let grand_total = 0;
+  let grand_tonase = 0;
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -190,41 +196,37 @@ function ModalPreviewPembelian({ isOpen, onClose, pengiriman_id }) {
               <tr className="text-center">
                 <th className="border border-black py-1 px-2">Nama Barang</th>
                 <th className="border border-black py-1 px-2">Tonase</th>
-                <th className="border border-black py-1 px-2">Harga</th>
-                <th className="border border-black py-1 px-2">Total</th>
+                <th className="border border-black py-1 px-2">Total Harga</th>
               </tr>
             </thead>
             <tbody>
               {dataPembelian &&
                 dataPembelian.map((value, index) => {
-                  console.log(parseInt(value.data_total ?? 0));
                   grand_total += parseInt(value.data_total ?? 0);
+                  grand_tonase += parseInt(value.data_tonase ?? 0);
                   return (
                     <tr>
                       <td className="border border-black py-1 px-2">
-                        {value.data_merek}
+                        {value.barang.nama}
                       </td>
                       <td className="border border-black py-1 px-2 text-center">
                         {value.data_tonase}
                       </td>
-                      <td className="border border-black py-1 px-2 text-right">
-                        {RupiahFormat(value.data_harga)}
-                      </td>
-                      <td className="border border-black py-1 px-2 text-right">
-                        {RupiahFormat(value.data_total)}
-                      </td>
+                      <td className="border border-black py-1 px-2 text-center">-</td>
                     </tr>
                   );
                 })}
               <tr className="font-semibold">
                 <td
                   className="border border-black py-1 px-2 text-right"
-                  colSpan="3"
                 >
                   Grand Total
                 </td>
+                <td className="border border-black py-1 px-2 text-center">
+                  {grand_tonase}
+                </td>
                 <td className="border border-black py-1 px-2 text-right">
-                  {RupiahFormat(grand_total)}
+                  {RupiahFormat(dataSuplier.total_biaya)}
                 </td>
               </tr>
             </tbody>

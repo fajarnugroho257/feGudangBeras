@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import ModalLaporan from "../components/ModalLaporan";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
 import RupiahFormat from "../utilities/RupiahFormat";
 import FormatTanggal from "../utilities/FormatTanggal";
 import api from "../utilities/axiosInterceptor";
+import Detail from "../components/Laporan/Detail";
 
 function Laporan() {
   // TOKEN
@@ -75,7 +75,6 @@ function Laporan() {
         });
         //get response data
         const data = await response.data.rs_data;
-        console.log(data);
         if (response.status === 200) {
           setBlur(false);
         }
@@ -94,6 +93,19 @@ function Laporan() {
     setSuplierTgl(tanggal);
   };
   let rowCounter = 0;
+  let ttlPembelian = 0;
+  let ttlPembelianTonase = 0;
+  let ttlBebanSemua = 0;
+  let ttlPengiriman = 0;
+  let ttlPengirimanTonase = 0;
+  // detail
+  const [showDetailData, setShowDetailData] = useState(false);
+  const [detailTanggal, setDetailTanggal] = useState(false);
+
+  const handleDetail = async (tanggal) => {
+    setShowDetailData(!showDetailData);
+    setDetailTanggal(tanggal);
+  };
   //
   return (
     <>
@@ -174,11 +186,16 @@ function Laporan() {
               <tbody className="divide-y divide-gray-100">
                 {datas.map((item, key) => {
                   rowCounter++;
-
+                  ttlPembelian += item.total_pembelian;
+                  ttlPembelianTonase += item.total_pembelian_tonase;
+                  ttlBebanSemua += item.total_bebanSemua;
+                  ttlPengiriman += item.total_pengiriman;
+                  ttlPengirimanTonase += item.total_pengiriman_tonase;
                   return (
                     <tr
+                      onClick={() => handleDetail(item.tanggal)}
                       key={key}
-                      className="hover:bg-teal-50/10 transition-colors border-t-2 border-gray-100"
+                      className="group hover:bg-gray-400 transition-colors border-t-2 border-gray-100 cursor-pointer"
                     >
                       <td className="py-4 px-4 text-center text-sm font-medium text-gray-600 border-r border-gray-100">
                         {rowCounter}
@@ -186,29 +203,55 @@ function Laporan() {
                       <td className="py-5 px-4 align-middle text-center border-r border-gray-200 bg-gray-50/50">
                         {FormatTanggal(item.tanggal)}
                       </td>
-                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 bg-gray-50/50 bg-green-200">
+                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 group-hover:bg-green-300 bg-green-200">
                         {RupiahFormat(item.total_pembelian)}
                       </td>
-                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 bg-gray-50/50 bg-green-200">
+                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 group-hover:bg-green-300 bg-green-200">
                         {item.total_pembelian_tonase} Kg
                       </td>
-                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 bg-gray-50/50 bg-yellow-200">
+                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 group-hover:bg-yellow-300 bg-yellow-200">
                         {RupiahFormat(item.total_bebanSemua)}
                       </td>
-                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 bg-gray-50/50 bg-red-200">
+                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 group-hover:bg-red-300 bg-red-200">
                         {RupiahFormat(item.total_pengiriman)}
                       </td>
-                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 bg-gray-50/50 bg-red-200">
+                      <td className="py-5 px-4 align-middle text-right border-r border-gray-200 group-hover:bg-red-300 bg-red-200">
                         {item.total_pengiriman_tonase} Kg
                       </td>
                     </tr>
                   );
                 })}
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td className="py-5 px-4 align-middle text-right border-r border-gray-200 group-hover:bg-green-300 bg-green-200">
+                    {RupiahFormat(ttlPembelian)}
+                  </td>
+                  <td className="py-5 px-4 align-middle text-right border-r border-gray-200 group-hover:bg-green-300 bg-green-200">
+                    {ttlPembelianTonase} Kg
+                  </td>
+                  <td className="py-5 px-4 align-middle text-right border-r border-gray-200 group-hover:bg-yellow-300 bg-yellow-200">
+                    {RupiahFormat(ttlBebanSemua)}
+                  </td>
+                  <td className="py-5 px-4 align-middle text-right border-r border-gray-200 group-hover:bg-red-300 bg-red-200">
+                    {RupiahFormat(ttlPengiriman)}
+                  </td>
+                  <td className="py-5 px-4 align-middle text-right border-r border-gray-200 group-hover:bg-red-300 bg-red-200">
+                    {ttlPengirimanTonase} Kg
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
         <ToastContainer position="bottom-right" />
+        {showDetailData && (
+          <Detail
+            tanggal={detailTanggal}
+            isOpen={showDetailData}
+            onClose={() => setShowDetailData(false)}
+          />
+        )}
       </div>
     </>
     //

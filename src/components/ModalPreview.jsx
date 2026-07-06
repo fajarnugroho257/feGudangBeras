@@ -44,8 +44,8 @@ function ModalPreview({ isOpen, onClose, id }) {
       const dataSuplier = response.data.data;
       // Data nota
       const supplier = dataSuplier.suplier_nama;
-      const tanggal = FormatTanggal(dataSuplier.suplier_tgl);
-      const items = response.data.data.listPembelian;
+      const tanggal = FormatTanggal(dataSuplier.pembelian_tgl);
+      const items = response.data.data.pembelian_data;
       const currentDateTime = getCurrentDateTime(); // Ambil tanggal dan jam sekarang
       const grandTotal = items.reduce(
         (sum, item) => sum + parseInt(item.pembelian_total),
@@ -58,8 +58,8 @@ function ModalPreview({ isOpen, onClose, id }) {
       // Format header
       const header =
         `${fontSmall}` + // Atur font kecil
-        "Putra Cabe\n" +
-        "Alamat Jln. Raya Bandongan - Magelang\nPaingan Trasan, Bandongan\n" +
+        "UD. DAFFA PUTRA\n" +
+        "Alamat Jln Kuwaluhan, Secang, Kab. Magelang\n" +
         "HP. 0813 1300 5249 / 0813 9123 1224" +
         "\n-----------------------------------------------\n" +
         `Supplier    : ${supplier}\n` +
@@ -70,16 +70,15 @@ function ModalPreview({ isOpen, onClose, id }) {
         formatRow(["Brg", "Ton", "Harga", "Total"], columnWidths) +
         "\n" +
         "-----------------------------------------------\n";
-
       // Format isi tabel
       const rows = items
         .map((item) =>
           formatRow(
             [
-              item.pembelian_nama,
-              item.pembelian_kotor.toString() +
+              item.barang.nama + "\n",
+              (item.pembelian_kotor.toString() +
                 "|" +
-                item.pembelian_bersih.toString(),
+                item.pembelian_bersih.toString()).padStart(10, " ").padEnd(15, " "),
               formatRupiah(parseInt(item.pembelian_harga)),
               formatRupiah(parseInt(item.pembelian_total)),
             ],
@@ -87,7 +86,6 @@ function ModalPreview({ isOpen, onClose, id }) {
           ),
         )
         .join("\n");
-
       // Format footer
       const footer =
         "-----------------------------------------------\n" +
