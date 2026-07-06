@@ -178,7 +178,7 @@ function StokGudang() {
             {datas.length > 0 ? (
               datas.map((item, index) => {
                 const rowSpan = item.suppliers.length;
-                const totalStok = item.suppliers.reduce((acc, sup) => acc + (sup.stok || 0), 0);
+                const totalStok = item.total_stok ?? item.suppliers.reduce((acc, sup) => acc + (parseFloat(sup.stok) || 0), 0);
 
                 return (
                   <React.Fragment key={item.barang_id}>
@@ -200,7 +200,7 @@ function StokGudang() {
                       </td>
 
                       <td className="py-4 px-4 text-right border-r border-gray-100">
-                        {renderStockBadge(item.suppliers[0]?.stok || 0)}
+                        {renderStockBadge(Number(item.suppliers[0]?.stok) || 0)}
                       </td>
 
                       {/* TOTAL STOK: Warna latar berbeda */}
@@ -217,7 +217,7 @@ function StokGudang() {
                           {sup.suplier_nama}
                         </td>
                         <td className="py-4 px-4 text-right border-r border-gray-100">
-                          {renderStockBadge(sup.stok)}
+                          {renderStockBadge(Number(sup.stok) || 0)}
                         </td>
                       </tr>
                     ))}
