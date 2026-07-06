@@ -186,11 +186,11 @@ function Laporan() {
               <tbody className="divide-y divide-gray-100">
                 {datas.map((item, key) => {
                   rowCounter++;
-                  ttlPembelian += item.total_pembelian;
-                  ttlPembelianTonase += item.total_pembelian_tonase;
-                  ttlBebanSemua += item.total_bebanSemua;
-                  ttlPengiriman += item.total_pengiriman;
-                  ttlPengirimanTonase += item.total_pengiriman_tonase;
+                  ttlPembelian += parseInt(item.total_pembelian);
+                  ttlPembelianTonase += parseInt(item.total_pembelian_tonase);
+                  ttlBebanSemua += parseInt(item.total_bebanSemua);
+                  ttlPengiriman += parseInt(item.total_pengiriman);
+                  ttlPengirimanTonase += parseInt(item.total_pengiriman_tonase);
                   return (
                     <tr
                       onClick={() => handleDetail(item.tanggal)}
