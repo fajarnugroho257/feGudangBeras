@@ -46,6 +46,11 @@ function TambahPengiriman() {
   ]);
 
   useEffect(() => {
+    const total = inputFields.reduce((sum, item) => sum + Number(item.data_total || 0), 0);
+    setGrand_total(total);
+  }, [inputFields]);
+
+  useEffect(() => {
     const fectData = async () => {
       try {
         const response = await api.get("/detail-Kardus/1", {
@@ -170,10 +175,14 @@ function TambahPengiriman() {
       values[index][event.target.name] = event.target.value;
     }
 
-    if (event.target.name === "data_tonase" || event.target.name === "data_harga") {
-      const tonase = Number(values[index].data_tonase || 0);
-      const harga = Number(values[index].data_harga || 0);
-      values[index].data_total = tonase * harga;
+    if (event.target.name === "data_tonase" || event.target.name === "data_harga" || event.target.name === "data_total") {
+      if (event.target.name === "data_total") {
+        values[index].data_total = event.target.value;
+      } else {
+        const tonase = Number(values[index].data_tonase || 0);
+        const harga = Number(values[index].data_harga || 0);
+        values[index].data_total = tonase * harga;
+      }
     }
 
     setInputFields(values);
@@ -213,6 +222,9 @@ function TambahPengiriman() {
       );
       if (stockEntry) {
         values[index].current_stock = stockEntry.stok;
+        values[index].data_harga = stockEntry.price || 0;
+        const tonase = Number(values[index].data_tonase || 0);
+        values[index].data_total = tonase * values[index].data_harga;
       }
     }
     setInputFields(values);
@@ -555,7 +567,7 @@ function TambahPengiriman() {
                           onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
                         />
                       </div>
-                      {/* <div>
+                      <div>
                         <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block text-center">Harga</label>
                         <input
                           type="number"
@@ -566,7 +578,7 @@ function TambahPengiriman() {
                           onChange={(event) => handleInputChange(index, event)}
                           onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
                         />
-                      </div> */}
+                      </div>
                     </div>
 
                     {/* Pembayaran & Subtotal */}
@@ -598,15 +610,16 @@ function TambahPengiriman() {
                           </label>
                         </div>
                       </div>
-                      {/* <div>
+                      <div>
                         <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Subtotal</label>
                         <input
-                          type="text"
-                          className="w-full py-2 px-3 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-800 font-bold text-right outline-none"
-                          value={RupiahFormat(field.data_total || 0)}
-                          readOnly
+                          type="number"
+                          name="data_total"
+                          className="w-full py-2 px-3 bg-white border border-gray-200 rounded-md text-sm text-gray-800 font-bold text-right outline-none"
+                          value={field.data_total}
+                          onChange={(event) => handleInputChange(index, event)}
                         />
-                      </div> */}
+                      </div>
                     </div>
 
                   </div>
@@ -644,8 +657,8 @@ function TambahPengiriman() {
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-56">Supplier</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Stock (Kg)</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">Tonase (Kg)</th>
-                      {/* <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Harga (Rp)</th> */}
-                      {/* <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Total</th> */}
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Harga (Rp)</th>
+                      <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Total</th>
                       <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-36">Pembayaran</th>
                       <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-14">Aksi</th>
                     </tr>
@@ -741,7 +754,7 @@ function TambahPengiriman() {
                             />
                           </td>
 
-                          {/* <td className="py-2 px-3 border-r border-gray-100">
+                          <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="number"
                               required
@@ -751,16 +764,18 @@ function TambahPengiriman() {
                               onChange={(event) => handleInputChange(index, event)}
                               onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
                             />
-                          </td> */}
+                          </td>
 
-                          {/* <td className="py-2 px-3 border-r border-gray-100">
+                          <td className="py-2 px-3 border-r border-gray-100">
                             <input
-                              type="text"
-                              className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-right text-gray-800 font-bold cursor-not-allowed outline-none"
-                              value={RupiahFormat(field.data_total || 0)}
-                              readOnly
+                              type="number"
+                              name="data_total"
+                              className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-right text-gray-800 font-bold outline-none focus:ring-2 focus:ring-teal-100 focus:border-teal-400"
+                              value={field.data_total}
+                              onChange={(event) => handleInputChange(index, event)}
+                              onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
                             />
-                          </td> */}
+                          </td>
 
                           {/* Toggle Pembayaran UI Modern */}
                           <td className="py-2 px-3 border-r border-gray-100">
