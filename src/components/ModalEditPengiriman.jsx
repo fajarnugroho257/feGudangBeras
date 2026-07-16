@@ -63,8 +63,8 @@ const PengirimanRow = memo(function PengirimanRow({
             !field.barang_id
               ? "Pilih barang dulu"
               : supplierOptions.length === 0
-              ? "Memuat…"
-              : "Pilih Supplier"
+                ? "Memuat…"
+                : "Pilih Supplier"
           }
           isClearable
           isDisabled={!field.barang_id}
@@ -100,33 +100,6 @@ const PengirimanRow = memo(function PengirimanRow({
           }
         />
       </td>
-
-      {/* Harga
-      <td className="py-2 px-3 border-r border-gray-100">
-        <input
-          type="number"
-          required
-          name="data_harga"
-          className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-right text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
-          value={field.data_harga}
-          onChange={(e) => onInputChange(index, e)}
-          onFocus={(e) =>
-            e.target.addEventListener("wheel", (ev) => ev.preventDefault(), {
-              passive: false,
-            })
-          }
-        />
-      </td> */}
-
-      {/* Total (read-only)
-      <td className="py-2 px-3 border-r border-gray-100">
-        <input
-          readOnly
-          type="text"
-          className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-right text-gray-800 font-bold cursor-not-allowed outline-none"
-          value={RupiahFormat(field.data_total || 0)}
-        />
-      </td> */}
 
       {/* Pembayaran */}
       <td className="py-2 px-3 border-r border-gray-100">
@@ -165,7 +138,7 @@ const PengirimanRow = memo(function PengirimanRow({
   );
 });
 
-// ─── Shared react-select styles (defined once, not recreated per render) ──────
+// ─── Shared react-select styles ──────────────────────────────────────────────
 const selectStyles = {
   menuPortal: (base) => ({ ...base, zIndex: 9999 }),
   control: (base, state) => ({
@@ -199,24 +172,18 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
 
   // Header fields
   const [pengiriman_tgl, setPengiriman_tgl] = useState("");
-  const [nama_pembeli, setNama_pembeli]     = useState("");
-  const [uang_muka, setUang_muka]           = useState("");
-  const [status, setStatus]                 = useState("yes");
-  const [grand_total, setGrand_total]       = useState("");
+  const [nama_pembeli, setNama_pembeli] = useState("");
+  const [nama_barang_nota, setNama_barang_nota] = useState(""); // ✅ STATE BARU
+  const [uang_muka, setUang_muka] = useState("");
+  const [status, setStatus] = useState("yes");
+  const [grand_total, setGrand_total] = useState("");
 
   // Line items
   const [rows, setRows] = useState([]);
 
-  /**
-   * barangCache:  { [tipe]: Option[] }   — fetched once per tipe, on demand
-   * stockCache:   { [barang_id]: { stockData, supplierOptions } }
-   *
-   * We use refs so cache reads/writes never trigger re-renders.
-   */
-  const barangCacheRef  = useRef({});
-  const stockCacheRef   = useRef({});
+  const barangCacheRef = useRef({});
+  const stockCacheRef = useRef({});
 
-  // Per-row supplier options kept in state so rows re-render when loaded
   const [supplierOptionsByIndex, setSupplierOptionsByIndex] = useState({});
 
   // ── Lazy fetch: barang options for a given tipe ──────────────────────────
@@ -274,7 +241,6 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
   useEffect(() => {
     if (!isOpen || !pengiriman_id) return;
 
-    // Reset on open
     setRows([]);
     setSupplierOptionsByIndex({});
 
@@ -282,12 +248,9 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
 
     (async () => {
       try {
-        // Fetch ALL tipe options upfront in parallel so we can build a
-        // reverse lookup: barang_id → tipe (response doesn't include barang.tipe)
         const ALL_TIPES = ["beras", "katul", "sekam"];
         await Promise.all(ALL_TIPES.map((t) => fetchBarangByType(t)));
 
-        // Build reverse map: { [barang_id]: tipe }
         const barangIdToTipe = {};
         for (const tipe of ALL_TIPES) {
           const opts = barangCacheRef.current[tipe] || [];
@@ -305,26 +268,24 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
         const d = res.data.data;
         setPengiriman_tgl(d.pengiriman_tgl ? d.pengiriman_tgl.split("T")[0] : "");
         setNama_pembeli(d.nama_pembeli || "");
+        setNama_barang_nota(d.nama_barang_nota || ""); // ✅ AMBIL DARI BACKEND
         setUang_muka(d.uang_muka || "");
         setStatus(d.status || "yes");
         setGrand_total(d.total_biaya || "");
 
         const list = d.listPengiriman || [];
 
-        // Fetch barang + stock for every row in parallel
         const [processedRows, supplierMap] = await (async () => {
-          const built   = [];
-          const supMap  = {};
+          const built = [];
+          const supMap = {};
 
           await Promise.all(
             list.map(async (item, index) => {
-              // ✅ Look up correct tipe from reverse map; fallback to "beras" only
-              // if the barang_id genuinely isn't found in any tipe list.
-              const tipe    = barangIdToTipe[item.barang_id] ?? "beras";
+              const tipe = barangIdToTipe[item.barang_id] ?? "beras";
               const options = barangCacheRef.current[tipe] || [];
               const matched = options.find((o) => o.value === item.barang_id);
 
-              let current_stock    = 0;
+              let current_stock = 0;
               let selectedSupplier = null;
 
               if (item.barang_id) {
@@ -333,7 +294,7 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
 
                 const entry = stockData.find((s) => s.suplier_id === item.supplier_id);
                 if (entry) {
-                  current_stock    = entry.stok;
+                  current_stock = entry.stok;
                   selectedSupplier = {
                     value: entry.suplier_id,
                     label: entry.suplier?.suplier_nama,
@@ -343,15 +304,15 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
 
               built[index] = {
                 id: item.id,
-                barang_tipe:      tipe,
-                barang_id:        item.barang_id,
-                selectedBarang:   matched ?? null,
-                supplier_id:      item.supplier_id,
+                barang_tipe: tipe,
+                barang_id: item.barang_id,
+                selectedBarang: matched ?? null,
+                supplier_id: item.supplier_id,
                 selectedSupplier,
                 current_stock,
-                data_tonase:   item.data_tonase  || "",
-                data_harga:    item.data_harga   || "",
-                data_total:    item.data_total   || "",
+                data_tonase: item.data_tonase || "",
+                data_harga: item.data_harga || "",
+                data_total: item.data_total || "",
                 pembayaran_st: item.pembayaran_st || "cash",
               };
             })
@@ -378,8 +339,7 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
         });
       }
     })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pengiriman_id, isOpen]);
+  }, [pengiriman_id, isOpen, fetchBarangByType, fetchStock, token]);
 
   // ── Row handlers ─────────────────────────────────────────────────────────
 
@@ -392,7 +352,6 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
     setSupplierOptionsByIndex((prev) => {
       const next = { ...prev };
       delete next[index];
-      // Re-key entries above removed index
       return Object.fromEntries(
         Object.entries(next).map(([k, v]) => [k > index ? k - 1 : k, v])
       );
@@ -401,19 +360,18 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
 
   const handleTypeChange = useCallback(
     async (index, tipe) => {
-      // Kick off lazy fetch immediately
       fetchBarangByType(tipe);
 
       setRows((prev) => {
         const next = [...prev];
         next[index] = {
           ...next[index],
-          barang_tipe:    tipe,
-          barang_id:      null,
+          barang_tipe: tipe,
+          barang_id: null,
           selectedBarang: null,
-          supplier_id:    null,
+          supplier_id: null,
           selectedSupplier: null,
-          current_stock:  0,
+          current_stock: 0,
         };
         return next;
       });
@@ -428,17 +386,16 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
         const next = [...prev];
         next[index] = {
           ...next[index],
-          barang_id:        selected?.value ?? null,
-          selectedBarang:   selected,
-          supplier_id:      null,
+          barang_id: selected?.value ?? null,
+          selectedBarang: selected,
+          supplier_id: null,
           selectedSupplier: null,
-          current_stock:    0,
+          current_stock: 0,
         };
         return next;
       });
 
       if (selected?.value) {
-        // Show loading state for supplier dropdown
         setSupplierOptionsByIndex((prev) => ({ ...prev, [index]: [] }));
         const { supplierOptions } = await fetchStock(selected.value);
         setSupplierOptionsByIndex((prev) => ({ ...prev, [index]: supplierOptions }));
@@ -465,7 +422,7 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
 
         next[index] = {
           ...next[index],
-          supplier_id:      selected?.value ?? null,
+          supplier_id: selected?.value ?? null,
           selectedSupplier: selected,
           current_stock,
         };
@@ -478,13 +435,13 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
   const handleInputChange = useCallback((index, e) => {
     const { name, value } = e.target;
     setRows((prev) => {
-      const next    = [...prev];
+      const next = [...prev];
       const updated = { ...next[index], [name]: value };
 
       if (name === "data_tonase" || name === "data_harga") {
         updated.data_total =
           Number(name === "data_tonase" ? value : updated.data_tonase || 0) *
-          Number(name === "data_harga"  ? value : updated.data_harga  || 0);
+          Number(name === "data_harga" ? value : updated.data_harga || 0);
       }
 
       next[index] = updated;
@@ -502,7 +459,15 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
           "/edit-Pengiriman",
           {
             pengiriman_id,
-            pengirimanData: { id: pengiriman_id, pengiriman_tgl, nama_pembeli, uang_muka, status, total_biaya: grand_total || null },
+            pengirimanData: {
+              id: pengiriman_id,
+              pengiriman_tgl,
+              nama_pembeli,
+              nama_barang_nota,
+              uang_muka,
+              status,
+              total_biaya: grand_total || null
+            },
             formData: rows.map(({ id, barang_id, data_tonase, data_harga, data_total, pembayaran_st, supplier_id }) => ({
               id, barang_id, data_tonase, data_harga, data_total, pembayaran_st, supplier_id,
             })),
@@ -526,7 +491,7 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
         toast.update(toastId, { render: `Error: ${err.message}`, type: "error", isLoading: false, autoClose: 5000 });
       }
     },
-    [pengiriman_id, pengiriman_tgl, nama_pembeli, uang_muka, status, grand_total, rows, token, onClose]
+    [pengiriman_id, pengiriman_tgl, nama_pembeli, nama_barang_nota, uang_muka, status, grand_total, rows, token, onClose] // ✅ TAMBAH NAMA_BARANG_NOTA DI DEPENDENCIES
   );
 
   if (!isOpen) return null;
@@ -562,8 +527,8 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
           <div className="flex-1 overflow-y-auto p-5 md:px-8 bg-gray-50/30">
 
-            {/* Header card */}
-            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {/* Header card — ✅ DIUBAH MENJADI 5 KOLOM (lg:grid-cols-5) AGAR PAS */}
+            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <div>
                 <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Tgl Pengiriman</label>
                 <input
@@ -587,6 +552,20 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
                   />
                 </div>
               </div>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Barang Nota</label>
+                <div className="relative">
+                  <i className="fa fa-tag absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    type="text"
+                    className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 focus:bg-white focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                    placeholder="Nama barang di nota"
+                    value={nama_barang_nota}
+                    onChange={(e) => setNama_barang_nota(e.target.value)}
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Uang Muka</label>
                 <div className="relative">
@@ -619,7 +598,7 @@ export default function ModalEditPengiriman({ pengiriman_id, isOpen, onClose }) 
                 <table className="w-full text-left border-collapse min-w-[1200px]">
                   <thead>
                     <tr className="bg-gray-50/80 border-b border-gray-200">
-                      {["No","Tipe","Barang","Supplier","Stok","Tonase","Pembayaran","Aksi"].map((h) => (
+                      {["No", "Tipe", "Barang", "Supplier", "Stok", "Tonase", "Pembayaran", "Aksi"].map((h) => (
                         <th key={h} className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 last:border-r-0">
                           {h}
                         </th>

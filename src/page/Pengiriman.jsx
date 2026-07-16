@@ -12,16 +12,16 @@ import api from "../utilities/axiosInterceptor";
 function Pengiriman() {
   // TOKEN
   const token = localStorage.getItem("token");
-  
+
   // lastDate
   const getLastDateOfMonth = () => {
-    const today = new Date(); 
+    const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
 
     const lastDate = new Date(year, month + 1, 0);
     const date = lastDate.getDate();
-    const formattedMonth = String(lastDate.getMonth() + 1).padStart(2, "0"); 
+    const formattedMonth = String(lastDate.getMonth() + 1).padStart(2, "0");
     const formattedYear = lastDate.getFullYear();
 
     return `${formattedYear}-${formattedMonth}-${date}`;
@@ -30,13 +30,13 @@ function Pengiriman() {
   const lastDate = getLastDateOfMonth();
 
   const getFirstDateOfMonth = () => {
-    const today = new Date(); 
+    const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
 
     const firstDate = new Date(year, month, 1);
-    const date = String(firstDate.getDate()).padStart(2, "0"); 
-    const formattedMonth = String(firstDate.getMonth() + 1).padStart(2, "0"); 
+    const date = String(firstDate.getDate()).padStart(2, "0");
+    const formattedMonth = String(firstDate.getMonth() + 1).padStart(2, "0");
     const formattedYear = firstDate.getFullYear();
 
     return `${formattedYear}-${formattedMonth}-${date}`;
@@ -58,7 +58,7 @@ function Pengiriman() {
       clearTimeout(handler);
     };
   }, [data_merek]);
-  
+
   const handleInputChange = (event) => {
     const val = event.target.value;
     const name = event.target.name;
@@ -73,14 +73,14 @@ function Pengiriman() {
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-  
+
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
   const openEditModal = (pengiriman_id) => {
     setIsModalEditOpen(true);
     setEdit_id(pengiriman_id);
   };
   const closeEditModal = () => setIsModalEditOpen(false);
-  
+
   //define state
   const [datas, setDatas] = useState([]);
   const [blur, setBlur] = useState(true);
@@ -88,7 +88,7 @@ function Pengiriman() {
   const [endPoint, setEndPoint] = useState("/index-Pengiriman");
   const [dataKaryawan, setDataKaryawan] = useState([]);
   const [stModalBeban, setStModalBeban] = useState(false);
-  
+
   //useEffect hook
   const fectData = async () => {
     let params = {
@@ -99,7 +99,7 @@ function Pengiriman() {
     setBlur(true);
     const response = await api.post(endPoint, params, {
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
         Accept: "application/json",
       },
@@ -116,7 +116,7 @@ function Pengiriman() {
     const fectDataKaryawan = async () => {
       const data_karyawan = await api.get("/get-karyawan", {
         headers: {
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
           Accept: "application/json",
         },
@@ -137,7 +137,7 @@ function Pengiriman() {
     debouncedSearch,
   ]);
 
-  const changeAfterAddData = (suplierData) => {};
+  const changeAfterAddData = (suplierData) => { };
 
   const changeEndPoint = (url, label) => {
     setEndPoint(url);
@@ -173,7 +173,7 @@ function Pengiriman() {
     setInputBebanKaryawan([...inputBebanKaryawan, { karyawan_id: "", beban_value: "" }]);
   };
   const [bebanKardus, setInputBebanKardus] = useState("0");
-  
+
   const [inputBebanLain, setInputBebanLain] = useState([
     { beban_nama: "", beban_value: "" },
   ]);
@@ -184,7 +184,7 @@ function Pengiriman() {
 
   const [pengiriman_id, setSPengiriman_id] = useState(null);
   const [pengiriman_tgl, setSPengiriman_tgl] = useState(null);
-  
+
   const handleModalBeban = (pengiriman_id, pengiriman_tgl) => {
     setSPengiriman_id(pengiriman_id);
     setSPengiriman_tgl(pengiriman_tgl);
@@ -259,7 +259,7 @@ function Pengiriman() {
       };
       const response = await api.post("/add-Pengiriman-Beban", params, {
         headers: {
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
           Accept: "application/json",
         },
@@ -297,7 +297,7 @@ function Pengiriman() {
         const params = { pengiriman_id: pengiriman_id };
         const response = await api.post("/delete-Pengiriman", params, {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
             Accept: "application/json",
           },
@@ -319,17 +319,17 @@ function Pengiriman() {
     const toastId = toast.loading("Sending data...");
     try {
       const response = await api.get(`/pengiriman-cetak-image/${pengiriman_id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: "blob", 
-        }
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
+      }
       );
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "Pengiriman.png"); 
+      link.setAttribute("download", "Pengiriman.png");
       document.body.appendChild(link);
-      link.click(); 
-      document.body.removeChild(link); 
+      link.click();
+      document.body.removeChild(link);
 
       if (response.status === 200) {
         toast.update(toastId, { render: "Download successfully!", type: "success", isLoading: false, autoClose: 3000 });
@@ -340,13 +340,13 @@ function Pengiriman() {
       toast.update(toastId, { render: "Error Download! " + error.message, type: "error", isLoading: false, autoClose: 5000 });
     }
   };
-  
+
   const [isModalCetak, setIsModalCetak] = useState(false);
   const viewModalCetak = (suplier_id) => {
     setIsModalCetak(!isModalCetak);
     setEdit_id(suplier_id);
   };
-  
+
   let ttl_operational = 0;
   let ttl_data_total = 0;
   let local_number = 0; // Local counter for rendering
@@ -355,7 +355,7 @@ function Pengiriman() {
     <>
       <div className="p-1 md:p-3 xl:p-5 font-poppins">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full h-full mx-auto">
-          
+
           {/* Header & Title */}
           <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
             <div>
@@ -376,7 +376,7 @@ function Pengiriman() {
                 onChange={(event) => handleInputChange(event)}
               />
             </div>
-            
+
             <div className="flex flex-col flex-1 sm:flex-none">
               <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">Sampai</label>
               <input
@@ -455,7 +455,7 @@ function Pengiriman() {
                       <div className="text-right">
                         <span className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Operasional</span>
                         <div className="flex justify-end items-center gap-2">
-                          <button 
+                          <button
                             onClick={() => handleModalBeban(item.id, item.pengiriman_tgl)}
                             className="w-7 h-7 flex items-center justify-center bg-teal-50 text-teal-600 rounded-md hover:bg-teal-100"
                           >
@@ -468,7 +468,12 @@ function Pengiriman() {
 
                     {/* List Barang */}
                     <div className="p-4 space-y-3 bg-white">
-                      <span className="block text-xs font-bold text-gray-800 border-b border-gray-100 pb-2">Detail Pengiriman</span>
+                      <div className="border-b border-gray-100 pb-2 mb-2 flex justify-between items-center">
+                        <span className="block text-xs font-bold text-gray-800">Detail Pengiriman</span>
+                        {item.nama_barang_nota && (
+                          <span className="block text-[10px] font-bold text-white bg-teal-600 px-2 py-0.5 rounded uppercase">Nota: {item.nama_barang_nota}</span>
+                        )}
+                      </div>
                       {item.listPengiriman && item.listPengiriman.map((listPem, key) => {
                         return (
                           <div key={listPem.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200/60 shadow-sm">
@@ -477,13 +482,12 @@ function Pengiriman() {
                                 <p className="font-bold text-gray-700 text-sm">{listPem.barang?.nama}</p>
                                 <p className="text-[11px] text-gray-500 mt-0.5">Suplier: {listPem.suplier?.suplier_nama}</p>
                               </div>
-                              <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider border ${
-                                listPem.pembayaran_st === 'cash' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'
-                              }`}>
+                              <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider border ${listPem.pembayaran_st === 'cash' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'
+                                }`}>
                                 {listPem.pembayaran_st}
                               </span>
                             </div>
-                            
+
                             <div className="flex justify-between items-center text-xs mt-3 pt-2 border-t border-gray-200/60">
                               <div>
                                 <span className="text-gray-400 block text-[9px] uppercase">Tonase</span>
@@ -502,7 +506,7 @@ function Pengiriman() {
                 Data tidak ditemukan
               </div>
             )}
-            
+
             {/* Total Mobile Bawah */}
             {datas.length > 0 && (
               <div className="bg-teal-50/50 border border-teal-200 rounded-xl p-4 shadow-sm">
@@ -527,7 +531,7 @@ function Pengiriman() {
               {ttl_operational = 0}
               {ttl_data_total = 0}
             </div>
-            
+
             <table className="w-full text-left border-collapse min-w-[1300px]">
               <thead>
                 <tr className="bg-gray-50/80 border-b border-gray-200">
@@ -539,6 +543,7 @@ function Pengiriman() {
                   <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Status</th>
                   <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-36">Atur Ops</th>
                   <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-36">Total Biaya</th>
+                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-40">Nama di Nota</th>
                   <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-40">Barang</th>
                   <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-36">Supplier</th>
                   <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Tonase</th>
@@ -588,7 +593,7 @@ function Pengiriman() {
                         </td>
                         <td className="align-middle text-right border-r border-b border-gray-200 py-2 px-3 bg-gray-50/30" rowSpan={item.listPengiriman.length || 1}>
                           <div className="flex justify-end items-center gap-2">
-                            <button 
+                            <button
                               onClick={() => handleModalBeban(item.id, item.pengiriman_tgl)}
                               className="w-7 h-7 flex items-center justify-center bg-teal-50 text-teal-600 rounded hover:bg-teal-100 transition-colors border border-teal-100"
                               title="Atur Operational"
@@ -601,7 +606,10 @@ function Pengiriman() {
                         <td className="align-middle text-right border-r border-b border-gray-200 py-2 px-3 text-sm text-teal-700 font-bold bg-teal-50/10" rowSpan={item.listPengiriman.length || 1}>
                           {RupiahFormat(item.total_biaya || 0)}
                         </td>
-                        
+                        <td className="align-middle border-r border-b border-gray-200 py-2 px-3 text-sm text-gray-700" rowSpan={item.listPengiriman.length || 1}>
+                          {item.nama_barang_nota || '-'}
+                        </td>
+
                         {/* Data pertama listPengiriman */}
                         <td className="border-r border-gray-100 py-2 px-3 text-sm text-gray-700 font-medium">
                           {item.listPengiriman[0] && item.listPengiriman[0].barang?.nama}
@@ -614,17 +622,16 @@ function Pengiriman() {
                         </td>
                         <td className="text-center py-2 px-3">
                           {item.listPengiriman[0] && (
-                            <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
-                              item.listPengiriman[0]["pembayaran_st"] === "cash"
-                                ? "bg-green-100 text-green-700 border-green-200"
-                                : "bg-red-100 text-red-700 border-red-200"
-                            }`}>
+                            <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${item.listPengiriman[0]["pembayaran_st"] === "cash"
+                              ? "bg-green-100 text-green-700 border-green-200"
+                              : "bg-red-100 text-red-700 border-red-200"
+                              }`}>
                               {item.listPengiriman[0]["pembayaran_st"]}
                             </span>
                           )}
                         </td>
                       </tr>
-                      
+
                       {/* Data sisa listPengiriman (jika ada) */}
                       {item.listPengiriman && item.listPengiriman.map((listPem, keyIndex) => {
                         return (
@@ -641,11 +648,10 @@ function Pengiriman() {
                                   {listPem.data_tonase}
                                 </td>
                                 <td className="text-center py-2 px-3">
-                                  <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
-                                    listPem.pembayaran_st === "cash"
-                                      ? "bg-green-100 text-green-700 border-green-200"
-                                      : "bg-red-100 text-red-700 border-red-200"
-                                  }`}>
+                                  <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${listPem.pembayaran_st === "cash"
+                                    ? "bg-green-100 text-green-700 border-green-200"
+                                    : "bg-red-100 text-red-700 border-red-200"
+                                    }`}>
                                     {listPem.pembayaran_st}
                                   </span>
                                 </td>
@@ -657,7 +663,7 @@ function Pengiriman() {
                     </React.Fragment>
                   );
                 })}
-                
+
                 {/* Total Row */}
                 <tr className="bg-gray-100/80 border-t-2 border-gray-300">
                   <td colSpan="6" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
@@ -669,21 +675,21 @@ function Pengiriman() {
                   <td className="text-right py-3 px-3 text-sm font-bold text-teal-700 border-r border-gray-200">
                     {RupiahFormat(ttl_data_total)}
                   </td>
-                  <td colSpan="4"></td>
+                  <td colSpan="5"></td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-        
+
         <ToastContainer position="bottom-right" />
-        
+
         {isModalEditOpen ? (
           <ModalEditPengiriman isOpen={isModalEditOpen} onClose={closeEditModal} pengiriman_id={edit_id} />
         ) : (
           <ModalAddPengiriman isOpen={isModalOpen} onClose={closeModal} listData={changeAfterAddData} />
         )}
-        
+
         {isModalCetak && (
           <ModalPreviewPembelian isOpen={true} onClose={() => setIsModalCetak(!isModalCetak)} pengiriman_id={edit_id} />
         )}
@@ -695,7 +701,7 @@ function Pengiriman() {
       {stModalBeban && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4 sm:p-6 font-poppins">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => handleModalBeban()}></div>
-          
+
           <div className="bg-white w-full max-w-2xl h-full max-h-[85vh] rounded-2xl shadow-2xl relative z-10 flex flex-col overflow-hidden">
             {/* Header Modal */}
             <div className="flex justify-between items-center p-5 border-b border-gray-100">
@@ -718,7 +724,7 @@ function Pengiriman() {
               <form onSubmit={handleSubmit} id="form-operasional">
                 <input type="hidden" value={pengiriman_id} />
                 <input type="hidden" value={pengiriman_tgl} />
-                
+
                 {/* 1. Kardus */}
                 {/* <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-5">
                   <h3 className="text-sm font-bold text-gray-700 uppercase mb-2 border-b border-gray-100 pb-2">1. Operasional Kardus</h3>
@@ -735,7 +741,7 @@ function Pengiriman() {
                 {/* 2. Karyawan */}
                 <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-5">
                   <h3 className="text-sm font-bold text-gray-700 uppercase mb-3 border-b border-gray-100 pb-2">1. Operasional Karyawan</h3>
-                  
+
                   <div className="space-y-3 mb-3">
                     {inputBebanKaryawan.map((field, index) => (
                       <div className="flex flex-col sm:flex-row gap-2" key={index}>
@@ -774,7 +780,7 @@ function Pengiriman() {
                       </div>
                     ))}
                   </div>
-                  
+
                   <button
                     type="button"
                     className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors shadow-sm"
@@ -787,7 +793,7 @@ function Pengiriman() {
                 {/* 3. Lainnya */}
                 <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-5">
                   <h3 className="text-sm font-bold text-gray-700 uppercase mb-3 border-b border-gray-100 pb-2">2. Operasional Lainnya</h3>
-                  
+
                   <div className="space-y-3 mb-3">
                     {inputBebanLain.map((field, index) => (
                       <div className="flex flex-col sm:flex-row gap-2" key={index}>

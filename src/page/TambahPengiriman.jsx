@@ -45,6 +45,8 @@ function TambahPengiriman() {
     },
   ]);
 
+  const [nama_barang_nota, setNamaBarangNota] = useState("");
+
   useEffect(() => {
     const total = inputFields.reduce((sum, item) => sum + Number(item.data_total || 0), 0);
     setGrand_total(total);
@@ -250,6 +252,7 @@ function TambahPengiriman() {
         uang_muka: uang_muka || null,
         status: status || null,
         total_biaya: grand_total || null,
+        nama_barang_nota: nama_barang_nota || null,
       };
       const sanitizedFields = inputFields.map((item) => ({
         barang_id: item.barang_id || null,
@@ -309,6 +312,7 @@ function TambahPengiriman() {
             pembayaran_st: "cash",
           },
         ]);
+        setNamaBarangNota("");
         toast.update(toastId, {
           render: "Data sent successfully!",
           type: "success",
@@ -628,7 +632,17 @@ function TambahPengiriman() {
 
               {/* Total Mobile Bawah */}
               <div className="bg-teal-50/50 border border-teal-200 rounded-xl p-4 shadow-sm flex flex-col gap-2">
-                <span className="text-sm font-bold text-teal-900 uppercase">Grand Total</span>
+                <span className="text-sm font-bold text-teal-900 uppercase">Nama Barang di Nota</span>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                  placeholder="Ketik nama..."
+                  name="nama_barang_nota"
+                  value={nama_barang_nota}
+                  onChange={(e) => setNamaBarangNota(e.target.value)}
+                />
+
+                <span className="text-sm font-bold text-teal-900 uppercase mt-2">Grand Total</span>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">Rp</span>
                   <input
@@ -822,7 +836,20 @@ function TambahPengiriman() {
 
                     {/* Footer Grand Total dalam Tabel */}
                     <tr className="bg-gray-100/80 border-t-2 border-gray-300">
-                      <td colSpan="6" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
+                      <td colSpan="4" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
+                        NAMA BARANG DI NOTA
+                      </td>
+                      <td colSpan="2" className="py-2 px-3 border-r border-gray-200">
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                          placeholder="Ketik nama..."
+                          name="nama_barang_nota"
+                          value={nama_barang_nota}
+                          onChange={(e) => setNamaBarangNota(e.target.value)}
+                        />
+                      </td>
+                      <td colSpan="2" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
                         GRAND TOTAL PENGIRIMAN
                       </td>
                       <td colSpan="2" className="py-2 px-3 border-r border-gray-200 bg-red-50/50">
