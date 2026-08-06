@@ -43,6 +43,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
         setsuplier_tgl(formattedDate);
         setsuplier_id(suplier.suplier_id);
         setTotal_operasional(suplier.ttlOperasional || "");
+        setDp(suplier.dp || "");
         //
         toast.update(toastId, {
           render: "Data getting successfully!",
@@ -105,6 +106,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
   const [suplier_tgl, setsuplier_tgl] = useState("");
   const [suplier_id, setsuplier_id] = useState("");
   const [total_operasional, setTotal_operasional] = useState("");
+  const [dp, setDp] = useState("");
   //
   const handleSuplier_nama = (event) => {
     setsuplier_nama(event.target.value);
@@ -115,6 +117,9 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
   };
   const handleTotal_operasional = (event) => {
     setTotal_operasional(event.target.value);
+  };
+  const handleDp = (event) => {
+    setDp(event.target.value);
   };
 
   const handleAddField = () => {
@@ -209,6 +214,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
         id: suplier_id,
         suplier_nama: suplier_nama,
         total_operasional: total_operasional || null,
+        dp: dp || null,
       };
       const sanitizedFields = inputFields.map(item => ({
         ...item,
@@ -276,10 +282,10 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
     <div className="fixed inset-0 flex items-center justify-center z-50 p-4 sm:p-6">
       {/* Background Overlay */}
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose}></div>
-      
+
       {/* Modal Container */}
       <div className="bg-white w-full max-w-[1400px] h-full max-h-[95vh] rounded-2xl shadow-2xl relative z-10 flex flex-col font-poppins overflow-hidden">
-        
+
         {/* Header Modal */}
         <div className="flex justify-between items-center p-5 md:px-8 border-b border-gray-100 bg-white">
           <div className="flex items-center gap-3">
@@ -298,12 +304,12 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
 
         {/* Form Wrap */}
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          
+
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto p-5 md:px-8 bg-gray-50/30">
-            
+
             {/* Info Suplier Card */}
-            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-4 gap-5">
               <div>
                 <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Nama Suplier</label>
                 <div className="relative">
@@ -329,6 +335,20 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                     name="total_operasional"
                     value={total_operasional}
                     onChange={handleTotal_operasional}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">DP(Uang Muka)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">Rp</span>
+                  <input
+                    type="number"
+                    className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
+                    placeholder="0"
+                    name="dp"
+                    value={dp}
+                    onChange={handleDp}
                   />
                 </div>
               </div>
@@ -370,7 +390,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                       return (
                         <tr key={index} className="hover:bg-teal-50/20 transition-colors">
                           <td className="py-2 px-2 text-center text-sm font-medium text-gray-500 border-r border-gray-100">{number}</td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100">
                             <select
                               className="w-full py-1.5 px-2 bg-white border border-gray-200 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all cursor-pointer"
@@ -383,7 +403,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                               <option value="katul">Katul</option>
                             </select>
                           </td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100 relative">
                             <Select
                               value={field.selectedBarang}
@@ -411,7 +431,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                               }}
                             />
                           </td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100">
                             {field.selectedBarang && field.selectedBarang.value === 'new' ? (
                               <input
@@ -426,7 +446,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                               <span className="text-xs text-gray-400 italic bg-gray-50 px-2 py-1 rounded w-full block border border-gray-100 text-center">Otomatis dari sistem</span>
                             )}
                           </td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="number"
@@ -438,7 +458,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                               onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
                             />
                           </td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="number"
@@ -449,7 +469,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                               onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
                             />
                           </td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               className="w-full py-1.5 px-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-center text-green-700 font-bold cursor-not-allowed outline-none"
@@ -459,7 +479,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                               required
                             />
                           </td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="number"
@@ -471,7 +491,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                               onFocus={(e) => e.target.addEventListener("wheel", (e) => e.preventDefault(), { passive: false })}
                             />
                           </td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100">
                             <div className="flex justify-center gap-3">
                               <label className="flex items-center gap-1.5 cursor-pointer">
@@ -500,7 +520,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                               </label>
                             </div>
                           </td>
-                          
+
                           <td className="py-2 px-3 border-r border-gray-100">
                             <input
                               type="text"
@@ -511,7 +531,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                               required
                             />
                           </td>
-                          
+
                           <td className="py-2 px-2 text-center">
                             {number === 1 ? (
                               <button type="button" className="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed" disabled>
@@ -550,7 +570,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
                 <i className="fa fa-plus text-xs"></i> Tambah Baris
               </button>
             </div>
-            
+
           </div>
 
           {/* Footer Modal (Fixed di Bawah) */}
@@ -569,7 +589,7 @@ function ModalEditPembelian({ id, isOpen, onClose }) {
               <i className="fa fa-save"></i> Simpan Perubahan
             </button>
           </div>
-          
+
         </form>
       </div>
     </div>

@@ -126,6 +126,7 @@ function Pembelian() {
   let ttl_tonase_potongan = 0;
   let ttl_tonase_bersih = 0;
   let ttl_operasional = 0;
+  let ttl_dp = 0;
 
   const handleDelete = async (id) => {
     const isConfirmed = window.confirm("Apakah Anda yakin ingin menghapus data ini?");
@@ -396,6 +397,11 @@ function Pembelian() {
                   <span className="block text-[10px] font-bold text-gray-400 uppercase">Total Operasional</span>
                   <span className="font-bold text-red-500 text-sm">{RupiahFormat(item.total_operasional || 0)}</span>
                 </div>
+                {/* DP */}
+                <div className="p-4 border-b border-gray-100 bg-white flex justify-between items-center">
+                  <span className="block text-[10px] font-bold text-gray-400 uppercase">DP (Uang Muka)</span>
+                  <span className="font-bold text-orange-500 text-sm">{RupiahFormat(item.dp || 0)}</span>
+                </div>
 
                 {/* List Barang (Data Pembelian) */}
                 <div className="p-4 space-y-3">
@@ -480,8 +486,9 @@ function Pembelian() {
                 <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200" title="Tonase Bersih">T. Bersih (Kg)</th>
                 <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">Harga</th>
                 <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">Subtotal</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200">Status</th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">Status</th>
                 <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">Total Ops</th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">DP(Uang Muka)</th>
                 <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">Total All</th>
                 <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Nota</th>
               </tr>
@@ -493,6 +500,7 @@ function Pembelian() {
                   const totalPembelianData = item.pembelian_data.length;
 
                   ttl_operasional += parseInt(item.total_operasional || 0, 10);
+                  ttl_dp += parseInt(item.dp || 0, 10);
 
                   item.pembelian_data.forEach((pembelianDetail) => {
                     ttl_harga += parseInt(pembelianDetail.pembelian_harga, 10);
@@ -601,6 +609,12 @@ function Pembelian() {
                                   {RupiahFormat(item.total_operasional || 0)}
                                 </td>
                                 <td
+                                  className="align-middle text-right border-r border-b border-gray-200 py-2 px-3 text-sm text-orange-500 font-bold bg-gray-50/30"
+                                  rowSpan={totalPembelianData}
+                                >
+                                  {RupiahFormat(item.dp || 0)}
+                                </td>
+                                <td
                                   className="align-middle text-right border-r border-b border-gray-200 py-2 px-3 text-sm text-gray-800 font-bold bg-gray-50/30"
                                   rowSpan={totalPembelianData}
                                 >
@@ -653,6 +667,9 @@ function Pembelian() {
                 <td className="border-r border-gray-200"></td>
                 <td className="text-right py-3 px-3 text-sm font-bold text-red-500 border-r border-gray-200">
                   {RupiahFormat(ttl_operasional)}
+                </td>
+                <td className="text-right py-3 px-3 text-sm font-bold text-orange-500 border-r border-gray-200">
+                  {RupiahFormat(ttl_dp)}
                 </td>
                 <td className="border-r border-gray-200"></td>
                 <td></td>
