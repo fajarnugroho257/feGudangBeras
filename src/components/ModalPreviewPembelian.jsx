@@ -26,7 +26,7 @@ function ModalPreviewPembelian({ isOpen, onClose, pengiriman_id }) {
         },
       });
       if (response.status === 200) {
-        console.log(response.data.data.listPengiriman)
+        console.log(response.data.data.listPengiriman);
         setDataSuplier(response.data.data);
         setDataPembelian(response.data.data.listPengiriman);
         //
@@ -50,38 +50,38 @@ function ModalPreviewPembelian({ isOpen, onClose, pengiriman_id }) {
   }, [pengiriman_id]);
   //
   const handlePrint = async () => {
-  try {
-    // Fungsi kirim data per-chunk
-    const sendInChunks = async (characteristic, buffer) => {
-      const CHUNK = 500; // aman < 512
-      for (let i = 0; i < buffer.length; i += CHUNK) {
-        const chunk = buffer.slice(i, i + CHUNK);
-        await characteristic.writeValue(chunk);
-        await new Promise((res) => setTimeout(res, 30)); // delay sedikit
-      }
-    };
+    try {
+      // Fungsi kirim data per-chunk
+      const sendInChunks = async (characteristic, buffer) => {
+        const CHUNK = 500; // aman < 512
+        for (let i = 0; i < buffer.length; i += CHUNK) {
+          const chunk = buffer.slice(i, i + CHUNK);
+          await characteristic.writeValue(chunk);
+          await new Promise((res) => setTimeout(res, 30)); // delay sedikit
+        }
+      };
 
-    // ESC/POS Commands
-    const ESC = "\x1B";
-    const fontSmall = `${ESC}!\x01`; 
-    const fontNormal = `${ESC}!\x00`;
+      // ESC/POS Commands
+      const ESC = "\x1B";
+      const fontSmall = `${ESC}!\x01`;
+      const fontNormal = `${ESC}!\x00`;
 
-    const tanggal = FormatTanggal(dataSuplier.pengiriman_tgl);
-    const items = dataPembelian;
-    const currentDateTime = getCurrentDateTime();
+      const tanggal = FormatTanggal(dataSuplier.pengiriman_tgl);
+      const items = dataPembelian;
+      const currentDateTime = getCurrentDateTime();
 
-    const grandTotal = items.reduce(
-      (sum, item) => sum + (parseInt(item.data_total) || 0),
-      0
-    );
+      const grandTotal = items.reduce(
+        (sum, item) => sum + (parseInt(item.data_total) || 0),
+        0,
+      );
 
-    const columnWidths = [25, 7, 15];
+      const columnWidths = [25, 7, 15];
 
-    const header =
+      const header =
         `${fontSmall}` + // Atur font kecil
         "UD. DAFFA PUTRA\n" +
         "Alamat Jln Kuwaluhan, Secang, Kab. Magelang\n" +
-        "HP. 0813 1300 5249 / 0813 9123 1224" +
+        "HP. 0813 2866 7762 / 0813 9123 1224" +
         "\n-----------------------------------------------\n" +
         `Tanggal     : ${tanggal}\n` +
         `Nota Cetak  : ${currentDateTime[0]}\n` + // Tambahkan tanggal dan jam sekarang
@@ -91,54 +91,51 @@ function ModalPreviewPembelian({ isOpen, onClose, pengiriman_id }) {
         "\n" +
         "-----------------------------------------------\n";
 
-    console.log(items)
-    const rows = items
-      .map((item) =>
+      console.log(items);
+      const rows = items
+        .map((item) =>
+          formatRow([item.barang.nama, item.data_tonase, ""], columnWidths),
+        )
+        .join("\n");
+
+      const footer =
+        "-----------------------------------------------\n" +
         formatRow(
-          [
-            item.barang.nama,
-            item.data_tonase,
-            "",
-          ],
+          ["Grand Total", grand_tonase, RupiahFormat(dataSuplier.total_biaya)],
           columnWidths,
-        ),
-      )
-      .join("\n");
+        ) +
+        "\n-----------------------------------------------\n\n";
 
-    const footer =
-      "-----------------------------------------------\n" +
-      formatRow(["Grand Total", grand_tonase, RupiahFormat(dataSuplier.total_biaya)], columnWidths) +
-      "\n-----------------------------------------------\n\n";
+      // Gabungkan semua
+      const nota =
+        `${fontSmall}` + header + rows + "\n" + footer + `${fontSmall}`;
 
-    // Gabungkan semua
-    const nota = `${fontSmall}` + header + rows + "\n" + footer + `${fontSmall}`;
+      console.log(nota);
 
-    console.log(nota);
+      const printData = new TextEncoder().encode(nota);
 
-    const printData = new TextEncoder().encode(nota);
+      // Koneksi BLE
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ["000018f0-0000-1000-8000-00805f9b34fb"],
+      });
 
-    // Koneksi BLE
-    const device = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
-      optionalServices: ["000018f0-0000-1000-8000-00805f9b34fb"],
-    });
+      const server = await device.gatt.connect();
+      const service = await server.getPrimaryService(
+        "000018f0-0000-1000-8000-00805f9b34fb",
+      );
+      const characteristic = await service.getCharacteristic(
+        "00002af1-0000-1000-8000-00805f9b34fb",
+      );
 
-    const server = await device.gatt.connect();
-    const service = await server.getPrimaryService(
-      "000018f0-0000-1000-8000-00805f9b34fb"
-    );
-    const characteristic = await service.getCharacteristic(
-      "00002af1-0000-1000-8000-00805f9b34fb"
-    );
+      // **FIX: KIRIM DATA DALAM CHUNK**
+      await sendInChunks(characteristic, printData);
 
-    // **FIX: KIRIM DATA DALAM CHUNK**
-    await sendInChunks(characteristic, printData);
-
-    console.log("Nota berhasil dicetak.");
-  } catch (error) {
-    console.error("Gagal mencetak nota:", error);
-  }
-};
+      console.log("Nota berhasil dicetak.");
+    } catch (error) {
+      console.error("Gagal mencetak nota:", error);
+    }
+  };
 
   function getCurrentDateTime() {
     const now = new Date();
@@ -212,14 +209,14 @@ function ModalPreviewPembelian({ isOpen, onClose, pengiriman_id }) {
                       <td className="border border-black py-1 px-2 text-center">
                         {value.data_tonase}
                       </td>
-                      <td className="border border-black py-1 px-2 text-center">-</td>
+                      <td className="border border-black py-1 px-2 text-center">
+                        -
+                      </td>
                     </tr>
                   );
                 })}
               <tr className="font-semibold">
-                <td
-                  className="border border-black py-1 px-2 text-right"
-                >
+                <td className="border border-black py-1 px-2 text-right">
                   Grand Total
                 </td>
                 <td className="border border-black py-1 px-2 text-center">

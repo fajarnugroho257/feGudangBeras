@@ -129,7 +129,9 @@ function Pembelian() {
   let ttl_dp = 0;
 
   const handleDelete = async (id) => {
-    const isConfirmed = window.confirm("Apakah Anda yakin ingin menghapus data ini?");
+    const isConfirmed = window.confirm(
+      "Apakah Anda yakin ingin menghapus data ini?",
+    );
     if (isConfirmed) {
       const toastId = toast.loading("Sending data...");
       try {
@@ -177,6 +179,7 @@ function Pembelian() {
         responseType: "blob",
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
+      // console.log(url);
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", "Pembelian" + id + ".png");
@@ -185,17 +188,37 @@ function Pembelian() {
       document.body.removeChild(link);
 
       if (response.status === 200) {
-        toast.update(toastId, { render: "Download successfully!", type: "success", isLoading: false, autoClose: 3000 });
+        toast.update(toastId, {
+          render: "Download successfully!",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
+        });
       } else {
-        toast.update(toastId, { render: "Error Download!" + response.status, type: "error", isLoading: false, autoClose: 5000 });
+        toast.update(toastId, {
+          render: "Error Download!" + response.status,
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+        });
       }
     } catch (error) {
-      toast.update(toastId, { render: "Error Download! " + error.message, type: "error", isLoading: false, autoClose: 5000 });
+      toast.update(toastId, {
+        render: "Error Download! " + error.message,
+        type: "error",
+        isLoading: false,
+        autoClose: 5000,
+      });
     }
   };
 
   const downloadLaporan = async () => {
-    let params = { dateFrom: dateFrom, dateTo: dateTo, supName: supName, pembayaran: pembayaran };
+    let params = {
+      dateFrom: dateFrom,
+      dateTo: dateTo,
+      supName: supName,
+      pembayaran: pembayaran,
+    };
     const toastId = toast.loading("Download data...");
     try {
       const response = await api.post(`/cetak-laporan`, params, {
@@ -211,25 +234,40 @@ function Pembelian() {
       document.body.removeChild(link);
 
       if (response.status === 200) {
-        toast.update(toastId, { render: "Download successfully!", type: "success", isLoading: false, autoClose: 3000 });
+        toast.update(toastId, {
+          render: "Download successfully!",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
+        });
       } else {
-        toast.update(toastId, { render: "Error Download!" + response.status, type: "error", isLoading: false, autoClose: 5000 });
+        toast.update(toastId, {
+          render: "Error Download!" + response.status,
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+        });
       }
     } catch (error) {
-      toast.update(toastId, { render: "Error Download! " + error.message, type: "error", isLoading: false, autoClose: 5000 });
+      toast.update(toastId, {
+        render: "Error Download! " + error.message,
+        type: "error",
+        isLoading: false,
+        autoClose: 5000,
+      });
     }
   };
 
   const [selectedIds, setSelectedIds] = useState([]);
   const handleCheckboxChange = (id, index) => {
-    setSelectedIds(
-      (prevSelected) =>
-        prevSelected.includes(id)
-          ? prevSelected.filter((itemId) => itemId !== id)
-          : [...prevSelected, id],
+    setSelectedIds((prevSelected) =>
+      prevSelected.includes(id)
+        ? prevSelected.filter((itemId) => itemId !== id)
+        : [...prevSelected, id],
     );
     const values = [...datas];
-    values[index]["pembelian_nota_st"] = values[index]["pembelian_nota_st"] === "yes" ? "no" : "yes";
+    values[index]["pembelian_nota_st"] =
+      values[index]["pembelian_nota_st"] === "yes" ? "no" : "yes";
     setDatas(values);
   };
 
@@ -251,15 +289,37 @@ function Pembelian() {
           setDraftNota(true);
           setSelectedIds([]);
           if (response.data.success === true) {
-            toast.update(toastId, { render: response.data.message, type: "success", isLoading: false, autoClose: 3000 });
+            toast.update(toastId, {
+              render: response.data.message,
+              type: "success",
+              isLoading: false,
+              autoClose: 3000,
+            });
           } else {
-            toast.update(toastId, { render: "Error make nota, Suplier ID sudah tersedia : " + response.data.message, type: "error", isLoading: false, autoClose: 5000 });
+            toast.update(toastId, {
+              render:
+                "Error make nota, Suplier ID sudah tersedia : " +
+                response.data.message,
+              type: "error",
+              isLoading: false,
+              autoClose: 5000,
+            });
           }
         } else {
-          toast.update(toastId, { render: "Error make nota: " + response.message, type: "error", isLoading: false, autoClose: 5000 });
+          toast.update(toastId, {
+            render: "Error make nota: " + response.message,
+            type: "error",
+            isLoading: false,
+            autoClose: 5000,
+          });
         }
       } catch (error) {
-        toast.update(toastId, { render: "Error getting data! " + error.message, type: "error", isLoading: false, autoClose: 5000 });
+        toast.update(toastId, {
+          render: "Error getting data! " + error.message,
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+        });
       }
     }
   };
@@ -273,12 +333,13 @@ function Pembelian() {
   return (
     <div className="p-1 md:p-3 xl:p-5 font-poppins">
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full h-full mx-auto">
-
         {/* Header & Actions */}
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
           <div>
             <h2 className="text-xl font-bold text-gray-800">Data Pembelian</h2>
-            <p className="text-sm text-gray-500 mt-1">Kelola transaksi dan cetak nota</p>
+            <p className="text-sm text-gray-500 mt-1">
+              Kelola transaksi dan cetak nota
+            </p>
           </div>
 
           <div className="flex flex-wrap gap-3">
@@ -300,7 +361,9 @@ function Pembelian() {
         {/* Filters Panel */}
         <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 flex flex-wrap items-end gap-4 mb-6">
           <div className="flex flex-col flex-1 sm:flex-none">
-            <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">Dari</label>
+            <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">
+              Dari
+            </label>
             <input
               name="dateFrom"
               type="date"
@@ -311,7 +374,9 @@ function Pembelian() {
           </div>
 
           <div className="flex flex-col flex-1 sm:flex-none">
-            <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">Sampai</label>
+            <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">
+              Sampai
+            </label>
             <input
               name="dateTo"
               type="date"
@@ -322,7 +387,9 @@ function Pembelian() {
           </div>
 
           <div className="flex flex-col flex-1 sm:flex-none min-w-[200px]">
-            <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">Supplier</label>
+            <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">
+              Supplier
+            </label>
             <div className="relative">
               <i className="fa fa-users absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
               <input
@@ -336,7 +403,9 @@ function Pembelian() {
           </div>
 
           <div className="flex flex-col flex-1 sm:flex-none">
-            <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">Status</label>
+            <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">
+              Status
+            </label>
             <select
               name="pembayaran"
               className="w-full sm:w-36 border border-gray-200 py-2 px-3 rounded-lg bg-white text-sm focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all cursor-pointer text-gray-700"
@@ -352,19 +421,29 @@ function Pembelian() {
         {/* ========================================= */}
         {/* VIEW MOBILE: CARD LAYOUT (Tampil < 768px)  */}
         {/* ========================================= */}
-        <div className={`md:hidden space-y-4 mb-6 ${blur ? "opacity-50" : "opacity-100"} transition-opacity`}>
+        <div
+          className={`md:hidden space-y-4 mb-6 ${blur ? "opacity-50" : "opacity-100"} transition-opacity`}
+        >
           {datas && datas.length > 0 ? (
             datas.map((item, index) => (
-              <div key={item.id} className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-
+              <div
+                key={item.id}
+                className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden"
+              >
                 {/* Header Card (Supplier & Nota) */}
                 <div className="bg-gray-50/80 p-4 border-b border-gray-100 flex justify-between items-center">
                   <div>
-                    <h3 className="font-bold text-gray-800 text-base uppercase leading-tight">{item.suplier_nama}</h3>
-                    <p className="text-xs text-gray-500 mt-1">{FormatTanggal(item.pembelian_tgl)}</p>
+                    <h3 className="font-bold text-gray-800 text-base uppercase leading-tight">
+                      {item.suplier_nama}
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {FormatTanggal(item.pembelian_tgl)}
+                    </p>
                   </div>
                   <div className="flex flex-col items-center justify-center bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-sm">
-                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Cetak Nota</span>
+                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                      Cetak Nota
+                    </span>
                     <input
                       type="checkbox"
                       className="w-5 h-5 text-teal-600 bg-gray-50 border-gray-300 rounded focus:ring-teal-500 cursor-pointer disabled:opacity-50"
@@ -378,47 +457,83 @@ function Pembelian() {
 
                 {/* Tombol Aksi per Suplier */}
                 <div className="flex border-b border-gray-100 divide-x divide-gray-100 bg-white">
-                  <button onClick={() => downloadImage(item.id)} className="flex-1 py-2.5 text-blue-500 hover:bg-blue-50 transition-colors" title="Image">
+                  <button
+                    onClick={() => downloadImage(item.id)}
+                    className="flex-1 py-2.5 text-blue-500 hover:bg-blue-50 transition-colors"
+                    title="Image"
+                  >
                     <i className="fa fa-image text-lg"></i>
                   </button>
-                  <button onClick={() => viewModalCetak(item.id)} className="flex-1 py-2.5 text-green-500 hover:bg-green-50 transition-colors" title="Print">
+                  <button
+                    onClick={() => viewModalCetak(item.id)}
+                    className="flex-1 py-2.5 text-green-500 hover:bg-green-50 transition-colors"
+                    title="Print"
+                  >
                     <i className="fa fa-download text-lg"></i>
                   </button>
-                  <button onClick={() => openEditModal(item.id)} className="flex-1 py-2.5 text-yellow-500 hover:bg-yellow-50 transition-colors" title="Edit">
+                  <button
+                    onClick={() => openEditModal(item.id)}
+                    className="flex-1 py-2.5 text-yellow-500 hover:bg-yellow-50 transition-colors"
+                    title="Edit"
+                  >
                     <i className="fa fa-edit text-lg"></i>
                   </button>
-                  <button onClick={() => handleDelete(item.id)} className="flex-1 py-2.5 text-red-500 hover:bg-red-50 transition-colors" title="Delete">
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="flex-1 py-2.5 text-red-500 hover:bg-red-50 transition-colors"
+                    title="Delete"
+                  >
                     <i className="fa fa-trash text-lg"></i>
                   </button>
                 </div>
 
                 {/* Total Operasional */}
                 <div className="p-4 border-b border-gray-100 bg-white flex justify-between items-center">
-                  <span className="block text-[10px] font-bold text-gray-400 uppercase">Total Operasional</span>
-                  <span className="font-bold text-red-500 text-sm">{RupiahFormat(item.total_operasional || 0)}</span>
+                  <span className="block text-[10px] font-bold text-gray-400 uppercase">
+                    Total Operasional
+                  </span>
+                  <span className="font-bold text-red-500 text-sm">
+                    {RupiahFormat(item.total_operasional || 0)}
+                  </span>
                 </div>
                 {/* DP */}
                 <div className="p-4 border-b border-gray-100 bg-white flex justify-between items-center">
-                  <span className="block text-[10px] font-bold text-gray-400 uppercase">DP (Uang Muka)</span>
-                  <span className="font-bold text-orange-500 text-sm">{RupiahFormat(item.dp || 0)}</span>
+                  <span className="block text-[10px] font-bold text-gray-400 uppercase">
+                    DP (Uang Muka)
+                  </span>
+                  <span className="font-bold text-orange-500 text-sm">
+                    {RupiahFormat(item.dp || 0)}
+                  </span>
                 </div>
 
                 {/* List Barang (Data Pembelian) */}
                 <div className="p-4 space-y-3">
                   {item.pembelian_data.map((detail, dIdx) => (
-                    <div key={dIdx} className="bg-gray-50 rounded-lg p-3 border border-gray-200/60 shadow-sm">
+                    <div
+                      key={dIdx}
+                      className="bg-gray-50 rounded-lg p-3 border border-gray-200/60 shadow-sm"
+                    >
                       <div className="flex justify-between items-start mb-3">
                         <div>
-                          <p className="font-bold text-gray-700 text-sm">{detail.barang.nama}</p>
+                          <p className="font-bold text-gray-700 text-sm">
+                            {detail.barang.nama}
+                          </p>
                           <span
-                            className={`inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded text-white uppercase font-semibold tracking-widest border shadow-sm transition-colors ${tipeColors[detail.barang.tipe?.toLowerCase()] || "bg-teal-600 border-teal-700"
-                              }`}
+                            className={`inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded text-white uppercase font-semibold tracking-widest border shadow-sm transition-colors ${
+                              tipeColors[detail.barang.tipe?.toLowerCase()] ||
+                              "bg-teal-600 border-teal-700"
+                            }`}
                           >
                             {detail.barang.tipe}
                           </span>
                         </div>
-                        <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${detail.pembayaran === 'cash' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                          }`}>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${
+                            detail.pembayaran === "cash"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
                           {detail.pembayaran}
                         </span>
                       </div>
@@ -426,28 +541,48 @@ function Pembelian() {
                       {/* Grid Tonase */}
                       <div className="grid grid-cols-3 gap-2 mb-3 text-center">
                         <div className="bg-white rounded border border-gray-100 py-1.5 shadow-sm">
-                          <p className="text-[9px] text-gray-400 uppercase font-bold">Kotor</p>
-                          <p className="font-semibold text-gray-700 text-xs">{detail.pembelian_kotor}</p>
+                          <p className="text-[9px] text-gray-400 uppercase font-bold">
+                            Kotor
+                          </p>
+                          <p className="font-semibold text-gray-700 text-xs">
+                            {detail.pembelian_kotor}
+                          </p>
                         </div>
                         <div className="bg-white rounded border border-gray-100 py-1.5 shadow-sm">
-                          <p className="text-[9px] text-gray-400 uppercase font-bold">Potongan</p>
-                          <p className="font-semibold text-red-500 text-xs">{detail.pembelian_potongan}</p>
+                          <p className="text-[9px] text-gray-400 uppercase font-bold">
+                            Potongan
+                          </p>
+                          <p className="font-semibold text-red-500 text-xs">
+                            {detail.pembelian_potongan}
+                          </p>
                         </div>
                         <div className="bg-white rounded border border-gray-100 py-1.5 shadow-sm">
-                          <p className="text-[9px] text-gray-400 uppercase font-bold">Bersih</p>
-                          <p className="font-semibold text-green-600 text-xs">{detail.pembelian_bersih}</p>
+                          <p className="text-[9px] text-gray-400 uppercase font-bold">
+                            Bersih
+                          </p>
+                          <p className="font-semibold text-green-600 text-xs">
+                            {detail.pembelian_bersih}
+                          </p>
                         </div>
                       </div>
 
                       {/* Harga & Subtotal */}
                       <div className="flex justify-between items-center text-xs border-t border-gray-200/60 pt-2.5 mt-1">
                         <div>
-                          <span className="text-gray-400 block text-[10px] uppercase">Harga / Kg</span>
-                          <span className="font-semibold text-gray-600">{RupiahFormat(detail.pembelian_harga)}</span>
+                          <span className="text-gray-400 block text-[10px] uppercase">
+                            Harga / Kg
+                          </span>
+                          <span className="font-semibold text-gray-600">
+                            {RupiahFormat(detail.pembelian_harga)}
+                          </span>
                         </div>
                         <div className="text-right">
-                          <span className="text-gray-400 block text-[10px] uppercase">Subtotal</span>
-                          <span className="font-bold text-gray-800">{RupiahFormat(detail.pembelian_total)}</span>
+                          <span className="text-gray-400 block text-[10px] uppercase">
+                            Subtotal
+                          </span>
+                          <span className="font-bold text-gray-800">
+                            {RupiahFormat(detail.pembelian_total)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -456,8 +591,12 @@ function Pembelian() {
 
                 {/* Footer Card (Total Keseluruhan) */}
                 <div className="bg-teal-50/40 p-4 border-t border-teal-100 flex justify-between items-center">
-                  <span className="text-xs font-bold text-teal-800 uppercase tracking-wider">Total Semua</span>
-                  <span className="text-lg font-bold text-teal-700">{RupiahFormat(item.ttlPembelian)}</span>
+                  <span className="text-xs font-bold text-teal-800 uppercase tracking-wider">
+                    Total Semua
+                  </span>
+                  <span className="text-lg font-bold text-teal-700">
+                    {RupiahFormat(item.ttlPembelian)}
+                  </span>
                 </div>
               </div>
             ))
@@ -471,26 +610,69 @@ function Pembelian() {
         {/* ========================================= */}
         {/* VIEW DESKTOP: TABLE LAYOUT (Tampil > 768px) */}
         {/* ========================================= */}
-        <div className={`hidden md:block overflow-x-auto rounded-lg border border-gray-200 ${blur ? "opacity-50" : "opacity-100"} transition-opacity`}>
+        <div
+          className={`hidden md:block overflow-x-auto rounded-lg border border-gray-200 ${blur ? "opacity-50" : "opacity-100"} transition-opacity`}
+        >
           <table className="w-full text-left border-collapse min-w-[1200px]">
             <thead>
-              <tr className="bg-gray-50/80 border-b border-gray-200" key="head-pembelian">
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-32 border-r border-gray-200">Aksi</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200">No</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200">Suplier</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200">Tanggal</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200">Barang</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200">Tipe</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200" title="Tonase Kotor">T. Kotor (Kg)</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200">Pot. (kg)</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200" title="Tonase Bersih">T. Bersih (Kg)</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">Harga</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">Subtotal</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">Status</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">Total Ops</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">DP(Uang Muka)</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">Total All</th>
-                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Nota</th>
+              <tr
+                className="bg-gray-50/80 border-b border-gray-200"
+                key="head-pembelian"
+              >
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-32 border-r border-gray-200">
+                  Aksi
+                </th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200">
+                  No
+                </th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200">
+                  Suplier
+                </th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200">
+                  Tanggal
+                </th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200">
+                  Barang
+                </th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200">
+                  Tipe
+                </th>
+                <th
+                  className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200"
+                  title="Tonase Kotor"
+                >
+                  T. Kotor (Kg)
+                </th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200">
+                  Pot. (kg)
+                </th>
+                <th
+                  className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200"
+                  title="Tonase Bersih"
+                >
+                  T. Bersih (Kg)
+                </th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">
+                  Harga
+                </th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">
+                  Subtotal
+                </th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">
+                  Status
+                </th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">
+                  Total Ops
+                </th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">
+                  DP(Uang Muka)
+                </th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200">
+                  Total All
+                </th>
+                <th className="py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
+                  Nota
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100" key="t-body-pembelian">
@@ -505,9 +687,15 @@ function Pembelian() {
                   item.pembelian_data.forEach((pembelianDetail) => {
                     ttl_harga += parseInt(pembelianDetail.pembelian_harga, 10);
                     ttl_total += parseInt(pembelianDetail.pembelian_total, 10);
-                    ttl_tonase_kotor += parseFloat(pembelianDetail.pembelian_kotor);
-                    ttl_tonase_potongan += parseFloat(pembelianDetail.pembelian_potongan ?? 0);
-                    ttl_tonase_bersih += parseFloat(pembelianDetail.pembelian_bersih);
+                    ttl_tonase_kotor += parseFloat(
+                      pembelianDetail.pembelian_kotor,
+                    );
+                    ttl_tonase_potongan += parseFloat(
+                      pembelianDetail.pembelian_potongan ?? 0,
+                    );
+                    ttl_tonase_bersih += parseFloat(
+                      pembelianDetail.pembelian_bersih,
+                    );
                   });
 
                   let firstPembelianDataOfSupplier = true;
@@ -515,7 +703,8 @@ function Pembelian() {
                   return (
                     <React.Fragment key={item.id}>
                       {item.pembelian_data.map((pembelianDetail, dataIndex) => {
-                        const isFirstDetailOfSupplier = firstPembelianDataOfSupplier;
+                        const isFirstDetailOfSupplier =
+                          firstPembelianDataOfSupplier;
                         if (firstPembelianDataOfSupplier) {
                           firstPembelianDataOfSupplier = false;
                         }
@@ -532,16 +721,32 @@ function Pembelian() {
                                   rowSpan={totalPembelianData}
                                 >
                                   <div className="flex flex-wrap justify-center gap-1">
-                                    <button onClick={() => downloadImage(item.id)} className="w-7 h-7 flex items-center justify-center rounded bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Download Image">
+                                    <button
+                                      onClick={() => downloadImage(item.id)}
+                                      className="w-7 h-7 flex items-center justify-center rounded bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                                      title="Download Image"
+                                    >
                                       <i className="fa fa-image"></i>
                                     </button>
-                                    <button onClick={() => viewModalCetak(item.id)} className="w-7 h-7 flex items-center justify-center rounded bg-green-50 text-green-600 hover:bg-green-100 transition-colors" title="Preview/Cetak">
+                                    <button
+                                      onClick={() => viewModalCetak(item.id)}
+                                      className="w-7 h-7 flex items-center justify-center rounded bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
+                                      title="Preview/Cetak"
+                                    >
                                       <i className="fa fa-download text-sm"></i>
                                     </button>
-                                    <button onClick={() => openEditModal(item.id)} className="w-7 h-7 flex items-center justify-center rounded bg-yellow-50 text-yellow-600 hover:bg-yellow-100 transition-colors" title="Edit">
+                                    <button
+                                      onClick={() => openEditModal(item.id)}
+                                      className="w-7 h-7 flex items-center justify-center rounded bg-yellow-50 text-yellow-600 hover:bg-yellow-100 transition-colors"
+                                      title="Edit"
+                                    >
                                       <i className="fa fa-edit"></i>
                                     </button>
-                                    <button onClick={() => handleDelete(item.id)} className="w-7 h-7 flex items-center justify-center rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors" title="Delete">
+                                    <button
+                                      onClick={() => handleDelete(item.id)}
+                                      className="w-7 h-7 flex items-center justify-center rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                                      title="Delete"
+                                    >
                                       <i className="fa fa-trash"></i>
                                     </button>
                                   </div>
@@ -571,8 +776,11 @@ function Pembelian() {
                             </td>
                             <td className="border-r border-gray-50 text-center py-2 px-2">
                               <span
-                                className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold text-white border uppercase tracking-widest shadow-sm transition-colors ${tipeColors[pembelianDetail.barang.tipe?.toLowerCase()] || "bg-teal-600 border-teal-700"
-                                  }`}
+                                className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold text-white border uppercase tracking-widest shadow-sm transition-colors ${
+                                  tipeColors[
+                                    pembelianDetail.barang.tipe?.toLowerCase()
+                                  ] || "bg-teal-600 border-teal-700"
+                                }`}
                               >
                                 {pembelianDetail.barang.tipe}
                               </span>
@@ -593,10 +801,13 @@ function Pembelian() {
                               {RupiahFormat(pembelianDetail.pembelian_total)}
                             </td>
                             <td className="border-r border-gray-100 text-center py-2 px-3">
-                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${pembelianDetail.pembayaran === "cash"
-                                ? "bg-green-100 text-green-700 border-green-200"
-                                : "bg-red-100 text-red-700 border-red-200"
-                                }`}>
+                              <span
+                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                                  pembelianDetail.pembayaran === "cash"
+                                    ? "bg-green-100 text-green-700 border-green-200"
+                                    : "bg-red-100 text-red-700 border-red-200"
+                                }`}
+                              >
                                 {pembelianDetail.pembayaran}
                               </span>
                             </td>
@@ -629,12 +840,18 @@ function Pembelian() {
                                       type="checkbox"
                                       className="w-4 h-4 text-teal-600 bg-white border-gray-300 rounded focus:ring-teal-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                       name="pembelian_nota_st"
-                                      onChange={(event) => handleCheckboxChange(item.id, index)}
+                                      onChange={(event) =>
+                                        handleCheckboxChange(item.id, index)
+                                      }
                                       checked={item.pembelian_nota_st === "yes"}
-                                      disabled={item.pembelian_nota_st === "yes"}
+                                      disabled={
+                                        item.pembelian_nota_st === "yes"
+                                      }
                                     />
                                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                                      {item.pembelian_nota_st === "yes" ? "Done" : "Draft"}
+                                      {item.pembelian_nota_st === "yes"
+                                        ? "Done"
+                                        : "Draft"}
                                     </span>
                                   </div>
                                 </td>
@@ -647,8 +864,14 @@ function Pembelian() {
                   );
                 })}
 
-              <tr key="jumlah" className="bg-gray-100/80 border-t-2 border-gray-300">
-                <td colSpan="6" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
+              <tr
+                key="jumlah"
+                className="bg-gray-100/80 border-t-2 border-gray-300"
+              >
+                <td
+                  colSpan="6"
+                  className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300"
+                >
                   TOTAL KESELURUHAN
                 </td>
                 <td className="text-center py-3 px-3 text-sm font-bold text-gray-800 border-r border-gray-200">
@@ -682,13 +905,21 @@ function Pembelian() {
       <ToastContainer position="bottom-right" />
 
       {isModalEditOpen ? (
-        <ModalEditPembelian isOpen={isModalEditOpen} onClose={closeEditModal} id={edit_id} />
+        <ModalEditPembelian
+          isOpen={isModalEditOpen}
+          onClose={closeEditModal}
+          id={edit_id}
+        />
       ) : (
         <ModalAddPembelian isOpen={isModalOpen} onClose={closeModal} />
       )}
 
       {isModalCetak && (
-        <ModalPreview isOpen={true} onClose={() => setIsModalCetak(!isModalCetak)} id={edit_id} />
+        <ModalPreview
+          isOpen={true}
+          onClose={() => setIsModalCetak(!isModalCetak)}
+          id={edit_id}
+        />
       )}
     </div>
   );

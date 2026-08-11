@@ -137,7 +137,7 @@ function Pengiriman() {
     debouncedSearch,
   ]);
 
-  const changeAfterAddData = (suplierData) => { };
+  const changeAfterAddData = (suplierData) => {};
 
   const changeEndPoint = (url, label) => {
     setEndPoint(url);
@@ -162,7 +162,9 @@ function Pengiriman() {
 
   const handleSimpan = (pengiriman_id, kunci) => {
     alert(pengiriman_id);
-    const filteredData = datas.filter((item) => item.pengiriman_id === pengiriman_id);
+    const filteredData = datas.filter(
+      (item) => item.pengiriman_id === pengiriman_id,
+    );
   };
 
   const [inputBebanKaryawan, setInputBebanKaryawan] = useState([
@@ -170,7 +172,10 @@ function Pengiriman() {
   ]);
 
   const handleAddKaryawan = () => {
-    setInputBebanKaryawan([...inputBebanKaryawan, { karyawan_id: "", beban_value: "" }]);
+    setInputBebanKaryawan([
+      ...inputBebanKaryawan,
+      { karyawan_id: "", beban_value: "" },
+    ]);
   };
   const [bebanKardus, setInputBebanKardus] = useState("0");
 
@@ -290,7 +295,9 @@ function Pengiriman() {
   };
 
   const handleDelete = async (pengiriman_id) => {
-    const isConfirmed = window.confirm("Apakah Anda yakin ingin menghapus data ini?");
+    const isConfirmed = window.confirm(
+      "Apakah Anda yakin ingin menghapus data ini?",
+    );
     if (isConfirmed) {
       const toastId = toast.loading("Sending data...");
       try {
@@ -304,12 +311,27 @@ function Pengiriman() {
         });
         if (response.status === 200) {
           fectData();
-          toast.update(toastId, { render: "Delete data successfully!", type: "success", isLoading: false, autoClose: 3000 });
+          toast.update(toastId, {
+            render: "Delete data successfully!",
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+          });
         } else {
-          toast.update(toastId, { render: "Error delete data!" + response.status, type: "error", isLoading: false, autoClose: 5000 });
+          toast.update(toastId, {
+            render: "Error delete data!" + response.status,
+            type: "error",
+            isLoading: false,
+            autoClose: 5000,
+          });
         }
       } catch (error) {
-        toast.update(toastId, { render: "Error delete data! " + error.message, type: "error", isLoading: false, autoClose: 5000 });
+        toast.update(toastId, {
+          render: "Error delete data! " + error.message,
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+        });
       }
       setIsFunctionComplete(true);
     }
@@ -318,12 +340,15 @@ function Pengiriman() {
   const downloadImage = async (pengiriman_id) => {
     const toastId = toast.loading("Sending data...");
     try {
-      const response = await api.get(`/pengiriman-cetak-image/${pengiriman_id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        responseType: "blob",
-      }
+      const response = await api.get(
+        `/pengiriman-cetak-image/${pengiriman_id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: "blob",
+        },
       );
       const url = window.URL.createObjectURL(new Blob([response.data]));
+      // console.log(url);
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", "Pengiriman.png");
@@ -332,19 +357,162 @@ function Pengiriman() {
       document.body.removeChild(link);
 
       if (response.status === 200) {
-        toast.update(toastId, { render: "Download successfully!", type: "success", isLoading: false, autoClose: 3000 });
+        toast.update(toastId, {
+          render: "Download successfully!",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
+        });
       } else {
-        toast.update(toastId, { render: "Error Download!" + response.status, type: "error", isLoading: false, autoClose: 5000 });
+        toast.update(toastId, {
+          render: "Error Download!" + response.status,
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+        });
       }
     } catch (error) {
-      toast.update(toastId, { render: "Error Download! " + error.message, type: "error", isLoading: false, autoClose: 5000 });
+      toast.update(toastId, {
+        render: "Error Download! " + error.message,
+        type: "error",
+        isLoading: false,
+        autoClose: 5000,
+      });
     }
   };
 
+  function getCurrentDateTime() {
+    const now = new Date();
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    };
+    const tanggal = now.toLocaleDateString("id-ID", options);
+    const jam = now.toLocaleTimeString("id-ID");
+    return [tanggal, jam];
+  }
+
+  function formatRupiah(angka) {
+    return `Rp${angka.toLocaleString("id-ID")}`;
+  }
+
   const [isModalCetak, setIsModalCetak] = useState(false);
-  const viewModalCetak = (suplier_id) => {
-    setIsModalCetak(!isModalCetak);
-    setEdit_id(suplier_id);
+
+  // Fungsi untuk memformat baris teks
+  function formatRow(columns, columnWidths) {
+    return columns
+      .map((col, index) => {
+        const width = columnWidths[index];
+        return col.toString().padEnd(width, " "); // Tambahkan spasi untuk alignment
+      })
+      .join(" ");
+  }
+  const viewModalCetak = async (suplier_id) => {
+    try {
+      setEdit_id(suplier_id);
+      const responseGet = await api.get(`/detail-Pengiriman/${suplier_id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Sisipkan token di header
+        },
+      });
+      // print termal
+      const ESC = "\x1B";
+      const fontSmall = `${ESC}!\x01`; // Ukuran font kecil
+      const dataMaster = responseGet.data.data;
+      const currentDateTime = getCurrentDateTime();
+      // Format kolom
+      const columnWidths = [14, 13, 20]; // Lebar kolom untuk nama, tonase, dan harga
+
+      const grandTotalTonase = dataMaster.listPengiriman.reduce(
+        (sum, item) => sum + parseInt(item.data_tonase),
+        0,
+      );
+
+      // Format header
+      const header =
+        `${fontSmall}` + // Atur font kecil
+        "UD. DAFFA PUTRA\n" +
+        "Alamat Jln Kuwaluhan, Secang, Kab. Magelang\n" +
+        "HP. 0813 2866 7762 / 0813 2997 1472" +
+        "\n-----------------------------------------------\n" +
+        `Pembeli     : ${dataMaster.nama_pembeli}\n` +
+        `Tanggal     : ${FormatTanggal(dataMaster.pengiriman_tgl)}\n` +
+        `Uang Muka   : ${formatRupiah(parseInt(dataMaster.uang_muka))}\n` +
+        `Nota Cetak  : ${currentDateTime[0]}\n` + // Tambahkan tanggal dan jam sekarang
+        `Nota Jam    : ${currentDateTime[1]}\n` + // Tambahkan tanggal dan jam sekarang
+        "-----------------------------------------------\n" +
+        formatRow(["Barang", "Ton(kg)", "Total"], columnWidths) +
+        "\n" +
+        "-----------------------------------------------\n";
+      // Format isi tabel
+      const rows = formatRow(
+        [
+          dataMaster.nama_barang_nota + "\n",
+          grandTotalTonase.toString().padStart(20, " ").padEnd(25, " "),
+          formatRupiah(parseInt(dataMaster.total_biaya)),
+        ],
+        columnWidths,
+      );
+      // Format footer
+      const footer = "\n-----------------------------------------------\n\n";
+
+      // Gabungkan semuanya
+      // const nota = header + rows + "\n" + footer;
+      const nota =
+        `${fontSmall}` + header + rows + "\n" + footer + `${fontSmall}`; // Kembalikan ke font normal jika perlu
+
+      console.log(nota); // Debug: lihat output di konsol
+
+      // Kirim ke printer thermal
+      const printData = new TextEncoder().encode(nota);
+
+      // Hubungkan ke perangkat Bluetooth
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ["000018f0-0000-1000-8000-00805f9b34fb"],
+      });
+
+      console.log("Perangkat ditemukan:", device.name);
+
+      const server = await device.gatt.connect();
+      const service = await server.getPrimaryService(
+        "000018f0-0000-1000-8000-00805f9b34fb",
+      );
+      const characteristic = await service.getCharacteristic(
+        "00002af1-0000-1000-8000-00805f9b34fb",
+      );
+
+      // Kirim data ke printer
+      console.log("Data size:", printData.byteLength);
+      // await characteristic.writeValue(printData);
+      // mambagi dua
+      function chunkArrayBuffer(buffer, chunkSize) {
+        let chunks = [];
+        for (let i = 0; i < buffer.byteLength; i += chunkSize) {
+          chunks.push(buffer.slice(i, i + chunkSize));
+        }
+        return chunks;
+      }
+
+      async function sendDataInChunks(characteristic, data) {
+        const chunkSize = 512; // Batas maksimum byte
+        const chunks = chunkArrayBuffer(data, chunkSize);
+
+        for (const chunk of chunks) {
+          await characteristic.writeValue(chunk);
+          // Tunggu sedikit waktu jika perangkat memerlukan jeda
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+      }
+      // end membagi dua
+      await sendDataInChunks(characteristic, printData);
+
+      console.log("Nota berhasil dicetak.");
+    } catch (error) {
+      console.error("Gagal mencetak nota:", error);
+    }
   };
 
   let ttl_operational = 0;
@@ -355,19 +523,24 @@ function Pengiriman() {
     <>
       <div className="p-1 md:p-3 xl:p-5 font-poppins">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full h-full mx-auto">
-
           {/* Header & Title */}
           <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
             <div>
-              <h2 className="text-xl font-bold text-gray-800">Data Pengiriman</h2>
-              <p className="text-sm text-gray-500 mt-1">Kelola transaksi pengiriman dan operasional beban</p>
+              <h2 className="text-xl font-bold text-gray-800">
+                Data Pengiriman
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Kelola transaksi pengiriman dan operasional beban
+              </p>
             </div>
           </div>
 
           {/* Filters Panel */}
           <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 flex flex-wrap items-end gap-4 mb-6">
             <div className="flex flex-col flex-1 sm:flex-none">
-              <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">Dari</label>
+              <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">
+                Dari
+              </label>
               <input
                 name="dateFrom"
                 type="date"
@@ -378,7 +551,9 @@ function Pengiriman() {
             </div>
 
             <div className="flex flex-col flex-1 sm:flex-none">
-              <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">Sampai</label>
+              <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">
+                Sampai
+              </label>
               <input
                 name="dateTo"
                 type="date"
@@ -389,7 +564,9 @@ function Pengiriman() {
             </div>
 
             <div className="flex flex-col flex-1 sm:flex-none min-w-[300px]">
-              <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">Cari</label>
+              <label className="text-[10px] font-bold text-gray-500 mb-1 ml-1 uppercase">
+                Cari
+              </label>
               <div className="relative">
                 <i className="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                 <input
@@ -406,18 +583,27 @@ function Pengiriman() {
           {/* ========================================= */}
           {/* VIEW MOBILE: CARD LAYOUT (Tampil < 768px)  */}
           {/* ========================================= */}
-          <div className={`md:hidden space-y-4 mb-6 ${blur ? "opacity-50" : "opacity-100"} transition-opacity`}>
+          <div
+            className={`md:hidden space-y-4 mb-6 ${blur ? "opacity-50" : "opacity-100"} transition-opacity`}
+          >
             {datas && datas.length > 0 ? (
               datas.map((item, index) => {
                 ttl_operational += item.totalBeban;
                 ttl_data_total += parseInt(item.total_biaya || 0, 10);
                 return (
-                  <div key={item.id} className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                  <div
+                    key={item.id}
+                    className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden"
+                  >
                     {/* Header Card */}
                     <div className="bg-gray-50/80 p-4 border-b border-gray-100 flex justify-between items-center">
                       <div>
-                        <h3 className="font-bold text-gray-800 text-base uppercase leading-tight">{item.nama_pembeli}</h3>
-                        <p className="text-xs text-gray-500 mt-1">{FormatTanggal(item.pengiriman_tgl)}</p>
+                        <h3 className="font-bold text-gray-800 text-base uppercase leading-tight">
+                          {item.nama_pembeli}
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {FormatTanggal(item.pengiriman_tgl)}
+                        </p>
                       </div>
                       <div>
                         <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-gray-100 border border-gray-200 text-gray-600">
@@ -428,16 +614,32 @@ function Pengiriman() {
 
                     {/* Tombol Aksi per Transaksi */}
                     <div className="flex border-b border-gray-100 divide-x divide-gray-100 bg-white">
-                      <button onClick={() => downloadImage(item.id)} className="flex-1 py-2.5 text-blue-500 hover:bg-blue-50 transition-colors" title="Image">
+                      <button
+                        onClick={() => downloadImage(item.id)}
+                        className="flex-1 py-2.5 text-blue-500 hover:bg-blue-50 transition-colors"
+                        title="Image"
+                      >
                         <i className="fa fa-image text-lg"></i>
                       </button>
-                      <button onClick={() => viewModalCetak(item.id)} className="flex-1 py-2.5 text-green-500 hover:bg-green-50 transition-colors" title="Print">
+                      <button
+                        onClick={() => viewModalCetak(item.id)}
+                        className="flex-1 py-2.5 text-green-500 hover:bg-green-50 transition-colors"
+                        title="Print"
+                      >
                         <i className="fa fa-download text-lg"></i>
                       </button>
-                      <button onClick={() => openEditModal(item.id)} className="flex-1 py-2.5 text-yellow-500 hover:bg-yellow-50 transition-colors" title="Edit">
+                      <button
+                        onClick={() => openEditModal(item.id)}
+                        className="flex-1 py-2.5 text-yellow-500 hover:bg-yellow-50 transition-colors"
+                        title="Edit"
+                      >
                         <i className="fa fa-edit text-lg"></i>
                       </button>
-                      <button onClick={() => handleDelete(item.id)} className="flex-1 py-2.5 text-red-500 hover:bg-red-50 transition-colors" title="Delete">
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="flex-1 py-2.5 text-red-500 hover:bg-red-50 transition-colors"
+                        title="Delete"
+                      >
                         <i className="fa fa-trash text-lg"></i>
                       </button>
                     </div>
@@ -445,23 +647,37 @@ function Pengiriman() {
                     {/* Uang Muka & Operasional */}
                     <div className="p-4 border-b border-gray-100 bg-white grid grid-cols-3 gap-2">
                       <div>
-                        <span className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Uang Muka</span>
-                        <span className="font-bold text-gray-700">{RupiahFormat(item.uang_muka)}</span>
+                        <span className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                          Uang Muka
+                        </span>
+                        <span className="font-bold text-gray-700">
+                          {RupiahFormat(item.uang_muka)}
+                        </span>
                       </div>
                       <div className="text-center border-l border-r border-gray-100">
-                        <span className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Total Biaya</span>
-                        <span className="font-bold text-teal-700">{RupiahFormat(item.total_biaya || 0)}</span>
+                        <span className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                          Total Biaya
+                        </span>
+                        <span className="font-bold text-teal-700">
+                          {RupiahFormat(item.total_biaya || 0)}
+                        </span>
                       </div>
                       <div className="text-right">
-                        <span className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Operasional</span>
+                        <span className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                          Operasional
+                        </span>
                         <div className="flex justify-end items-center gap-2">
                           <button
-                            onClick={() => handleModalBeban(item.id, item.pengiriman_tgl)}
+                            onClick={() =>
+                              handleModalBeban(item.id, item.pengiriman_tgl)
+                            }
                             className="w-7 h-7 flex items-center justify-center bg-teal-50 text-teal-600 rounded-md hover:bg-teal-100"
                           >
                             <i className="fa fa-book text-sm"></i>
                           </button>
-                          <span className="font-bold text-red-500">{RupiahFormat(item.totalBeban)}</span>
+                          <span className="font-bold text-red-500">
+                            {RupiahFormat(item.totalBeban)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -469,34 +685,55 @@ function Pengiriman() {
                     {/* List Barang */}
                     <div className="p-4 space-y-3 bg-white">
                       <div className="border-b border-gray-100 pb-2 mb-2 flex justify-between items-center">
-                        <span className="block text-xs font-bold text-gray-800">Detail Pengiriman</span>
+                        <span className="block text-xs font-bold text-gray-800">
+                          Detail Pengiriman
+                        </span>
                         {item.nama_barang_nota && (
-                          <span className="block text-[10px] font-bold text-white bg-teal-600 px-2 py-0.5 rounded uppercase">Nota: {item.nama_barang_nota}</span>
+                          <span className="block text-[10px] font-bold text-white bg-teal-600 px-2 py-0.5 rounded uppercase">
+                            Nota: {item.nama_barang_nota}
+                          </span>
                         )}
                       </div>
-                      {item.listPengiriman && item.listPengiriman.map((listPem, key) => {
-                        return (
-                          <div key={listPem.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200/60 shadow-sm">
-                            <div className="flex justify-between items-start mb-2">
-                              <div>
-                                <p className="font-bold text-gray-700 text-sm">{listPem.barang?.nama}</p>
-                                <p className="text-[11px] text-gray-500 mt-0.5">Suplier: {listPem.suplier?.suplier_nama}</p>
+                      {item.listPengiriman &&
+                        item.listPengiriman.map((listPem, key) => {
+                          return (
+                            <div
+                              key={listPem.id}
+                              className="bg-gray-50 rounded-lg p-3 border border-gray-200/60 shadow-sm"
+                            >
+                              <div className="flex justify-between items-start mb-2">
+                                <div>
+                                  <p className="font-bold text-gray-700 text-sm">
+                                    {listPem.barang?.nama}
+                                  </p>
+                                  <p className="text-[11px] text-gray-500 mt-0.5">
+                                    Suplier: {listPem.suplier?.suplier_nama}
+                                  </p>
+                                </div>
+                                <span
+                                  className={`text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider border ${
+                                    listPem.pembayaran_st === "cash"
+                                      ? "bg-green-100 text-green-700 border-green-200"
+                                      : "bg-red-100 text-red-700 border-red-200"
+                                  }`}
+                                >
+                                  {listPem.pembayaran_st}
+                                </span>
                               </div>
-                              <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider border ${listPem.pembayaran_st === 'cash' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'
-                                }`}>
-                                {listPem.pembayaran_st}
-                              </span>
-                            </div>
 
-                            <div className="flex justify-between items-center text-xs mt-3 pt-2 border-t border-gray-200/60">
-                              <div>
-                                <span className="text-gray-400 block text-[9px] uppercase">Tonase</span>
-                                <span className="font-medium text-gray-600">{listPem.data_tonase} Kg</span>
+                              <div className="flex justify-between items-center text-xs mt-3 pt-2 border-t border-gray-200/60">
+                                <div>
+                                  <span className="text-gray-400 block text-[9px] uppercase">
+                                    Tonase
+                                  </span>
+                                  <span className="font-medium text-gray-600">
+                                    {listPem.data_tonase} Kg
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
                     </div>
                   </div>
                 );
@@ -511,12 +748,20 @@ function Pengiriman() {
             {datas.length > 0 && (
               <div className="bg-teal-50/50 border border-teal-200 rounded-xl p-4 shadow-sm">
                 <div className="flex justify-between mb-2">
-                  <span className="text-xs font-bold text-teal-800 uppercase">Total Operasional</span>
-                  <span className="text-sm font-bold text-red-600">{RupiahFormat(ttl_operational)}</span>
+                  <span className="text-xs font-bold text-teal-800 uppercase">
+                    Total Operasional
+                  </span>
+                  <span className="text-sm font-bold text-red-600">
+                    {RupiahFormat(ttl_operational)}
+                  </span>
                 </div>
                 <div className="flex justify-between border-t border-teal-200 pt-2 mt-2">
-                  <span className="text-sm font-bold text-teal-900 uppercase">Grand Total</span>
-                  <span className="text-lg font-bold text-teal-700">{RupiahFormat(ttl_data_total)}</span>
+                  <span className="text-sm font-bold text-teal-900 uppercase">
+                    Grand Total
+                  </span>
+                  <span className="text-lg font-bold text-teal-700">
+                    {RupiahFormat(ttl_data_total)}
+                  </span>
                 </div>
               </div>
             )}
@@ -525,29 +770,57 @@ function Pengiriman() {
           {/* ========================================= */}
           {/* VIEW DESKTOP: TABLE LAYOUT (Tampil > 768px) */}
           {/* ========================================= */}
-          <div className={`hidden md:block overflow-x-auto rounded-lg border border-gray-200 ${blur ? "opacity-50" : "opacity-100"} transition-opacity`}>
+          <div
+            className={`hidden md:block overflow-x-auto rounded-lg border border-gray-200 ${blur ? "opacity-50" : "opacity-100"} transition-opacity`}
+          >
             {/* Reset counters for desktop render */}
             <div className="hidden">
-              {ttl_operational = 0}
-              {ttl_data_total = 0}
+              {(ttl_operational = 0)}
+              {(ttl_data_total = 0)}
             </div>
 
             <table className="w-full text-left border-collapse min-w-[1300px]">
               <thead>
                 <tr className="bg-gray-50/80 border-b border-gray-200">
-                  <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">Aksi</th>
-                  <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-12">No</th>
-                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">Tanggal</th>
-                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-40">Nama Pembeli</th>
-                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">Uang Muka</th>
-                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Status</th>
-                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-36">Atur Ops</th>
-                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-36">Total Biaya</th>
-                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-40">Nama di Nota</th>
-                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-40">Barang</th>
-                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-36">Supplier</th>
-                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">Tonase</th>
-                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Pembayaran</th>
+                  <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">
+                    Aksi
+                  </th>
+                  <th className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-12">
+                    No
+                  </th>
+                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-28">
+                    Tanggal
+                  </th>
+                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-40">
+                    Nama Pembeli
+                  </th>
+                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-32">
+                    Uang Muka
+                  </th>
+                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">
+                    Status
+                  </th>
+                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-36">
+                    Atur Ops
+                  </th>
+                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right border-r border-gray-200 w-36">
+                    Total Biaya
+                  </th>
+                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-40">
+                    Nama di Nota
+                  </th>
+                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-40">
+                    Barang
+                  </th>
+                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-36">
+                    Supplier
+                  </th>
+                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center border-r border-gray-200 w-24">
+                    Tonase
+                  </th>
+                  <th className="py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">
+                    Pembayaran
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -558,74 +831,128 @@ function Pengiriman() {
                   return (
                     <React.Fragment key={item.id}>
                       <tr className="hover:bg-teal-50/20 transition-colors border-t-2 border-gray-100">
-                        <td className="align-middle border-r border-b border-gray-200 p-2" rowSpan={item.listPengiriman.length || 1}>
+                        <td
+                          className="align-middle border-r border-b border-gray-200 p-2"
+                          rowSpan={item.listPengiriman.length || 1}
+                        >
                           <div className="flex flex-wrap justify-center gap-1">
-                            <button onClick={() => downloadImage(item.id)} className="w-7 h-7 flex items-center justify-center rounded bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Download Image">
+                            <button
+                              onClick={() => downloadImage(item.id)}
+                              className="w-7 h-7 flex items-center justify-center rounded bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                              title="Download Image"
+                            >
                               <i className="fa fa-image"></i>
                             </button>
-                            <button onClick={() => viewModalCetak(item.id)} className="w-7 h-7 flex items-center justify-center rounded bg-green-50 text-green-600 hover:bg-green-100 transition-colors" title="Preview/Cetak">
+                            <button
+                              onClick={() => viewModalCetak(item.id)}
+                              className="w-7 h-7 flex items-center justify-center rounded bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
+                              title="Preview/Cetak"
+                            >
                               <i className="fa fa-download text-sm"></i>
                             </button>
-                            <button onClick={() => openEditModal(item.id)} className="w-7 h-7 flex items-center justify-center rounded bg-yellow-50 text-yellow-600 hover:bg-yellow-100 transition-colors" title="Edit">
+                            <button
+                              onClick={() => openEditModal(item.id)}
+                              className="w-7 h-7 flex items-center justify-center rounded bg-yellow-50 text-yellow-600 hover:bg-yellow-100 transition-colors"
+                              title="Edit"
+                            >
                               <i className="fa fa-edit"></i>
                             </button>
-                            <button onClick={() => handleDelete(item.id)} className="w-7 h-7 flex items-center justify-center rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors" title="Delete">
+                            <button
+                              onClick={() => handleDelete(item.id)}
+                              className="w-7 h-7 flex items-center justify-center rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                              title="Delete"
+                            >
                               <i className="fa fa-trash"></i>
                             </button>
                           </div>
                         </td>
-                        <td className="align-middle text-center border-r border-b border-gray-200 text-sm text-gray-600 font-medium" rowSpan={item.listPengiriman.length || 1}>
+                        <td
+                          className="align-middle text-center border-r border-b border-gray-200 text-sm text-gray-600 font-medium"
+                          rowSpan={item.listPengiriman.length || 1}
+                        >
                           {local_number}
                         </td>
-                        <td className="align-middle text-center border-r border-b border-gray-200 text-sm text-gray-600" rowSpan={item.listPengiriman.length || 1}>
+                        <td
+                          className="align-middle text-center border-r border-b border-gray-200 text-sm text-gray-600"
+                          rowSpan={item.listPengiriman.length || 1}
+                        >
                           {FormatTanggal(item.pengiriman_tgl)}
                         </td>
-                        <td className="align-middle border-r border-b border-gray-200 py-2 px-3 text-sm text-gray-800 font-bold uppercase" rowSpan={item.listPengiriman.length || 1}>
+                        <td
+                          className="align-middle border-r border-b border-gray-200 py-2 px-3 text-sm text-gray-800 font-bold uppercase"
+                          rowSpan={item.listPengiriman.length || 1}
+                        >
                           {item.nama_pembeli}
                         </td>
-                        <td className="align-middle text-right border-r border-b border-gray-200 py-2 px-3 text-sm text-gray-700" rowSpan={item.listPengiriman.length || 1}>
+                        <td
+                          className="align-middle text-right border-r border-b border-gray-200 py-2 px-3 text-sm text-gray-700"
+                          rowSpan={item.listPengiriman.length || 1}
+                        >
                           {RupiahFormat(item.uang_muka)}
                         </td>
-                        <td className="align-middle text-center border-r border-b border-gray-200 py-2 px-2" rowSpan={item.listPengiriman.length || 1}>
+                        <td
+                          className="align-middle text-center border-r border-b border-gray-200 py-2 px-2"
+                          rowSpan={item.listPengiriman.length || 1}
+                        >
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200 uppercase tracking-wider">
                             {item.status}
                           </span>
                         </td>
-                        <td className="align-middle text-right border-r border-b border-gray-200 py-2 px-3 bg-gray-50/30" rowSpan={item.listPengiriman.length || 1}>
+                        <td
+                          className="align-middle text-right border-r border-b border-gray-200 py-2 px-3 bg-gray-50/30"
+                          rowSpan={item.listPengiriman.length || 1}
+                        >
                           <div className="flex justify-end items-center gap-2">
                             <button
-                              onClick={() => handleModalBeban(item.id, item.pengiriman_tgl)}
+                              onClick={() =>
+                                handleModalBeban(item.id, item.pengiriman_tgl)
+                              }
                               className="w-7 h-7 flex items-center justify-center bg-teal-50 text-teal-600 rounded hover:bg-teal-100 transition-colors border border-teal-100"
                               title="Atur Operational"
                             >
                               <i className="fa fa-book text-sm"></i>
                             </button>
-                            <span className="text-sm font-bold text-red-500">{RupiahFormat(item.totalBeban)}</span>
+                            <span className="text-sm font-bold text-red-500">
+                              {RupiahFormat(item.totalBeban)}
+                            </span>
                           </div>
                         </td>
-                        <td className="align-middle text-right border-r border-b border-gray-200 py-2 px-3 text-sm text-teal-700 font-bold bg-teal-50/10" rowSpan={item.listPengiriman.length || 1}>
+                        <td
+                          className="align-middle text-right border-r border-b border-gray-200 py-2 px-3 text-sm text-teal-700 font-bold bg-teal-50/10"
+                          rowSpan={item.listPengiriman.length || 1}
+                        >
                           {RupiahFormat(item.total_biaya || 0)}
                         </td>
-                        <td className="align-middle border-r border-b border-gray-200 py-2 px-3 text-sm text-gray-700" rowSpan={item.listPengiriman.length || 1}>
-                          {item.nama_barang_nota || '-'}
+                        <td
+                          className="align-middle border-r border-b border-gray-200 py-2 px-3 text-sm text-gray-700"
+                          rowSpan={item.listPengiriman.length || 1}
+                        >
+                          {item.nama_barang_nota || "-"}
                         </td>
 
                         {/* Data pertama listPengiriman */}
                         <td className="border-r border-gray-100 py-2 px-3 text-sm text-gray-700 font-medium">
-                          {item.listPengiriman[0] && item.listPengiriman[0].barang?.nama}
+                          {item.listPengiriman[0] &&
+                            item.listPengiriman[0].barang?.nama}
                         </td>
                         <td className="border-r border-gray-100 py-2 px-3 text-sm text-gray-600">
-                          {item.listPengiriman[0] && item.listPengiriman[0].suplier?.suplier_nama}
+                          {item.listPengiriman[0] &&
+                            item.listPengiriman[0].suplier?.suplier_nama}
                         </td>
                         <td className="border-r border-gray-100 text-center py-2 px-3 text-sm text-gray-700">
-                          {item.listPengiriman[0] && item.listPengiriman[0]["data_tonase"]}
+                          {item.listPengiriman[0] &&
+                            item.listPengiriman[0]["data_tonase"]}
                         </td>
                         <td className="text-center py-2 px-3">
                           {item.listPengiriman[0] && (
-                            <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${item.listPengiriman[0]["pembayaran_st"] === "cash"
-                              ? "bg-green-100 text-green-700 border-green-200"
-                              : "bg-red-100 text-red-700 border-red-200"
-                              }`}>
+                            <span
+                              className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
+                                item.listPengiriman[0]["pembayaran_st"] ===
+                                "cash"
+                                  ? "bg-green-100 text-green-700 border-green-200"
+                                  : "bg-red-100 text-red-700 border-red-200"
+                              }`}
+                            >
                               {item.listPengiriman[0]["pembayaran_st"]}
                             </span>
                           )}
@@ -633,40 +960,47 @@ function Pengiriman() {
                       </tr>
 
                       {/* Data sisa listPengiriman (jika ada) */}
-                      {item.listPengiriman && item.listPengiriman.map((listPem, keyIndex) => {
-                        return (
-                          <React.Fragment key={listPem.id}>
-                            {JSON.stringify(keyIndex) === "0" ? null : (
-                              <tr className="hover:bg-teal-50/20 transition-colors">
-                                <td className="border-r border-gray-100 py-2 px-3 text-sm text-gray-700 font-medium">
-                                  {listPem.barang?.nama}
-                                </td>
-                                <td className="border-r border-gray-100 py-2 px-3 text-sm text-gray-600">
-                                  {listPem.suplier?.suplier_nama}
-                                </td>
-                                <td className="border-r border-gray-100 text-center py-2 px-3 text-sm text-gray-700">
-                                  {listPem.data_tonase}
-                                </td>
-                                <td className="text-center py-2 px-3">
-                                  <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${listPem.pembayaran_st === "cash"
-                                    ? "bg-green-100 text-green-700 border-green-200"
-                                    : "bg-red-100 text-red-700 border-red-200"
-                                    }`}>
-                                    {listPem.pembayaran_st}
-                                  </span>
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
-                        );
-                      })}
+                      {item.listPengiriman &&
+                        item.listPengiriman.map((listPem, keyIndex) => {
+                          return (
+                            <React.Fragment key={listPem.id}>
+                              {JSON.stringify(keyIndex) === "0" ? null : (
+                                <tr className="hover:bg-teal-50/20 transition-colors">
+                                  <td className="border-r border-gray-100 py-2 px-3 text-sm text-gray-700 font-medium">
+                                    {listPem.barang?.nama}
+                                  </td>
+                                  <td className="border-r border-gray-100 py-2 px-3 text-sm text-gray-600">
+                                    {listPem.suplier?.suplier_nama}
+                                  </td>
+                                  <td className="border-r border-gray-100 text-center py-2 px-3 text-sm text-gray-700">
+                                    {listPem.data_tonase}
+                                  </td>
+                                  <td className="text-center py-2 px-3">
+                                    <span
+                                      className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
+                                        listPem.pembayaran_st === "cash"
+                                          ? "bg-green-100 text-green-700 border-green-200"
+                                          : "bg-red-100 text-red-700 border-red-200"
+                                      }`}
+                                    >
+                                      {listPem.pembayaran_st}
+                                    </span>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          );
+                        })}
                     </React.Fragment>
                   );
                 })}
 
                 {/* Total Row */}
                 <tr className="bg-gray-100/80 border-t-2 border-gray-300">
-                  <td colSpan="6" className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300">
+                  <td
+                    colSpan="6"
+                    className="text-right py-3 px-4 text-sm font-bold text-gray-700 tracking-wider border-r border-gray-300"
+                  >
                     TOTAL OPERASIONAL & BIAYA
                   </td>
                   <td className="text-right py-3 px-3 text-sm font-bold text-red-600 border-r border-gray-200">
@@ -685,13 +1019,25 @@ function Pengiriman() {
         <ToastContainer position="bottom-right" />
 
         {isModalEditOpen ? (
-          <ModalEditPengiriman isOpen={isModalEditOpen} onClose={closeEditModal} pengiriman_id={edit_id} />
+          <ModalEditPengiriman
+            isOpen={isModalEditOpen}
+            onClose={closeEditModal}
+            pengiriman_id={edit_id}
+          />
         ) : (
-          <ModalAddPengiriman isOpen={isModalOpen} onClose={closeModal} listData={changeAfterAddData} />
+          <ModalAddPengiriman
+            isOpen={isModalOpen}
+            onClose={closeModal}
+            listData={changeAfterAddData}
+          />
         )}
 
         {isModalCetak && (
-          <ModalPreviewPembelian isOpen={true} onClose={() => setIsModalCetak(!isModalCetak)} pengiriman_id={edit_id} />
+          <ModalPreviewPembelian
+            isOpen={true}
+            onClose={() => setIsModalCetak(!isModalCetak)}
+            pengiriman_id={edit_id}
+          />
         )}
       </div>
 
@@ -700,7 +1046,10 @@ function Pengiriman() {
       {/* ========================================= */}
       {stModalBeban && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4 sm:p-6 font-poppins">
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => handleModalBeban()}></div>
+          <div
+            className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+            onClick={() => handleModalBeban()}
+          ></div>
 
           <div className="bg-white w-full max-w-2xl h-full max-h-[85vh] rounded-2xl shadow-2xl relative z-10 flex flex-col overflow-hidden">
             {/* Header Modal */}
@@ -710,11 +1059,18 @@ function Pengiriman() {
                   <i className="fa fa-money-bill-wave text-lg"></i>
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800 leading-tight">Atur Operasional</h2>
-                  <p className="text-xs text-gray-500">Kelola beban dan pengeluaran pengiriman</p>
+                  <h2 className="text-xl font-bold text-gray-800 leading-tight">
+                    Atur Operasional
+                  </h2>
+                  <p className="text-xs text-gray-500">
+                    Kelola beban dan pengeluaran pengiriman
+                  </p>
                 </div>
               </div>
-              <button onClick={() => handleModalBeban()} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+              <button
+                onClick={() => handleModalBeban()}
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+              >
                 <i className="fa fa-times text-lg"></i>
               </button>
             </div>
@@ -740,22 +1096,31 @@ function Pengiriman() {
 
                 {/* 2. Karyawan */}
                 <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-5">
-                  <h3 className="text-sm font-bold text-gray-700 uppercase mb-3 border-b border-gray-100 pb-2">1. Operasional Karyawan</h3>
+                  <h3 className="text-sm font-bold text-gray-700 uppercase mb-3 border-b border-gray-100 pb-2">
+                    1. Operasional Karyawan
+                  </h3>
 
                   <div className="space-y-3 mb-3">
                     {inputBebanKaryawan.map((field, index) => (
-                      <div className="flex flex-col sm:flex-row gap-2" key={index}>
+                      <div
+                        className="flex flex-col sm:flex-row gap-2"
+                        key={index}
+                      >
                         <div className="flex-1">
                           <select
                             required
                             name="karyawan_id"
                             className="w-full border border-gray-200 py-2 px-3 rounded-lg text-sm bg-white focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all cursor-pointer"
                             value={field.karyawan_id}
-                            onChange={(event) => handleInputKaryawan(index, event)}
+                            onChange={(event) =>
+                              handleInputKaryawan(index, event)
+                            }
                           >
                             <option value="">-- Pilih Karyawan --</option>
                             {dataKaryawan.map((option) => (
-                              <option key={option.id} value={option.id}>{option.karyawan_nama}</option>
+                              <option key={option.id} value={option.id}>
+                                {option.karyawan_nama}
+                              </option>
                             ))}
                           </select>
                         </div>
@@ -767,7 +1132,9 @@ function Pengiriman() {
                             className="w-full border border-gray-200 py-2 px-3 rounded-lg text-sm bg-white focus:ring-2 focus:ring-teal-100 focus:border-teal-400 outline-none transition-all"
                             placeholder="Nilai Operasional"
                             value={field.beban_value}
-                            onChange={(event) => handleInputKaryawan(index, event)}
+                            onChange={(event) =>
+                              handleInputKaryawan(index, event)
+                            }
                           />
                         </div>
                         <button
@@ -792,11 +1159,16 @@ function Pengiriman() {
 
                 {/* 3. Lainnya */}
                 <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-5">
-                  <h3 className="text-sm font-bold text-gray-700 uppercase mb-3 border-b border-gray-100 pb-2">2. Operasional Lainnya</h3>
+                  <h3 className="text-sm font-bold text-gray-700 uppercase mb-3 border-b border-gray-100 pb-2">
+                    2. Operasional Lainnya
+                  </h3>
 
                   <div className="space-y-3 mb-3">
                     {inputBebanLain.map((field, index) => (
-                      <div className="flex flex-col sm:flex-row gap-2" key={index}>
+                      <div
+                        className="flex flex-col sm:flex-row gap-2"
+                        key={index}
+                      >
                         <div className="flex-1">
                           <input
                             required

@@ -42,6 +42,7 @@ function ModalPreview({ isOpen, onClose, id }) {
         });
       }
       const dataSuplier = response.data.data;
+      console.log();
       // Data nota
       const supplier = dataSuplier.suplier_nama;
       const tanggal = FormatTanggal(dataSuplier.pembelian_tgl);
@@ -60,10 +61,11 @@ function ModalPreview({ isOpen, onClose, id }) {
         `${fontSmall}` + // Atur font kecil
         "UD. DAFFA PUTRA\n" +
         "Alamat Jln Kuwaluhan, Secang, Kab. Magelang\n" +
-        "HP. 0813 1300 5249 / 0813 9123 1224" +
+        "HP. 0813 2866 7762 / 0813 2997 1472" +
         "\n-----------------------------------------------\n" +
         `Supplier    : ${supplier}\n` +
-        `Tanggal     : ${tanggal}\n` +
+        `Tanggal     : ${formatRupiah(parseInt(dataSuplier.dp))}\n` +
+        `Uang Muka   : ${tanggal}\n` +
         `Nota Cetak  : ${currentDateTime[0]}\n` + // Tambahkan tanggal dan jam sekarang
         `Nota Jam    : ${currentDateTime[1]}\n` + // Tambahkan tanggal dan jam sekarang
         "-----------------------------------------------\n" +
@@ -76,9 +78,13 @@ function ModalPreview({ isOpen, onClose, id }) {
           formatRow(
             [
               item.barang.nama + "\n",
-              (item.pembelian_kotor.toString() +
+              (
+                item.pembelian_kotor.toString() +
                 "|" +
-                item.pembelian_bersih.toString()).padStart(10, " ").padEnd(15, " "),
+                item.pembelian_bersih.toString()
+              )
+                .padStart(10, " ")
+                .padEnd(15, " "),
               formatRupiah(parseInt(item.pembelian_harga)),
               formatRupiah(parseInt(item.pembelian_total)),
             ],

@@ -7,7 +7,7 @@ const AuthRoute = ({ element, isPrivate }) => {
 
   // Jika ini adalah rute private dan token tidak ada, redirect ke halaman login
   if (isPrivate && !token) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   // Jika ini adalah rute public dan token ada, redirect ke dashboard
